@@ -345,7 +345,7 @@ a { color: inherit; }
   border: none;
   border-radius: var(--flowx-radius-12);
   box-shadow: var(--flowx-shadow-xs);
-  padding: 24px 32px;
+  padding: 24px;
   margin: 16px 16px 0;
   display: flex;
   align-items: center;
@@ -402,7 +402,7 @@ a { color: inherit; }
 .page-head + .page-section { margin-top: 16px; }
 /* Filter bar that sits at the top of a page-section (or directly under page-head) */
 .filter-bar {
-  padding: 12px 20px;
+  padding: 16px 24px;
   background: var(--flowx-surface-primary);
   border-bottom: 1px solid var(--flowx-neutrals-100);
   display: flex;
@@ -584,7 +584,7 @@ a { color: inherit; }
   box-shadow: var(--flowx-shadow-xs);
 }
 .card-head {
-  padding: 16px 20px;
+  padding: 24px;
   border-bottom: 1px solid var(--flowx-neutrals-100);
   display: flex;
   justify-content: space-between;
@@ -599,7 +599,7 @@ a { color: inherit; }
 .banner {
   border-radius: var(--flowx-radius-12);
   box-shadow: var(--flowx-shadow-xs);
-  padding: 16px 20px;
+  padding: 24px;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -627,13 +627,22 @@ a { color: inherit; }
   font-size: 12px;
   line-height: 16px;
   color: var(--flowx-yellow-700);
-  border-radius: 0 var(--flowx-radius-8) var(--flowx-radius-8) 0;
+  border-radius: var(--flowx-radius-8);
   margin-bottom: 12px;
   display: flex;
   align-items: flex-start;
   gap: 8px;
 }
+/* Inside the Configuration card, inset the banner to match the card's 24px rhythm */
+.cfg-shell .doc-banner { margin: 24px 24px 12px; }
 .doc-banner b { color: var(--text); font-weight: 700; }
+.doc-banner .banner-icon {
+  font-size: 16px;
+  line-height: 16px;
+  color: var(--flowx-yellow-700);
+  flex-shrink: 0;
+  margin-top: 0;
+}
 .doc-banner .x {
   margin-left: auto;
   cursor: pointer;
@@ -648,14 +657,14 @@ a { color: inherit; }
 /* Tables */
 .list-table { width: 100%; border-collapse: collapse; font-size: 12px; }
 .list-table thead th {
-  background: var(--bg-alt);
-  padding: 8px 14px;
+  background: var(--flowx-surface-primary);
+  padding: 12px 14px;
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: var(--text-muted);
+  color: var(--flowx-text-secondary);
   font-weight: 700;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--flowx-neutrals-100);
   text-align: left;
   white-space: nowrap;
 }
@@ -917,7 +926,7 @@ a { color: inherit; }
 }
 
 .stack { display: flex; flex-direction: column; gap: 12px; }
-.kpi-card { padding: 16px 20px; background: var(--flowx-surface-primary); border: none; border-radius: var(--flowx-radius-12); box-shadow: var(--flowx-shadow-xs); }
+.kpi-card { padding: 24px; background: var(--flowx-surface-primary); border: none; border-radius: var(--flowx-radius-12); box-shadow: var(--flowx-shadow-xs); }
 .kpi-card h4 { margin: 0 0 8px; font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; font-weight: 700; }
 .kpi-big { font-size: 24px; font-weight: 700; color: var(--text); line-height: 28px; font-variant-numeric: tabular-nums; }
 .kpi-row { display: flex; gap: 10px; align-items: baseline; }
@@ -946,7 +955,7 @@ a { color: inherit; }
   gap: 12px;
 }
 @media (max-width: 760px) { .trends-strip { grid-template-columns: repeat(2, 1fr); } }
-.trend-card { padding: 12px 16px; background: var(--flowx-surface-primary); border: none; border-radius: var(--flowx-radius-12); box-shadow: var(--flowx-shadow-xs); }
+.trend-card { padding: 24px; background: var(--flowx-surface-primary); border: none; border-radius: var(--flowx-radius-12); box-shadow: var(--flowx-shadow-xs); }
 .trend-card h5 { margin: 0; font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.04em; font-weight: 700; }
 .trend-card .val { font-size: 16px; font-weight: 700; color: var(--text); margin-top: 2px; }
 .spark { height: 24px; margin-top: 4px; width: 100%; }
@@ -1132,7 +1141,7 @@ a { color: inherit; }
   display: flex;
   background: var(--flowx-surface-primary);
   border-bottom: 1px solid var(--flowx-neutrals-100);
-  padding: 0 20px;
+  padding: 0 24px;
 }
 .stage-tab {
   padding: 8px 12px;
@@ -1338,25 +1347,23 @@ a { color: inherit; }
   width: 32px; height: 32px;
   border-radius: var(--flowx-radius-8);
   display: flex; align-items: center; justify-content: center;
-  color: white;
-  font-weight: 700;
-  font-size: 14px;
+  background: var(--flowx-neutrals-50);
+  color: var(--flowx-neutrals-500);
+  font-size: 18px;
+  flex-shrink: 0;
 }
-.axis-icon.build { background: var(--blue-500); }
-.axis-icon.params { background: var(--purple-500); }
+.axis-icon .ph { font-size: 18px; line-height: 1; }
 .axis-header h3 { margin: 0; font-size: 18px; line-height: 28px; font-weight: 700; }
 .axis-header .sub { color: var(--text-muted); font-size: 12px; margin-left: auto; }
 .default-card {
-  background: var(--bg-alt);
-  border: 1px solid var(--border);
-  border-left: 3px solid var(--blue-500);
-  border-radius: 6px;
-  padding: 12px 14px;
+  background: var(--flowx-surface-secondary);
+  border: 1px solid var(--flowx-neutrals-100);
+  border-radius: var(--flowx-radius-8);
+  padding: 16px;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
-.default-card.params { border-left-color: var(--purple-500); }
 .default-card .lbl { font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.04em; font-weight: 700; }
 .default-card .val { font-size: 13px; font-weight: 600; color: var(--text); margin-top: 4px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .default-card .val code {
@@ -1501,7 +1508,7 @@ a { color: inherit; }
   display: flex;
   background: var(--flowx-surface-primary);
   border-bottom: 1px solid var(--flowx-neutrals-100);
-  padding: 0 20px;
+  padding: 0 24px;
 }
 
 /* Live Evals tiers — floating cards on gray canvas */
@@ -1510,7 +1517,7 @@ a { color: inherit; }
   border: none;
   border-radius: var(--flowx-radius-12);
   box-shadow: var(--flowx-shadow-s);
-  padding: 20px;
+  padding: 24px;
   margin-bottom: 0;
 }
 .le-tier h4 { margin: 0 0 4px; font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
@@ -2578,7 +2585,7 @@ function renderConfiguration(root) {
 
         <div class="axis-section">
           <div class="axis-header">
-            <div class="axis-icon build">◆</div>
+            <div class="axis-icon build"><i class="ph ph-tag" aria-hidden="true"></i></div>
             <h3>Build version</h3>
             <span class="sub">${policy.overrides.length} overrides · ${policy.default.resolvesToTag} on default</span>
           </div>
@@ -2608,7 +2615,7 @@ function renderConfiguration(root) {
 
         <div class="axis-section">
           <div class="axis-header">
-            <div class="axis-icon params">⚙</div>
+            <div class="axis-icon params"><i class="ph ph-sliders-horizontal" aria-hidden="true"></i></div>
             <h3>Config parameters</h3>
             <span class="sub">${Object.keys(params.defaults).length} params · ${params.overrides.length} overrides</span>
           </div>
@@ -3151,7 +3158,7 @@ function renderAiRunsSlice(it) {
 function docBanner(title, body, id) {
   if (STATE.dismissedBanners.has(id)) return '';
   return `<div class="doc-banner" data-banner-id="${id}">
-    <span>ℹ</span>
+    <i class="ph ph-info banner-icon" aria-hidden="true"></i>
     <div><b>${escapeHtml(title)}</b> ${escapeHtml(body)}</div>
     <button class="x" onclick="dismissBanner('${id}'); this.parentElement.remove();">×</button>
   </div>`;
