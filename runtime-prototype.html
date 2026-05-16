@@ -1917,6 +1917,13 @@ const MOCK_DATA = {
     'Scorer': { short: 'A configured quality measurement against AI workflow output.', long: 'Has a threshold; crossing the threshold creates an AI quality incident. Examples: coherence, helpfulness, toxicity, accuracy.' },
     'Task': { short: 'A unit of human work created when a Process Instance reaches a human-task node.', long: 'The instance waits until the task is completed. Tasks appear in the Tasks inbox; the same task surfaces in the Instance\'s Activity tree.' },
     'Normalized status': { short: 'The simplified five-state vocabulary the UI uses for all instance types.', long: 'Running, Waiting, Completed, Failed, Terminated. Hover any status pill to see the underlying engineering state.' },
+    'Overview': { short: 'A real-time snapshot of what is happening across this app right now.', long: 'Aggregates the live activity feed, in-flight counts across all instance types, deployment coverage of the active build, and the current AI quality picture. Designed so a single glance answers "is anything going wrong?" before drilling into a specific surface.' },
+    'Activity feed': { short: 'A unified stream of runtime events: starts, finishes, incidents, deploys, and trigger fires.', long: 'Pulls events from every runtime source (Process Instances, UI Flow Sessions, Triggers, Builds, Incidents, AI scorer breaches) into one ordered list. Click an event to open its detail panel.' },
+    'In flight': { short: 'How many runtime objects are currently active across this app.', long: 'Counts everything that is not yet finished: running and waiting Process Instances, active UI Flow Sessions, and pending Tasks. Useful as a single load indicator across instance types.' },
+    'Deployment': { short: 'What build is currently serving which slice of traffic.', long: 'Combines the active build with the percentage of users routed to it (per policy resolution). The bar visualises traffic split across active, legacy, and beta builds.' },
+    'AI quality': { short: 'The current state of AI scorer signals for this app.', long: 'Surfaces recent movements on the configured scorers — coherence, helpfulness, toxicity, etc. A red arrow means a scorer crossed its threshold and an AI quality incident is open.' },
+    'Instance': { short: 'A single runtime execution — either a Process Instance or a UI Flow Session.', long: 'The Instances page lists both types in one table with the type shown as a column. Status, build context, and detail panel are normalized so you can scan across types without switching surfaces.' },
+    'Configuration': { short: 'The two axes that determine what a runtime caller actually runs and what params it uses.', long: 'Build version (which Build the caller is served) and Config parameters (what values the running app consumes). Both axes share the same default + per-user/role overrides + priority resolution. Use the resolver on the right to test what a specific user gets on both axes simultaneously.' },
   },
 };
 
@@ -2184,7 +2191,7 @@ function renderOverview(root) {
   root.innerHTML = `
     <div class="page-head">
       <h2>Overview</h2>
-      ${helpIcon('Normalized status')}
+      ${helpIcon('Overview')}
       <span class="sub">Real-time view of what's happening across this app right now.</span>
       <span class="meta">live · last 24 h</span>
     </div>
@@ -2195,7 +2202,7 @@ function renderOverview(root) {
         <!-- Activity feed -->
         <div class="card">
           <div class="card-head">
-            <h3>Activity${helpIcon('Incident')}</h3>
+            <h3>Activity${helpIcon('Activity feed')}</h3>
             <span class="meta">live · last 24 h</span>
           </div>
           <div class="feed-filters">
@@ -2210,7 +2217,7 @@ function renderOverview(root) {
         <!-- KPI sidebar -->
         <div class="stack">
           <div class="kpi-card">
-            <h4>In flight${helpIcon('Process Instance')}</h4>
+            <h4>In flight${helpIcon('In flight')}</h4>
             <div class="kpi-row">
               <div class="kpi-big">${proc + flow + cnt.pendingTaskCount}</div>
               <div class="kpi-sub kpi-trend up">↑ 12% vs 24h avg</div>
@@ -2223,7 +2230,7 @@ function renderOverview(root) {
           </div>
 
           <div class="kpi-card">
-            <h4>Deployment${helpIcon('Active policy')}</h4>
+            <h4>Deployment${helpIcon('Deployment')}</h4>
             <div class="kpi-row">
               <div class="kpi-big" style="font-size:18px">${cnt.activeBuildTag}</div>
               <div class="kpi-sub">active build · 11m ago</div>
@@ -2241,7 +2248,7 @@ function renderOverview(root) {
           </div>
 
           <div class="kpi-card">
-            <h4>AI quality${helpIcon('Scorer')}</h4>
+            <h4>AI quality${helpIcon('AI quality')}</h4>
             ${scorerMovements.map(s => `
               <div class="scorer-row">
                 <span>${escapeHtml(s.name)}</span>
@@ -2322,7 +2329,7 @@ function renderInstances(root) {
   root.innerHTML = `
     <div class="page-head">
       <h2>Instances</h2>
-      ${helpIcon('Process Instance')}
+      ${helpIcon('Instance')}
       <span class="sub">Any user-facing session or engine-driven process running in this app.</span>
       <span class="meta">${totalActive} active · ${MOCK_DATA.instances.length} in view</span>
     </div>
@@ -2575,7 +2582,7 @@ function renderConfiguration(root) {
   root.innerHTML = `
     <div class="page-head">
       <h2>Configuration</h2>
-      ${helpIcon('Active policy')}
+      ${helpIcon('Configuration')}
       <span class="sub">Two axes a runtime caller can be configured on — what build they run, and what params it uses.</span>
       <button class="btn ghost" style="margin-left:auto">+ New override</button>
     </div>
@@ -3426,11 +3433,15 @@ function renderGlossary(filter = '') {
 let popoverOpenTerm = null;
 function showHelpPopover(ev, term) {
   ev.stopPropagation();
-  const def = MOCK_DATA.glossary[term];
-  if (!def) return;
   const pop = document.getElementById('helpPopover');
+  const def = MOCK_DATA.glossary[term];
   popoverOpenTerm = term;
-  pop.innerHTML = `<h5>${escapeHtml(term)}</h5><p>${escapeHtml(def.short)}</p><a onclick="openGlossary('${escapeHtml(term)}'); document.getElementById('helpPopover').classList.remove('open');">Open glossary →</a>`;
+  if (def) {
+    pop.innerHTML = `<h5>${escapeHtml(term)}</h5><p>${escapeHtml(def.short)}</p><a onclick="openGlossary('${escapeHtml(term)}'); document.getElementById('helpPopover').classList.remove('open');">Open glossary →</a>`;
+  } else {
+    // Fallback so the popover never shows stale content from a previous term
+    pop.innerHTML = `<h5>${escapeHtml(term)}</h5><p style="color:var(--flowx-text-secondary);">No definition yet for this term.</p><a onclick="openGlossary(); document.getElementById('helpPopover').classList.remove('open');">Open glossary →</a>`;
+  }
   const rect = ev.target.getBoundingClientRect();
   pop.style.top = (rect.bottom + 8) + 'px';
   pop.style.left = Math.max(8, rect.left - 60) + 'px';
