@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>FlowX Designer — Runtime (prototype)</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/regular/style.css">
 <style>
 :root {
   /* ─── FlowX Design System foundations ─────────────────────────── */
@@ -85,37 +86,102 @@ a { color: inherit; }
 /* ============ APP SHELL ============ */
 .app {
   display: grid;
-  grid-template-rows: 48px 1fr;
+  grid-template-rows: 56px 1fr;
   height: 100vh;
 }
+/* AppHeader — matches Agent-Builder-5.0 Figma 11552:314342 */
 .app-bar {
-  background: var(--flowx-surface-primary);
-  border-bottom: 1px solid var(--flowx-border-default);
+  background: var(--flowx-neutrals-800);
+  height: 56px;
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 0 24px;
-  font-size: 14px;
-  line-height: 24px;
-}
-.app-bar .brand { font-weight: 700; color: var(--flowx-text-primary); }
-.app-bar .sep { color: var(--flowx-border-strong); }
-.app-bar .tab {
-  padding: 6px 12px;
-  border-radius: var(--flowx-radius-8);
-  color: var(--flowx-text-secondary);
-  text-decoration: none;
-  font-size: 12px;
-  line-height: 16px;
-  font-weight: 600;
-  transition: background 100ms ease, color 100ms ease;
-}
-.app-bar .tab:hover { background: var(--flowx-surface-secondary); color: var(--flowx-text-primary); }
-.app-bar .tab.active {
-  background: var(--flowx-blue-500);
+  gap: 12px;
+  padding: 0 16px;
   color: var(--flowx-white);
 }
-.app-bar .env { margin-left: auto; color: var(--flowx-neutrals-400); font-size: 12px; line-height: 16px; }
+.app-bar .brand-mark {
+  width: 18.467px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-left: 4px;
+}
+.app-bar .brand-mark img {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.app-bar .brand-project {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding-left: 20px;
+  height: 100%;
+}
+.app-bar .brand-project .project-icon {
+  width: 18px;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.app-bar .brand-project .project-icon img {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.app-bar .brand-project .project-label {
+  display: inline-flex;
+  align-items: center;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 14px;
+  line-height: 22px;
+  font-weight: 400;
+  color: var(--flowx-white);
+  white-space: nowrap;
+}
+.app-bar .brand-project .project-label strong { font-weight: 700; }
+
+/* Segmented control on the right */
+.app-bar .app-segmented {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  padding: 4px;
+  background: #191d23;
+  border-radius: var(--flowx-radius-8);
+}
+.app-bar .app-seg {
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 8px;
+  border-radius: var(--flowx-radius-6);
+  background: transparent;
+  border: none;
+  color: var(--flowx-white);
+  font-family: 'Open Sans', sans-serif;
+  font-size: 12px;
+  line-height: 18px;
+  font-weight: 400;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 100ms ease;
+}
+.app-bar .app-seg:hover { background: rgba(255,255,255,0.06); }
+.app-bar .app-seg.active {
+  background: var(--flowx-blue-500);
+  font-weight: 600;
+  border-radius: var(--flowx-radius-4);
+  padding: 0 16px;
+  box-shadow: 0 2px 8px -2px rgba(0,0,0,0.08), 0 1px 4px -1px rgba(0,0,0,0.12);
+}
 
 .shell {
   display: grid;
@@ -126,125 +192,224 @@ a { color: inherit; }
   .shell { grid-template-columns: 56px 1fr; }
 }
 
-/* ============ SIDEBAR ============ */
+/* ============ SIDEBAR — matches CORE-5.5 Figma 10413:43856 ============ */
 .sidebar {
-  background: var(--bg);
-  border-right: 1px solid var(--border);
-  padding: 14px 10px;
+  background: var(--flowx-surface-primary);
+  border-right: 1px solid var(--flowx-neutrals-100);
+  padding: 24px 8px 40px;
   display: flex;
   flex-direction: column;
   gap: 2px;
   overflow-y: auto;
 }
-.nav-group {
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--text-dim);
-  font-weight: 700;
-  padding: 14px 12px 6px;
-}
-.nav-group:first-child { padding-top: 0; }
-.nav-item {
+/* Parent row ("menu_category") — bold 14/24, 24px icon, white bg, 6px radius */
+.nav-parent {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 8px 12px;
-  border-radius: var(--flowx-radius-8);
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: var(--flowx-radius-6);
+  font-family: 'Open Sans', sans-serif;
   font-size: 14px;
   line-height: 24px;
-  color: var(--flowx-text-secondary);
+  font-weight: 600;
+  color: var(--flowx-neutrals-800);
+  background: var(--flowx-surface-primary);
+  border: none;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  transition: background 100ms ease, color 100ms ease;
+}
+.nav-parent.no-route { cursor: default; }
+.nav-parent.no-route:hover { background: var(--flowx-surface-primary); }
+.nav-parent:hover { background: var(--flowx-surface-secondary); }
+.nav-parent.parent-active {
+  background: var(--flowx-blue-50);
+  color: var(--flowx-blue-500);
+}
+.nav-parent.parent-active .glyph { color: var(--flowx-blue-500); }
+.nav-parent .content {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+.nav-parent .glyph {
+  width: 24px; height: 24px;
+  display: inline-flex; align-items: center; justify-content: center;
+  color: var(--flowx-neutrals-500);
+  font-size: 24px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.nav-parent .glyph .ph { font-size: 24px; }
+.nav-parent .label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Children wrapper — indents the subcategory block 40px from the parent */
+.nav-children {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-left: 40px;
+  padding-bottom: 4px;
+  width: 100%;
+}
+
+/* Child row ("menu_subcateg") — 28px tall, 12/16 regular */
+.nav-child {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  height: 28px;
+  padding: 4px 16px 4px 8px;
+  border-radius: var(--flowx-radius-6);
+  font-family: 'Open Sans', sans-serif;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 400;
+  color: var(--flowx-neutrals-800);
   background: none;
   border: none;
   width: 100%;
   text-align: left;
+  cursor: pointer;
   transition: background 100ms ease, color 100ms ease;
 }
-.nav-item:hover { background: var(--flowx-surface-secondary); color: var(--flowx-text-primary); }
-.nav-item.active { background: var(--flowx-blue-50); color: var(--flowx-blue-700); font-weight: 600; }
-.nav-item .icon {
-  width: 18px; height: 18px; border-radius: 4px;
-  display: inline-flex; align-items: center; justify-content: center;
-  background: var(--border-soft);
-  color: var(--text-muted);
-  font-size: 11px; font-weight: 700;
-  flex-shrink: 0;
+.nav-child:hover { background: var(--flowx-surface-secondary); }
+.nav-child.active {
+  background: var(--flowx-blue-50);
+  color: var(--flowx-blue-500);
+  border-radius: 10px;
+  font-weight: 600;
 }
-.nav-item.active .icon { background: var(--blue-500); color: white; }
-.nav-item .label { flex: 1; }
+.nav-child .label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
 .nav-badge {
-  font-size: 10px;
+  font-size: 11px;
+  line-height: 16px;
   font-weight: 700;
-  padding: 1px 7px;
-  border-radius: 9999px;
-  background: var(--border-soft);
-  color: var(--text-muted);
+  padding: 1px 8px;
+  border-radius: var(--flowx-radius-pill);
+  background: var(--flowx-neutrals-100);
+  color: var(--flowx-text-secondary);
   font-variant-numeric: tabular-nums;
   transition: transform 200ms ease;
 }
-.nav-badge.info  { background: var(--blue-50);   color: var(--blue-700); }
-.nav-badge.warn  { background: var(--orange-50); color: var(--orange-700); }
-.nav-badge.alert { background: var(--red-50);    color: var(--red-700); animation: pulse-alert 1200ms ease 1; }
+.nav-badge.info  { background: var(--flowx-blue-50);   color: var(--flowx-blue-700); }
+.nav-badge.warn  { background: var(--flowx-orange-50); color: var(--flowx-orange-700); }
+.nav-badge.alert { background: var(--flowx-red-50);    color: var(--flowx-red-700); animation: pulse-alert 1200ms ease 1; }
 @keyframes pulse-alert {
   0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(230,34,0,0.4); }
   60% { transform: scale(1.08); box-shadow: 0 0 0 6px rgba(230,34,0,0); }
   100% { transform: scale(1); }
 }
-.nav-bottom { margin-top: auto; padding-top: 12px; border-top: 1px solid var(--border); }
+.nav-bottom { margin-top: auto; padding-top: 16px; border-top: 1px solid var(--flowx-neutrals-100); }
 .nav-help {
-  display: flex; align-items: center; gap: 8px;
-  padding: 7px 12px;
-  font-size: 11px;
-  color: var(--text-muted);
-  border-radius: 6px;
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 12px;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--flowx-text-secondary);
+  border-radius: var(--flowx-radius-8);
   cursor: pointer;
   background: none; border: none; width: 100%; text-align: left;
 }
-.nav-help:hover { background: var(--bg-alt); color: var(--text); }
+.nav-help:hover { background: var(--flowx-surface-secondary); color: var(--flowx-text-primary); }
 .nav-help .dot {
-  width: 6px; height: 6px; border-radius: 50%;
-  background: var(--green-500);
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--flowx-green-500);
   box-shadow: 0 0 0 3px rgba(0,128,96,0.15);
 }
 .nav-help.alert .dot {
-  background: var(--red-500);
+  background: var(--flowx-red-500);
   box-shadow: 0 0 0 3px rgba(230,34,0,0.15);
 }
 @media (max-width: 760px) {
-  .nav-item .label, .nav-badge, .nav-group, .nav-help .text { display: none; }
-  .nav-item { justify-content: center; padding: 8px 4px; }
+  .nav-parent .label, .nav-children, .nav-badge, .nav-help .text { display: none; }
+  .nav-parent { justify-content: center; padding: 8px 4px; }
 }
 
-/* ============ MAIN ============ */
+/* ============ MAIN — card-on-canvas rhythm ============ */
 .main {
-  background: var(--bg-alt);
+  background: var(--flowx-surface-secondary);
   overflow-y: auto;
   position: relative;
 }
+/* Page-head sits as a floating "title" card on the gray canvas */
 .page-head {
-  background: var(--bg);
-  border-bottom: 1px solid var(--border);
-  padding: 14px 24px;
+  background: var(--flowx-surface-primary);
+  border: none;
+  border-radius: var(--flowx-radius-12);
+  box-shadow: var(--flowx-shadow-xs);
+  padding: 24px 32px;
+  margin: 16px 16px 0;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
   flex-wrap: wrap;
 }
-.page-head h2 { margin: 0; font-size: 18px; font-weight: 700; }
+.page-head h2 {
+  margin: 0;
+  font-size: 24px;
+  line-height: 38px;
+  font-weight: 700;
+  color: var(--flowx-text-primary);
+  letter-spacing: -0.01em;
+}
 .page-head .help-icon, .help-icon-inline {
-  width: 16px; height: 16px; border-radius: 50%;
-  border: 1px solid var(--border-strong);
-  background: var(--bg);
-  color: var(--text-muted);
-  font-size: 10px; line-height: 14px; text-align: center;
+  width: 18px; height: 18px; border-radius: 50%;
+  border: 1px solid var(--flowx-border-default);
+  background: var(--flowx-surface-primary);
+  color: var(--flowx-text-secondary);
+  font-size: 11px; line-height: 16px; text-align: center;
   cursor: help;
   display: inline-block;
   vertical-align: middle;
 }
 .help-icon-inline { width: 14px; height: 14px; font-size: 9px; line-height: 12px; margin-left: 4px; }
-.page-head .sub { color: var(--text-dim); font-size: 12px; }
-.page-head .meta { margin-left: auto; color: var(--text-dim); font-size: 12px; }
-.page-body { padding: 18px 24px; }
+.page-head .sub {
+  color: var(--flowx-text-secondary);
+  font-size: 14px;
+  line-height: 24px;
+}
+.page-head .meta {
+  margin-left: auto;
+  color: var(--flowx-text-secondary);
+  font-size: 12px;
+  line-height: 16px;
+}
+.page-body {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+/* Floating content card on the gray canvas (stage-tabs + filter bar + list/table all live inside one) */
+.page-section {
+  background: var(--flowx-surface-primary);
+  border: none;
+  border-radius: var(--flowx-radius-12);
+  box-shadow: var(--flowx-shadow-xs);
+  margin: 16px;
+  overflow: hidden;
+}
+.page-section + .page-section { margin-top: 0; }
+/* When a page-head is immediately followed by a page-section, tighten the gap */
+.page-head + .page-section { margin-top: 16px; }
+/* Filter bar that sits at the top of a page-section (or directly under page-head) */
+.filter-bar {
+  padding: 12px 20px;
+  background: var(--flowx-surface-primary);
+  border-bottom: 1px solid var(--flowx-neutrals-100);
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
 
 /* ============ COMMON COMPONENTS ============ */
 
@@ -410,33 +575,35 @@ a { color: inherit; }
 }
 .search input::placeholder { color: var(--flowx-text-secondary); }
 
-/* Cards */
+/* Cards — floating surfaces on the gray canvas */
 .card {
-  background: var(--bg);
-  border: 1px solid var(--border);
+  background: var(--flowx-surface-primary);
+  border: none;
   border-radius: var(--flowx-radius-12);
   overflow: hidden;
+  box-shadow: var(--flowx-shadow-xs);
 }
 .card-head {
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--border);
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--flowx-neutrals-100);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
-.card-head h3 { margin: 0; font-size: 13px; font-weight: 700; }
-.card-head .meta { font-size: 11px; color: var(--text-dim); }
+.card-head h3 { margin: 0; font-size: 14px; line-height: 24px; font-weight: 700; color: var(--flowx-text-primary); }
+.card-head .meta { font-size: 12px; line-height: 16px; color: var(--flowx-text-secondary); }
 .card-body { padding: 0; }
 
-/* Banner — surfacing operational state */
+/* Banner — surfacing operational state, floats on gray canvas */
 .banner {
-  border-radius: var(--flowx-radius-8);
-  padding: 12px 16px;
+  border-radius: var(--flowx-radius-12);
+  box-shadow: var(--flowx-shadow-xs);
+  padding: 16px 20px;
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 16px;
+  margin-bottom: 0;
 }
 .banner.alert {
   background: linear-gradient(90deg, var(--flowx-red-50) 0%, var(--flowx-orange-50) 100%);
@@ -519,7 +686,7 @@ a { color: inherit; }
 /* Detail panel */
 .detail-overlay {
   position: fixed;
-  inset: 48px 0 0 0;
+  inset: 56px 0 0 0;
   background: rgba(29,35,44,0.20);
   opacity: 0;
   pointer-events: none;
@@ -529,7 +696,7 @@ a { color: inherit; }
 .detail-overlay.open { opacity: 1; pointer-events: auto; }
 .detail-panel {
   position: fixed;
-  top: 48px; right: 0; bottom: 0;
+  top: 56px; right: 0; bottom: 0;
   width: 480px;
   background: var(--bg-soft);
   border-left: 1px solid var(--border);
@@ -652,10 +819,11 @@ a { color: inherit; }
   font-size: 13px;
 }
 .empty.positive {
-  background: var(--green-50);
-  border: 1px solid var(--green-100);
-  border-radius: 8px;
-  color: var(--green-700);
+  background: var(--flowx-green-50);
+  border: none;
+  border-radius: var(--flowx-radius-12);
+  box-shadow: var(--flowx-shadow-xs);
+  color: var(--flowx-green-700);
 }
 .empty h4 {
   margin: 0 0 4px;
@@ -749,7 +917,7 @@ a { color: inherit; }
 }
 
 .stack { display: flex; flex-direction: column; gap: 12px; }
-.kpi-card { padding: 12px 16px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--flowx-radius-12); }
+.kpi-card { padding: 16px 20px; background: var(--flowx-surface-primary); border: none; border-radius: var(--flowx-radius-12); box-shadow: var(--flowx-shadow-xs); }
 .kpi-card h4 { margin: 0 0 8px; font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; font-weight: 700; }
 .kpi-big { font-size: 24px; font-weight: 700; color: var(--text); line-height: 28px; font-variant-numeric: tabular-nums; }
 .kpi-row { display: flex; gap: 10px; align-items: baseline; }
@@ -778,7 +946,7 @@ a { color: inherit; }
   gap: 12px;
 }
 @media (max-width: 760px) { .trends-strip { grid-template-columns: repeat(2, 1fr); } }
-.trend-card { padding: 10px 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; }
+.trend-card { padding: 12px 16px; background: var(--flowx-surface-primary); border: none; border-radius: var(--flowx-radius-12); box-shadow: var(--flowx-shadow-xs); }
 .trend-card h5 { margin: 0; font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.04em; font-weight: 700; }
 .trend-card .val { font-size: 16px; font-weight: 700; color: var(--text); margin-top: 2px; }
 .spark { height: 24px; margin-top: 4px; width: 100%; }
@@ -798,7 +966,7 @@ a { color: inherit; }
 /* ============ GLOSSARY PANEL ============ */
 .glossary-panel {
   position: fixed;
-  top: 48px; right: 0; bottom: 0;
+  top: 56px; right: 0; bottom: 0;
   width: 420px;
   background: var(--bg);
   border-left: 1px solid var(--border);
@@ -962,9 +1130,9 @@ a { color: inherit; }
 /* Tabs/stage tabs (used by Incidents) */
 .stage-tabs {
   display: flex;
-  background: var(--bg-alt);
-  border-bottom: 1px solid var(--border);
-  padding: 0 16px;
+  background: var(--flowx-surface-primary);
+  border-bottom: 1px solid var(--flowx-neutrals-100);
+  padding: 0 20px;
 }
 .stage-tab {
   padding: 8px 12px;
@@ -1331,18 +1499,19 @@ a { color: inherit; }
 /* Triggers */
 .t-trigger-tabs {
   display: flex;
-  background: var(--bg-alt);
-  border-bottom: 1px solid var(--border);
-  padding: 0 16px;
+  background: var(--flowx-surface-primary);
+  border-bottom: 1px solid var(--flowx-neutrals-100);
+  padding: 0 20px;
 }
 
-/* Live Evals tiers */
+/* Live Evals tiers — floating cards on gray canvas */
 .le-tier {
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 14px 16px;
-  margin-bottom: 12px;
+  background: var(--flowx-surface-primary);
+  border: none;
+  border-radius: var(--flowx-radius-12);
+  box-shadow: var(--flowx-shadow-s);
+  padding: 20px;
+  margin-bottom: 0;
 }
 .le-tier h4 { margin: 0 0 4px; font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
 .le-tier .pill-mini { font-size: 10px; padding: 1px 6px; border-radius: 4px; font-weight: 700; }
@@ -1406,11 +1575,15 @@ a { color: inherit; }
 
   <!-- ============ APP BAR ============ -->
   <header class="app-bar">
-    <div class="brand">FlowX Designer</div>
-    <span class="sep">/</span>
-    <a class="tab active" href="#/overview">Runtime</a>
-    <a class="tab" href="#" onclick="event.preventDefault()">Config</a>
-    <div class="env">us-east · production</div>
+    <div class="brand-mark"><img src="assets/flowx-logo.svg" alt="FlowX"></div>
+    <div class="brand-project">
+      <span class="project-icon"><img src="assets/project-icon.svg" alt=""></span>
+      <span class="project-label">[Project] <strong>Mortgage</strong></span>
+    </div>
+    <div class="app-segmented" role="tablist">
+      <a class="app-seg" href="#" onclick="event.preventDefault()" role="tab">Config</a>
+      <a class="app-seg active" href="#/overview" role="tab" aria-selected="true">Runtime</a>
+    </div>
   </header>
 
   <!-- ============ SHELL ============ -->
@@ -1778,51 +1951,64 @@ function liveCounters() {
 // ============================================================
 //  NAV (sidebar)
 // ============================================================
+// Glyphs are Phosphor icon names (regular weight). See https://phosphoricons.com
 const NAV = [
-  { group: null, items: [
-    { id: 'overview', route: '#/overview', icon: '⌂', label: 'Overview', badge: null },
+  // Standalone top-level entry (no children)
+  { id: 'overview', route: '#/overview', glyph: 'squares-four', label: 'Overview', badge: null, children: [] },
+  // Parent + children groups
+  { glyph: 'activity', label: 'Live state', children: [
+    { id: 'instances', route: '#/instances', label: 'Instances', badge: () => ({ kind: 'info', value: liveCounters().activeInstanceCount }) },
+    { id: 'incidents', route: '#/incidents', label: 'Incidents', badge: () => ({ kind: 'alert', value: liveCounters().openIncidentCount }) },
+    { id: 'live-evals', route: '#/live-evals', label: 'Live Evals', badge: () => ({ kind: 'warn', value: liveCounters().openAlertCount }) },
   ]},
-  { group: 'Live state', items: [
-    { id: 'instances', route: '#/instances', icon: '▸', label: 'Instances', badge: () => ({ kind: 'info', value: liveCounters().activeInstanceCount }) },
-    { id: 'incidents', route: '#/incidents', icon: '⚠', label: 'Incidents', badge: () => ({ kind: 'alert', value: liveCounters().openIncidentCount }) },
-    { id: 'live-evals', route: '#/live-evals', icon: '∿', label: 'Live Evals', badge: () => ({ kind: 'warn', value: liveCounters().openAlertCount }) },
+  { glyph: 'package', label: 'Deployment', children: [
+    { id: 'builds', route: '#/builds', label: 'Builds', badge: () => ({ kind: 'info', value: liveCounters().activeBuildTag }) },
+    { id: 'configuration', route: '#/configuration', label: 'Configuration', badge: null },
+    { id: 'triggers', route: '#/triggers', label: 'Schedules & Triggers', badge: null },
   ]},
-  { group: 'Deployment', items: [
-    { id: 'builds', route: '#/builds', icon: '◆', label: 'Builds', badge: () => ({ kind: 'info', value: liveCounters().activeBuildTag }) },
-    { id: 'configuration', route: '#/configuration', icon: '⚙', label: 'Configuration', badge: null },
-    { id: 'triggers', route: '#/triggers', icon: '⟳', label: 'Schedules & Triggers', badge: null },
-  ]},
-  { group: 'Work', items: [
-    { id: 'tasks', route: '#/tasks', icon: '☐', label: 'Tasks', badge: () => ({ kind: 'info', value: liveCounters().pendingTaskCount }) },
-  ]},
+  // Standalone — was "Work > Tasks"; promoted to top-level to mirror the reference's flat top-levels
+  { id: 'tasks', route: '#/tasks', glyph: 'list-checks', label: 'Tasks', badge: () => ({ kind: 'info', value: liveCounters().pendingTaskCount }), children: [] },
 ];
 
 let prevBadges = {};
+
+function renderBadge(item) {
+  if (!item.badge) return '';
+  const b = item.badge();
+  if (!b || (!b.value && b.value !== 0)) return '';
+  // Hide '0' for alert badges
+  if (b.kind === 'alert' && b.value === 0) return '';
+  return `<span class="nav-badge ${b.kind}">${b.value}</span>`;
+}
 
 function renderSidebar() {
   const sb = document.getElementById('sidebar');
   const route = STATE.currentRoute;
   const cnt = liveCounters();
   let html = '';
-  NAV.forEach(grp => {
-    if (grp.group) html += `<div class="nav-group">${grp.group}</div>`;
-    grp.items.forEach(item => {
-      const active = route === item.id;
-      let badgeHtml = '';
-      if (item.badge) {
-        const b = item.badge();
-        if (b && (b.value || b.value === 0)) {
-          // Hide '0' for alert badges
-          const visible = !(b.kind === 'alert' && b.value === 0);
-          if (visible) badgeHtml = `<span class="nav-badge ${b.kind}">${b.value}</span>`;
-        }
-      }
-      html += `<button class="nav-item ${active ? 'active' : ''}" onclick="location.hash='${item.route}'">
-        <span class="icon">${item.icon}</span>
-        <span class="label">${item.label}</span>
-        ${badgeHtml}
-      </button>`;
-    });
+  NAV.forEach(entry => {
+    const isParentWithChildren = entry.children && entry.children.length > 0;
+    const parentActive = !isParentWithChildren && route === entry.id;
+    const parentClickable = !!entry.route;
+    const parentClick = parentClickable ? `onclick="location.hash='${entry.route}'"` : '';
+    html += `<button class="nav-parent ${parentClickable ? '' : 'no-route'} ${parentActive ? 'parent-active' : ''}" ${parentClick}>
+      <span class="content">
+        <span class="glyph"><i class="ph ph-${entry.glyph}"></i></span>
+        <span class="label">${entry.label}</span>
+      </span>
+      ${renderBadge(entry)}
+    </button>`;
+    if (isParentWithChildren) {
+      html += `<div class="nav-children">`;
+      entry.children.forEach(child => {
+        const active = route === child.id;
+        html += `<button class="nav-child ${active ? 'active' : ''}" onclick="location.hash='${child.route}'">
+          <span class="label">${child.label}</span>
+          ${renderBadge(child)}
+        </button>`;
+      });
+      html += `</div>`;
+    }
   });
   // footer
   const footerHealthy = cnt.openIncidentCount === 0;
@@ -2036,14 +2222,14 @@ function renderOverview(root) {
               <div class="kpi-sub">active build · 11m ago</div>
             </div>
             <div class="build-bar">
-              <span style="width:78%;background:var(--blue-500)"></span>
-              <span style="width:15%;background:var(--purple-500)"></span>
-              <span style="width:7%;background:var(--border-strong)"></span>
+              <span style="width:78%;background:var(--flowx-blue-500)"></span>
+              <span style="width:15%;background:var(--flowx-blue-300)"></span>
+              <span style="width:7%;background:var(--flowx-orange-500)"></span>
             </div>
             <div class="build-legend">
-              <span><i style="background:var(--blue-500)"></i> v1.4.2 78%</span>
-              <span><i style="background:var(--purple-500)"></i> v1.4.1 15%</span>
-              <span><i style="background:var(--border-strong)"></i> beta 7%</span>
+              <span><i style="background:var(--flowx-blue-500)"></i> v1.4.2 78%</span>
+              <span><i style="background:var(--flowx-blue-300)"></i> v1.4.1 15%</span>
+              <span><i style="background:var(--flowx-orange-500)"></i> beta 7%</span>
             </div>
           </div>
 
@@ -2133,29 +2319,29 @@ function renderInstances(root) {
       <span class="sub">Any user-facing session or engine-driven process running in this app.</span>
       <span class="meta">${totalActive} active · ${MOCK_DATA.instances.length} in view</span>
     </div>
-    <div style="padding:10px 24px;background:var(--bg);border-bottom:1px solid var(--border);display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
-      ${filterPickr('Type', 'type', f.type, ['all','process','uiflow'])}
-      ${filterPickr('Status', 'status', f.status, ['any','running','waiting','completed','failed','terminated'])}
-      ${filterPickr('Build', 'build', f.build, ['any', ...buildTags])}
-      <div class="search">
-        <input type="text" placeholder="Search by ID, variable…" value="${escapeHtml(f.search)}" oninput="STATE.filters.instances.search = this.value; renderInstances(document.getElementById('page'))">
+    <div class="page-section">
+      <div class="filter-bar">
+        ${filterPickr('Type', 'type', f.type, ['all','process','uiflow'])}
+        ${filterPickr('Status', 'status', f.status, ['any','running','waiting','completed','failed','terminated'])}
+        ${filterPickr('Build', 'build', f.build, ['any', ...buildTags])}
+        <div class="search">
+          <input type="text" placeholder="Search by ID, variable…" value="${escapeHtml(f.search)}" oninput="STATE.filters.instances.search = this.value; renderInstances(document.getElementById('page'))">
+        </div>
+        <span style="margin-left:auto;color:var(--flowx-text-secondary);font-size:12px;line-height:16px;">Time: <strong style="color:var(--flowx-text-primary)">Last 24h</strong></span>
       </div>
-      <span style="margin-left:auto;color:var(--text-dim);font-size:11px;">Time: <strong style="color:var(--text)">Last 24h</strong></span>
-    </div>
-    <div style="background:var(--bg);">
-    ${rows.length === 0 ? `<div class="empty"><h4>No instances match these filters</h4><p>Clear filters or expand the time window. When a UI flow runs or a process starts, it'll appear here.</p></div>` : `
-      <table class="list-table">
-        <thead><tr>
-          <th style="width:120px">Type</th>
-          <th>Identity</th>
-          <th>Status</th>
-          <th>Build</th>
-          <th>At step</th>
-          <th>Started</th>
-        </tr></thead>
-        <tbody>${rowsHtml}</tbody>
-      </table>
-    `}
+      ${rows.length === 0 ? `<div class="empty"><h4>No instances match these filters</h4><p>Clear filters or expand the time window. When a UI flow runs or a process starts, it'll appear here.</p></div>` : `
+        <table class="list-table">
+          <thead><tr>
+            <th style="width:120px">Type</th>
+            <th>Identity</th>
+            <th>Status</th>
+            <th>Build</th>
+            <th>At step</th>
+            <th>Started</th>
+          </tr></thead>
+          <tbody>${rowsHtml}</tbody>
+        </table>
+      `}
     </div>
   `;
 }
@@ -2223,22 +2409,22 @@ function renderIncidents(root) {
       <span class="sub">Anything that broke or breached — across the full lifecycle.</span>
       <span class="meta">${openCount} open · ${criticalCount} critical</span>
     </div>
-    <div class="stage-tabs">
-      ${['all','pre-start','trigger','mid-execution','ai-quality'].map(s => `
-        <button class="stage-tab ${f.stage === s ? 'active' : ''}" onclick="STATE.filters.incidents.stage = '${s}'; renderIncidents(document.getElementById('page'))">
-          ${stageLabel[s]} <span class="count ${stageCountCss(s)}">${countsByStage[s]}</span>
-        </button>
-      `).join('')}
-    </div>
-    <div style="padding:10px 24px;background:var(--bg);border-bottom:1px solid var(--border);display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
-      <div class="pickr"><span>Severity</span><span class="v">Any</span></div>
-      <div class="pickr"><span>Status</span><span class="v">Open + Ack</span></div>
-      <div class="pickr"><span>Build</span><span class="v">Any</span></div>
-      <div class="pickr"><span>Source</span><span class="v">Any</span></div>
-      <div class="search"><input type="text" placeholder="Search…" oninput="STATE.filters.incidents.search = this.value; renderIncidents(document.getElementById('page'))"></div>
-      <span style="margin-left:auto;color:var(--text-dim);font-size:11px;">Time: <strong style="color:var(--text)">Last 24h</strong></span>
-    </div>
-    <div style="background:var(--bg);">
+    <div class="page-section">
+      <div class="stage-tabs">
+        ${['all','pre-start','trigger','mid-execution','ai-quality'].map(s => `
+          <button class="stage-tab ${f.stage === s ? 'active' : ''}" onclick="STATE.filters.incidents.stage = '${s}'; renderIncidents(document.getElementById('page'))">
+            ${stageLabel[s]} <span class="count ${stageCountCss(s)}">${countsByStage[s]}</span>
+          </button>
+        `).join('')}
+      </div>
+      <div class="filter-bar">
+        <div class="pickr"><span>Severity</span><span class="v">Any</span></div>
+        <div class="pickr"><span>Status</span><span class="v">Open + Ack</span></div>
+        <div class="pickr"><span>Build</span><span class="v">Any</span></div>
+        <div class="pickr"><span>Source</span><span class="v">Any</span></div>
+        <div class="search"><input type="text" placeholder="Search…" oninput="STATE.filters.incidents.search = this.value; renderIncidents(document.getElementById('page'))"></div>
+        <span style="margin-left:auto;color:var(--flowx-text-secondary);font-size:12px;line-height:16px;">Time: <strong style="color:var(--flowx-text-primary)">Last 24h</strong></span>
+      </div>
       ${rows.length === 0 ? (f.stage === 'all' && all.filter(i => i.status === 'open').length === 0
           ? `<div class="empty positive"><h4>All clear</h4><p>No open incidents.</p></div>`
           : `<div class="empty"><h4>No incidents match</h4><p>Try a different stage or expand the time window.</p></div>`)
@@ -2259,8 +2445,8 @@ function renderBuilds(root) {
     const coverageBarHtml = b.coverage.percent === 0
       ? `<div class="coverage-bar"><span style="width:100%;background:var(--border-strong)"></span></div>`
       : `<div class="coverage-bar">
-          <span style="width:${b.coverage.percent}%;background:${b.isActive ? 'var(--blue-500)' : 'var(--purple-500)'}"></span>
-          <span style="width:${100 - b.coverage.percent}%;background:var(--border)"></span>
+          <span style="width:${b.coverage.percent}%;background:${b.isActive ? 'var(--flowx-blue-500)' : 'var(--flowx-blue-300)'}"></span>
+          <span style="width:${100 - b.coverage.percent}%;background:var(--flowx-neutrals-100)"></span>
         </div>`;
     const dlt = (d, suffix = '', invertColor = false) => {
       if (d === 0) return `<span class="delta flat">flat</span>`;
@@ -2297,17 +2483,19 @@ function renderBuilds(root) {
       <span class="sub">Immutable, published app snapshots. Each shows what it serves and how it compares.</span>
       <span class="meta">${all.length} builds · ${branches.length} branches</span>
     </div>
-    <div class="stage-tabs">
-      <button class="stage-tab ${f.branch === 'all' ? 'active' : ''}" onclick="STATE.filters.builds.branch='all'; renderBuilds(document.getElementById('page'))">All <span class="count">${branchCounts.all}</span></button>
-      ${branches.map(br => `<button class="stage-tab ${f.branch === br ? 'active' : ''}" onclick="STATE.filters.builds.branch='${br}'; renderBuilds(document.getElementById('page'))">${escapeHtml(br)} <span class="count">${branchCounts[br]}</span></button>`).join('')}
+    <div class="page-section">
+      <div class="stage-tabs">
+        <button class="stage-tab ${f.branch === 'all' ? 'active' : ''}" onclick="STATE.filters.builds.branch='all'; renderBuilds(document.getElementById('page'))">All <span class="count">${branchCounts.all}</span></button>
+        ${branches.map(br => `<button class="stage-tab ${f.branch === br ? 'active' : ''}" onclick="STATE.filters.builds.branch='${br}'; renderBuilds(document.getElementById('page'))">${escapeHtml(br)} <span class="count">${branchCounts[br]}</span></button>`).join('')}
+      </div>
+      <div class="filter-bar">
+        <div class="pickr"><span>Status</span><span class="v">Any</span></div>
+        <div class="pickr"><span>Date</span><span class="v">Last 30d</span></div>
+        <div class="pickr"><span>Author</span><span class="v">Anyone</span></div>
+        <span style="margin-left:auto;color:var(--flowx-text-secondary);font-size:12px;line-height:16px;">Sort: <strong style="color:var(--flowx-text-primary)">Newest first</strong></span>
+      </div>
+      ${rowsHtml}
     </div>
-    <div style="padding:10px 24px;background:var(--bg);border-bottom:1px solid var(--border);display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
-      <div class="pickr"><span>Status</span><span class="v">Any</span></div>
-      <div class="pickr"><span>Date</span><span class="v">Last 30d</span></div>
-      <div class="pickr"><span>Author</span><span class="v">Anyone</span></div>
-      <span style="margin-left:auto;color:var(--text-dim);font-size:11px;">Sort: <strong style="color:var(--text)">Newest first</strong></span>
-    </div>
-    <div style="background:var(--bg);">${rowsHtml}</div>
   `;
 }
 function renderConfiguration(root) {
@@ -2384,7 +2572,7 @@ function renderConfiguration(root) {
       <span class="sub">Two axes a runtime caller can be configured on — what build they run, and what params it uses.</span>
       <button class="btn ghost" style="margin-left:auto">+ New override</button>
     </div>
-    <div class="cfg-shell">
+    <div class="page-section cfg-shell">
       <div>
         ${docBanner('How configuration works.', 'Every caller has a default for each axis. Overrides match users or roles and replace the default for those callers. Higher-priority overrides win when multiple match. The resolver on the right shows the effective values for a specific user.', 'cfg-howto')}
 
@@ -2456,7 +2644,7 @@ function renderConfiguration(root) {
         </div>
         <div class="field">
           <label>Roles</label>
-          <div style="border:1px solid var(--border-strong);border-radius:6px;padding:6px 8px;background:white;min-height:34px;">${rolesChipsHtml}</div>
+          <div style="border:1px solid var(--flowx-border-default);border-radius:var(--flowx-radius-8);padding:6px 8px;background:white;min-height:36px;">${rolesChipsHtml}</div>
         </div>
         <button class="btn primary" style="width:100%;margin-top:4px;" onclick="resolveConfig()">Resolve →</button>
         ${resolvedHtml}
@@ -2568,9 +2756,11 @@ function renderLiveEvals(root) {
       <span class="sub">Runtime observability for AI workflow quality, telemetry, and cost.</span>
       <span class="meta">active build: <strong>${escapeHtml(wf.activeBuild)}</strong></span>
     </div>
-    <div style="padding:10px 24px;background:var(--bg);border-bottom:1px solid var(--border);display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
-      <span style="font-size:11px;color:var(--text-muted);margin-right:6px;">Workflow:</span>
-      ${MOCK_DATA.workflows.map(w => `<button class="chip ${w.id === wfId ? 'active' : ''}" onclick="STATE.liveEvals.workflowId='${w.id}'; renderLiveEvals(document.getElementById('page'))">${escapeHtml(w.name)}</button>`).join('')}
+    <div class="page-section">
+      <div class="filter-bar">
+        <span style="font-size:12px;line-height:16px;color:var(--flowx-text-secondary);margin-right:4px;">Workflow:</span>
+        ${MOCK_DATA.workflows.map(w => `<button class="chip ${w.id === wfId ? 'active' : ''}" onclick="STATE.liveEvals.workflowId='${w.id}'; renderLiveEvals(document.getElementById('page'))">${escapeHtml(w.name)}</button>`).join('')}
+      </div>
     </div>
     <div class="page-body">
 
@@ -2669,14 +2859,18 @@ function renderTriggers(root) {
       <span class="sub">Scheduled processes + external triggers + their failure history.</span>
       <span class="meta">${counts.scheduled} scheduled · ${counts.external} external · ${counts['failed-fires']} failed</span>
     </div>
-    <div class="stage-tabs">
-      ${['scheduled','external','recent-fires','failed-fires'].map(t => `
-        <button class="stage-tab ${tab === t ? 'active' : ''}" onclick="STATE.filters.triggers.tab='${t}'; renderTriggers(document.getElementById('page'))">
-          ${tabLabel[t]} <span class="count ${t === 'failed-fires' && counts[t] > 0 ? 'alert' : ''}">${counts[t]}</span>
-        </button>`).join('')}
+    <div class="page-body" style="padding-bottom:0;">
+      ${docBanner("What's combined here.", "Old Scheduled Processes + old Manage Triggers + the trigger-failure subset of Failed Triggers. Mid-execution / Pre-start failures live in Incidents. The 'Failed fires' tab here is just for fires that didn't reach a process start.", 'triggers-howto')}
     </div>
-    ${docBanner("What's combined here.", "Old Scheduled Processes + old Manage Triggers + the trigger-failure subset of Failed Triggers. Mid-execution / Pre-start failures live in Incidents. The 'Failed fires' tab here is just for fires that didn't reach a process start.", 'triggers-howto')}
-    <div style="background:var(--bg);">${bodyHtml}</div>
+    <div class="page-section">
+      <div class="stage-tabs">
+        ${['scheduled','external','recent-fires','failed-fires'].map(t => `
+          <button class="stage-tab ${tab === t ? 'active' : ''}" onclick="STATE.filters.triggers.tab='${t}'; renderTriggers(document.getElementById('page'))">
+            ${tabLabel[t]} <span class="count ${t === 'failed-fires' && counts[t] > 0 ? 'alert' : ''}">${counts[t]}</span>
+          </button>`).join('')}
+      </div>
+      ${bodyHtml}
+    </div>
   `;
 }
 
@@ -2727,12 +2921,12 @@ function renderTasks(root) {
       <span class="sub">User-task inbox. Tasks are created by Process Instances reaching a human-task node.</span>
       <span class="meta">${pendingCount} pending</span>
     </div>
-    <div style="padding:10px 24px;background:var(--bg);border-bottom:1px solid var(--border);display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
-      <div class="pickr ${f.assignee !== 'anyone' ? 'active' : ''}" onclick="cycleFilter('tasks','assignee', ['anyone','me','unassigned'])">Assignee <span class="v">${f.assignee.charAt(0).toUpperCase() + f.assignee.slice(1)}</span></div>
-      <div class="pickr ${f.status !== 'pending' ? 'active' : ''}" onclick="cycleFilter('tasks','status', ['pending','completed','all'])">Status <span class="v">${f.status.charAt(0).toUpperCase() + f.status.slice(1)}</span></div>
-      <div class="pickr"><span>Due</span><span class="v">All</span></div>
-    </div>
-    <div style="background:var(--bg-alt);">
+    <div class="page-section">
+      <div class="filter-bar">
+        <div class="pickr ${f.assignee !== 'anyone' ? 'active' : ''}" onclick="cycleFilter('tasks','assignee', ['anyone','me','unassigned'])">Assignee <span class="v">${f.assignee.charAt(0).toUpperCase() + f.assignee.slice(1)}</span></div>
+        <div class="pickr ${f.status !== 'pending' ? 'active' : ''}" onclick="cycleFilter('tasks','status', ['pending','completed','all'])">Status <span class="v">${f.status.charAt(0).toUpperCase() + f.status.slice(1)}</span></div>
+        <div class="pickr"><span>Due</span><span class="v">All</span></div>
+      </div>
       ${rows.length === 0 ? '<div class="empty"><h4>No tasks match these filters</h4><p>Clear filters or try a different assignee.</p></div>' : rowsHtml}
     </div>
   `;
