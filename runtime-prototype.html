@@ -1,0 +1,3314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FlowX Designer — Runtime (prototype)</title>
+<style>
+:root {
+  /* ─── FlowX Design System foundations ─────────────────────────── */
+  /* Palettes */
+  --flowx-blue-50:#e6f0fb; --flowx-blue-100:#b0d1f3; --flowx-blue-200:#8abbed; --flowx-blue-300:#549ce5; --flowx-blue-400:#3389e0; --flowx-blue-500:#006bd8; --flowx-blue-600:#005fc0; --flowx-blue-700:#004c99; --flowx-blue-800:#003b77; --flowx-blue-900:#002d5b;
+  --flowx-green-50:#e6f2ef; --flowx-green-100:#b0d8ce; --flowx-green-200:#8ac5b6; --flowx-green-300:#54aa94; --flowx-green-400:#339980; --flowx-green-500:#008060; --flowx-green-600:#007457; --flowx-green-700:#005b44; --flowx-green-800:#004635; --flowx-green-900:#003628;
+  --flowx-yellow-50:#fff8e7; --flowx-yellow-100:#ffe9b6; --flowx-yellow-200:#ffdf92; --flowx-yellow-300:#fed061; --flowx-yellow-400:#fec742; --flowx-yellow-500:#feb913; --flowx-yellow-600:#e7a811; --flowx-yellow-700:#b4830d; --flowx-yellow-800:#8c660a; --flowx-yellow-900:#6b4e08;
+  --flowx-orange-50:#fff0e8; --flowx-orange-100:#fed1b9; --flowx-orange-200:#febb97; --flowx-orange-300:#fe9c67; --flowx-orange-400:#fd8949; --flowx-orange-500:#fd6b1c; --flowx-orange-600:#e66119; --flowx-orange-700:#b44c14; --flowx-orange-800:#8b3b0f; --flowx-orange-900:#6a2d0c;
+  --flowx-red-50:#fde9e6; --flowx-red-100:#f7bab0; --flowx-red-200:#f4998a; --flowx-red-300:#ee6b54; --flowx-red-400:#eb4e33; --flowx-red-500:#e62200; --flowx-red-600:#d11f00; --flowx-red-700:#a31800; --flowx-red-800:#7f1300; --flowx-red-900:#610e00;
+  --flowx-neutrals-50:#f7f8f9; --flowx-neutrals-100:#e3e8ed; --flowx-neutrals-200:#cbd1db; --flowx-neutrals-300:#a6b0be; --flowx-neutrals-400:#8390a2; --flowx-neutrals-500:#64748b; --flowx-neutrals-600:#5b6a7e; --flowx-neutrals-700:#475263; --flowx-neutrals-800:#2a313a; --flowx-neutrals-900:#1d232c;
+  --flowx-white:#ffffff; --flowx-black:#000000;
+
+  /* Semantic (light) */
+  --flowx-surface-primary: var(--flowx-white);
+  --flowx-surface-secondary: var(--flowx-neutrals-50);
+  --flowx-surface-tertiary: var(--flowx-neutrals-100);
+  --flowx-text-primary: var(--flowx-neutrals-900);
+  --flowx-text-secondary: var(--flowx-neutrals-500);
+  --flowx-text-disabled: var(--flowx-neutrals-300);
+  --flowx-border-default: var(--flowx-neutrals-100);
+  --flowx-border-strong: var(--flowx-neutrals-200);
+  --flowx-interactive: var(--flowx-blue-500);
+  --flowx-interactive-hover: var(--flowx-blue-600);
+  --flowx-success: var(--flowx-green-500);
+  --flowx-warning: var(--flowx-yellow-500);
+  --flowx-error: var(--flowx-red-500);
+  --flowx-info: var(--flowx-blue-500);
+
+  /* Spacing scale (px) */
+  --flowx-space-0: 0; --flowx-space-1: 1px; --flowx-space-2: 2px; --flowx-space-4: 4px; --flowx-space-6: 6px; --flowx-space-8: 8px; --flowx-space-12: 12px; --flowx-space-16: 16px; --flowx-space-24: 24px; --flowx-space-32: 32px; --flowx-space-40: 40px; --flowx-space-48: 48px; --flowx-space-56: 56px; --flowx-space-64: 64px;
+
+  /* Radius scale */
+  --flowx-radius-2: 2px; --flowx-radius-4: 4px; --flowx-radius-6: 6px; --flowx-radius-8: 8px; --flowx-radius-12: 12px; --flowx-radius-16: 16px; --flowx-radius-24: 24px;
+  --flowx-radius-pill: 9999px;
+
+  /* Elevation (FlowX shadow color #163462 @ 10%) */
+  --flowx-shadow-xs: 0 2px 8px #1634621a;
+  --flowx-shadow-s:  0 4px 12px #1634621a;
+  --flowx-shadow-m:  0 8px 16px #1634621a;
+  --flowx-shadow-l:  0 16px 24px #1634621a;
+  --flowx-shadow-xl: 0 24px 32px #1634621a;
+
+  /* ─── Local aliases mapped to FlowX foundations ────────────────── */
+  --bg: var(--flowx-surface-primary);
+  --bg-alt: var(--flowx-surface-secondary);
+  --bg-soft: #fafbfc;
+  --border: var(--flowx-border-default);
+  --border-soft: #f0f3f6;
+  --border-strong: var(--flowx-border-strong);
+  --text: var(--flowx-text-primary);
+  --text-muted: var(--flowx-neutrals-600);
+  --text-dim: var(--flowx-neutrals-400);
+
+  --blue-50: var(--flowx-blue-50);   --blue-100: var(--flowx-blue-100);   --blue-500: var(--flowx-blue-500);   --blue-700: var(--flowx-blue-700);
+  --green-50: var(--flowx-green-50); --green-100: var(--flowx-green-100); --green-500: var(--flowx-green-500); --green-700: var(--flowx-green-700);
+  --yellow-50: var(--flowx-yellow-50); --yellow-100: var(--flowx-yellow-100); --yellow-500: var(--flowx-yellow-500); --yellow-700: var(--flowx-yellow-700);
+  --orange-50: var(--flowx-orange-50); --orange-100: var(--flowx-orange-100); --orange-500: var(--flowx-orange-500); --orange-700: var(--flowx-orange-700);
+  --red-50: var(--flowx-red-50);     --red-100: var(--flowx-red-100);     --red-500: var(--flowx-red-500);     --red-700: var(--flowx-red-700);
+
+  /* FlowX has no purple — map all purple usages onto FlowX blue (info/interactive). */
+  --purple-50: var(--flowx-blue-50); --purple-100: var(--flowx-blue-100); --purple-500: var(--flowx-blue-500); --purple-700: var(--flowx-blue-700);
+
+  --shadow-s: var(--flowx-shadow-xs);
+  --shadow-m: var(--flowx-shadow-m);
+  --shadow-l: var(--flowx-shadow-l);
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; }
+body {
+  font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 14px; line-height: 1.45;
+  color: var(--text);
+  background: var(--bg-alt);
+  -webkit-font-smoothing: antialiased;
+}
+button { font: inherit; cursor: pointer; }
+a { color: inherit; }
+
+/* ============ APP SHELL ============ */
+.app {
+  display: grid;
+  grid-template-rows: 48px 1fr;
+  height: 100vh;
+}
+.app-bar {
+  background: var(--flowx-surface-primary);
+  border-bottom: 1px solid var(--flowx-border-default);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 0 24px;
+  font-size: 14px;
+  line-height: 24px;
+}
+.app-bar .brand { font-weight: 700; color: var(--flowx-text-primary); }
+.app-bar .sep { color: var(--flowx-border-strong); }
+.app-bar .tab {
+  padding: 6px 12px;
+  border-radius: var(--flowx-radius-8);
+  color: var(--flowx-text-secondary);
+  text-decoration: none;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+  transition: background 100ms ease, color 100ms ease;
+}
+.app-bar .tab:hover { background: var(--flowx-surface-secondary); color: var(--flowx-text-primary); }
+.app-bar .tab.active {
+  background: var(--flowx-blue-500);
+  color: var(--flowx-white);
+}
+.app-bar .env { margin-left: auto; color: var(--flowx-neutrals-400); font-size: 12px; line-height: 16px; }
+
+.shell {
+  display: grid;
+  grid-template-columns: 224px 1fr;
+  min-height: 0;
+}
+@media (max-width: 760px) {
+  .shell { grid-template-columns: 56px 1fr; }
+}
+
+/* ============ SIDEBAR ============ */
+.sidebar {
+  background: var(--bg);
+  border-right: 1px solid var(--border);
+  padding: 14px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow-y: auto;
+}
+.nav-group {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+  font-weight: 700;
+  padding: 14px 12px 6px;
+}
+.nav-group:first-child { padding-top: 0; }
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  border-radius: var(--flowx-radius-8);
+  font-size: 14px;
+  line-height: 24px;
+  color: var(--flowx-text-secondary);
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+  transition: background 100ms ease, color 100ms ease;
+}
+.nav-item:hover { background: var(--flowx-surface-secondary); color: var(--flowx-text-primary); }
+.nav-item.active { background: var(--flowx-blue-50); color: var(--flowx-blue-700); font-weight: 600; }
+.nav-item .icon {
+  width: 18px; height: 18px; border-radius: 4px;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--border-soft);
+  color: var(--text-muted);
+  font-size: 11px; font-weight: 700;
+  flex-shrink: 0;
+}
+.nav-item.active .icon { background: var(--blue-500); color: white; }
+.nav-item .label { flex: 1; }
+.nav-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 7px;
+  border-radius: 9999px;
+  background: var(--border-soft);
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  transition: transform 200ms ease;
+}
+.nav-badge.info  { background: var(--blue-50);   color: var(--blue-700); }
+.nav-badge.warn  { background: var(--orange-50); color: var(--orange-700); }
+.nav-badge.alert { background: var(--red-50);    color: var(--red-700); animation: pulse-alert 1200ms ease 1; }
+@keyframes pulse-alert {
+  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(230,34,0,0.4); }
+  60% { transform: scale(1.08); box-shadow: 0 0 0 6px rgba(230,34,0,0); }
+  100% { transform: scale(1); }
+}
+.nav-bottom { margin-top: auto; padding-top: 12px; border-top: 1px solid var(--border); }
+.nav-help {
+  display: flex; align-items: center; gap: 8px;
+  padding: 7px 12px;
+  font-size: 11px;
+  color: var(--text-muted);
+  border-radius: 6px;
+  cursor: pointer;
+  background: none; border: none; width: 100%; text-align: left;
+}
+.nav-help:hover { background: var(--bg-alt); color: var(--text); }
+.nav-help .dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--green-500);
+  box-shadow: 0 0 0 3px rgba(0,128,96,0.15);
+}
+.nav-help.alert .dot {
+  background: var(--red-500);
+  box-shadow: 0 0 0 3px rgba(230,34,0,0.15);
+}
+@media (max-width: 760px) {
+  .nav-item .label, .nav-badge, .nav-group, .nav-help .text { display: none; }
+  .nav-item { justify-content: center; padding: 8px 4px; }
+}
+
+/* ============ MAIN ============ */
+.main {
+  background: var(--bg-alt);
+  overflow-y: auto;
+  position: relative;
+}
+.page-head {
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.page-head h2 { margin: 0; font-size: 18px; font-weight: 700; }
+.page-head .help-icon, .help-icon-inline {
+  width: 16px; height: 16px; border-radius: 50%;
+  border: 1px solid var(--border-strong);
+  background: var(--bg);
+  color: var(--text-muted);
+  font-size: 10px; line-height: 14px; text-align: center;
+  cursor: help;
+  display: inline-block;
+  vertical-align: middle;
+}
+.help-icon-inline { width: 14px; height: 14px; font-size: 9px; line-height: 12px; margin-left: 4px; }
+.page-head .sub { color: var(--text-dim); font-size: 12px; }
+.page-head .meta { margin-left: auto; color: var(--text-dim); font-size: 12px; }
+.page-body { padding: 18px 24px; }
+
+/* ============ COMMON COMPONENTS ============ */
+
+/* Status pills (normalized) */
+.state-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 8px;
+  border-radius: var(--flowx-radius-pill);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+  white-space: nowrap;
+  position: relative;
+}
+.state-pill .dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.state-running   { background: var(--green-50);  color: var(--green-700); }
+.state-running .dot { background: var(--green-500); box-shadow: 0 0 0 3px rgba(0,128,96,0.15); }
+.state-waiting   { background: var(--yellow-50); color: var(--yellow-700); }
+.state-waiting .dot { background: var(--yellow-500); }
+.state-failed    { background: var(--red-50);    color: var(--red-700); }
+.state-failed .dot { background: var(--red-500); }
+.state-completed { background: var(--border-soft); color: var(--text-muted); }
+.state-completed .dot { background: var(--text-dim); }
+.state-terminated{ background: var(--border-soft); color: var(--text-muted); }
+.state-terminated .dot { background: var(--text-muted); }
+
+/* Build chip */
+.build-chip {
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+  font-size: 10px;
+  padding: 1px 6px;
+  border: 1px solid var(--blue-100);
+  background: var(--blue-50);
+  color: var(--blue-700);
+  border-radius: 4px;
+}
+
+/* Build chip variants for non-active builds */
+.build-chip.muted {
+  background: var(--bg-alt);
+  border-color: var(--border-strong);
+  color: var(--text-muted);
+}
+
+/* Generic pill (for stage, severity, etc.) */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.tag-pre { background: var(--red-50); color: var(--red-700); }
+.tag-trig { background: var(--yellow-50); color: var(--yellow-700); }
+.tag-exec { background: var(--orange-50); color: var(--orange-700); }
+.tag-ai { background: var(--purple-50); color: var(--purple-700); }
+.tag-merge { background: var(--yellow-50); color: var(--yellow-700); }
+.tag-new { background: var(--green-50); color: var(--green-700); }
+
+/* Buttons — FlowX Button (Small): height 28, radius 8, paddingV 6, fontSize 12 / lineHeight 16 / weight 600 */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 28px;
+  padding: 6px 12px;
+  border-radius: var(--flowx-radius-8);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+  border: 1px solid var(--flowx-border-default);
+  background: var(--flowx-surface-primary);
+  color: var(--flowx-text-primary);
+  cursor: pointer;
+  transition: background 100ms ease, color 100ms ease, border-color 100ms ease;
+}
+.btn:hover { background: var(--flowx-surface-secondary); }
+.btn:active { background: var(--flowx-surface-tertiary); }
+/* Brand · Primary */
+.btn.primary { background: var(--flowx-blue-500); border-color: var(--flowx-blue-500); color: var(--flowx-white); }
+.btn.primary:hover { background: var(--flowx-blue-600); border-color: var(--flowx-blue-600); }
+.btn.primary:active { background: var(--flowx-blue-700); border-color: var(--flowx-blue-700); }
+/* Brand · Secondary (ghost) */
+.btn.ghost { background: var(--flowx-surface-primary); border-color: var(--flowx-border-default); color: var(--flowx-blue-500); }
+.btn.ghost:hover { background: var(--flowx-surface-secondary); }
+.btn.ghost:active { background: var(--flowx-surface-tertiary); }
+/* Danger · Tertiary */
+.btn.danger { background: transparent; border-color: transparent; color: var(--flowx-red-500); }
+.btn.danger:hover { background: var(--flowx-surface-secondary); }
+
+/* Filter chips — FlowX-styled pill toggle */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  padding: 0 12px;
+  border-radius: var(--flowx-radius-pill);
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--flowx-text-secondary);
+  background: var(--flowx-surface-primary);
+  border: 1px solid var(--flowx-border-default);
+  cursor: pointer;
+  transition: background 100ms ease, color 100ms ease, border-color 100ms ease;
+}
+.chip:hover { background: var(--flowx-surface-secondary); color: var(--flowx-text-primary); }
+.chip.active {
+  background: var(--flowx-blue-500);
+  color: var(--flowx-white);
+  border-color: var(--flowx-blue-500);
+  font-weight: 600;
+}
+
+/* Filter pickers — Secondary-button-flavoured */
+.pickr {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 8px;
+  border: 1px solid var(--flowx-border-default);
+  border-radius: var(--flowx-radius-8);
+  background: var(--flowx-surface-primary);
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--flowx-text-secondary);
+  cursor: pointer;
+  transition: background 100ms ease, color 100ms ease, border-color 100ms ease;
+}
+.pickr:hover { background: var(--flowx-surface-secondary); }
+.pickr.active { border-color: var(--flowx-blue-500); color: var(--flowx-blue-700); background: var(--flowx-blue-50); font-weight: 600; }
+.pickr .v { color: var(--flowx-text-primary); font-weight: 600; }
+
+/* Search — FlowX Input Field (small): height 28, radius 8, stroke = border-default */
+.search {
+  display: inline-flex;
+  align-items: center;
+  height: 28px;
+  padding: 0 8px;
+  border: 1px solid var(--flowx-border-default);
+  border-radius: var(--flowx-radius-8);
+  background: var(--flowx-surface-primary);
+  font-size: 12px;
+  line-height: 16px;
+  min-width: 200px;
+  transition: border-color 100ms ease;
+}
+.search:hover { border-color: var(--flowx-border-strong); }
+.search:focus-within { border-color: var(--flowx-blue-500); }
+.search input {
+  border: none;
+  outline: none;
+  width: 100%;
+  font: inherit;
+  background: transparent;
+  color: var(--flowx-text-primary);
+}
+.search input::placeholder { color: var(--flowx-text-secondary); }
+
+/* Cards */
+.card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--flowx-radius-12);
+  overflow: hidden;
+}
+.card-head {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+.card-head h3 { margin: 0; font-size: 13px; font-weight: 700; }
+.card-head .meta { font-size: 11px; color: var(--text-dim); }
+.card-body { padding: 0; }
+
+/* Banner — surfacing operational state */
+.banner {
+  border-radius: var(--flowx-radius-8);
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.banner.alert {
+  background: linear-gradient(90deg, var(--flowx-red-50) 0%, var(--flowx-orange-50) 100%);
+  border-left: 4px solid var(--flowx-red-500);
+}
+.banner .icon-dot {
+  width: 12px; height: 12px; border-radius: 50%;
+  background: var(--flowx-red-500);
+  box-shadow: 0 0 0 4px rgba(230,34,0,0.15);
+  flex-shrink: 0;
+}
+.banner .lhs { flex: 1; }
+.banner .title { font-weight: 700; color: var(--flowx-red-700); font-size: 14px; line-height: 24px; }
+.banner .summary { color: var(--flowx-text-secondary); font-size: 12px; line-height: 16px; margin-top: 2px; }
+
+/* Doc banner — informational accent, yellow */
+.doc-banner {
+  background: var(--flowx-yellow-50);
+  border-left: 4px solid var(--flowx-yellow-500);
+  padding: 12px;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--flowx-yellow-700);
+  border-radius: 0 var(--flowx-radius-8) var(--flowx-radius-8) 0;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+.doc-banner b { color: var(--text); font-weight: 700; }
+.doc-banner .x {
+  margin-left: auto;
+  cursor: pointer;
+  opacity: 0.6;
+  background: none;
+  border: none;
+  color: inherit;
+  font-size: 14px;
+  padding: 0;
+}
+
+/* Tables */
+.list-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.list-table thead th {
+  background: var(--bg-alt);
+  padding: 8px 14px;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  font-weight: 700;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  white-space: nowrap;
+}
+.list-table tbody td {
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--border-soft);
+  vertical-align: middle;
+}
+.list-table tbody tr {
+  cursor: pointer;
+  transition: background 60ms ease;
+}
+.list-table tbody tr:hover { background: var(--bg-alt); }
+.list-table tbody tr.selected { background: var(--blue-50); }
+.list-table tbody tr.anchor { background: var(--yellow-50); }
+
+.mono { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 11px; color: var(--text-muted); }
+.pill {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10px;
+  padding: 1px 6px;
+  background: var(--bg-alt);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  border-radius: var(--flowx-radius-4);
+}
+
+/* Detail panel */
+.detail-overlay {
+  position: fixed;
+  inset: 48px 0 0 0;
+  background: rgba(29,35,44,0.20);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 200ms ease;
+  z-index: 100;
+}
+.detail-overlay.open { opacity: 1; pointer-events: auto; }
+.detail-panel {
+  position: fixed;
+  top: 48px; right: 0; bottom: 0;
+  width: 480px;
+  background: var(--bg-soft);
+  border-left: 1px solid var(--border);
+  box-shadow: var(--shadow-l);
+  transform: translateX(100%);
+  transition: transform 250ms cubic-bezier(0.32, 0.72, 0, 1);
+  z-index: 101;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.detail-panel.open { transform: translateX(0); }
+@media (max-width: 760px) {
+  .detail-panel { width: 100%; }
+}
+.detail-head {
+  padding: 14px 18px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+}
+.detail-head .topline {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 11px; color: var(--text-muted);
+  margin-bottom: 6px;
+}
+.detail-head .topline .crumb { color: var(--blue-700); font-weight: 600; }
+.detail-head .topline .x {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 16px;
+  cursor: pointer;
+}
+.detail-head h3 { margin: 0; font-size: 18px; line-height: 28px; font-weight: 700; }
+.detail-head .sub { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+.detail-head .meta-row {
+  margin-top: 10px;
+  display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+}
+.detail-head .actions { display: flex; gap: 8px; margin-top: 12px; }
+.detail-tabs {
+  display: flex;
+  padding: 0 18px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+}
+/* Tabs — FlowX Tabs (small): paddingV 8 paddingH 12, fontSize 12 / lineHeight 16, activeText + 2px bottomStroke blue-500 */
+.detail-tabs .tab {
+  padding: 8px 12px;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--flowx-neutrals-500);
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  white-space: nowrap;
+  background: none;
+  border-top: none;
+  border-left: none;
+  border-right: none;
+  font-weight: 400;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: color 100ms ease, border-color 100ms ease;
+}
+.detail-tabs .tab:hover { color: var(--flowx-text-primary); }
+.detail-tabs .tab.active {
+  color: var(--flowx-blue-500);
+  font-weight: 600;
+  border-bottom-color: var(--flowx-blue-500);
+}
+.detail-tabs .tab .count {
+  display: inline-block;
+  background: var(--flowx-neutrals-100);
+  color: var(--flowx-neutrals-500);
+  font-size: 10px;
+  line-height: 12px;
+  padding: 1px 6px;
+  border-radius: var(--flowx-radius-pill);
+  font-weight: 600;
+}
+.detail-tabs .tab.active .count { background: var(--flowx-blue-500); color: var(--flowx-white); }
+.detail-tabs .tab .count.alert { background: var(--flowx-red-50); color: var(--flowx-red-700); }
+.detail-body {
+  padding: 16px 18px;
+  overflow-y: auto;
+  flex: 1;
+}
+.panel-block {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+}
+.panel-block h4 {
+  margin: 0 0 8px;
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 700;
+}
+.kv {
+  display: grid;
+  grid-template-columns: 130px 1fr;
+  gap: 4px 12px;
+  font-size: 12px;
+}
+.kv > span:nth-child(odd) { color: var(--text-dim); }
+.kv > span:nth-child(even) { color: var(--text); }
+
+/* Generic helpers */
+.empty {
+  text-align: center;
+  padding: 32px 16px;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+.empty.positive {
+  background: var(--green-50);
+  border: 1px solid var(--green-100);
+  border-radius: 8px;
+  color: var(--green-700);
+}
+.empty h4 {
+  margin: 0 0 4px;
+  font-size: 14px;
+  color: var(--text);
+  font-weight: 700;
+}
+.empty.positive h4 { color: var(--green-700); }
+
+/* ============ TOOLTIP ============ */
+[data-tip] { position: relative; }
+[data-tip]:hover::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--text);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  white-space: nowrap;
+  z-index: 200;
+  pointer-events: none;
+}
+
+/* ============ OVERVIEW ============ */
+.ov-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+@media (max-width: 1000px) { .ov-grid { grid-template-columns: 1fr; } }
+.feed-filters {
+  background: var(--bg-alt);
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.feed-filters .search { margin-left: auto; }
+.feed-row {
+  display: grid;
+  grid-template-columns: 70px 28px 1fr auto;
+  align-items: start;
+  padding: 10px 16px;
+  gap: 12px;
+  border-bottom: 1px solid var(--border-soft);
+  cursor: pointer;
+  transition: background 60ms ease;
+}
+.feed-row:hover { background: var(--bg-alt); }
+.feed-row.new-row { animation: feed-fade 320ms ease; }
+@keyframes feed-fade {
+  0% { opacity: 0; transform: translateY(-6px); background: var(--blue-50); }
+  100% { opacity: 1; transform: translateY(0); background: var(--bg); }
+}
+.feed-row .time { color: var(--text-dim); font-size: 11px; font-variant-numeric: tabular-nums; padding-top: 4px; }
+.feed-row .glyph {
+  width: 26px; height: 26px;
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: white;
+}
+.glyph-start  { background: var(--green-500); }
+.glyph-finish { background: var(--text-muted); }
+.glyph-error  { background: var(--red-500); }
+.glyph-alert  { background: var(--orange-500); }
+.glyph-deploy { background: var(--purple-500); }
+.glyph-trigger { background: var(--yellow-500); color: var(--text-muted); }
+.feed-row .body .title { font-size: 12px; color: var(--text); }
+.feed-row .body .sub { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
+.feed-row .actions { color: var(--blue-500); font-size: 11px; font-weight: 600; padding-top: 4px; align-self: center; }
+.day-divider {
+  padding: 6px 16px;
+  background: var(--bg-alt);
+  font-size: 10px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 700;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.stack { display: flex; flex-direction: column; gap: 12px; }
+.kpi-card { padding: 12px 16px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--flowx-radius-12); }
+.kpi-card h4 { margin: 0 0 8px; font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; font-weight: 700; }
+.kpi-big { font-size: 24px; font-weight: 700; color: var(--text); line-height: 28px; font-variant-numeric: tabular-nums; }
+.kpi-row { display: flex; gap: 10px; align-items: baseline; }
+.kpi-sub { font-size: 11px; color: var(--text-muted); }
+.kpi-trend.up { color: var(--green-700); }
+.kpi-trend.down { color: var(--red-700); }
+.kpi-list { font-size: 11px; color: var(--text-muted); margin-top: 6px; }
+.kpi-list .row { display: flex; justify-content: space-between; padding: 2px 0; }
+.kpi-list .row strong { color: var(--text); }
+.build-bar {
+  display: flex; height: 8px; border-radius: 9999px; overflow: hidden;
+  margin: 8px 0; background: var(--border);
+}
+.build-bar span { display: block; }
+.build-legend { font-size: 10px; color: var(--text-muted); display: flex; flex-wrap: wrap; gap: 8px; }
+.build-legend i { width: 8px; height: 8px; border-radius: 2px; display: inline-block; }
+.scorer-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--border-soft); font-size: 11px; }
+.scorer-row:last-child { border-bottom: none; }
+.scorer-row .delta.up { color: var(--green-700); font-weight: 600; }
+.scorer-row .delta.down { color: var(--red-700); font-weight: 600; }
+.scorer-row .delta.flat { color: var(--text-muted); }
+
+.trends-strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+@media (max-width: 760px) { .trends-strip { grid-template-columns: repeat(2, 1fr); } }
+.trend-card { padding: 10px 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; }
+.trend-card h5 { margin: 0; font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.04em; font-weight: 700; }
+.trend-card .val { font-size: 16px; font-weight: 700; color: var(--text); margin-top: 2px; }
+.spark { height: 24px; margin-top: 4px; width: 100%; }
+
+/* ============ INSTANCES (placeholder until Task 4) ============ */
+.type-cell { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 11px; }
+.type-cell.proc { color: var(--green-700); }
+.type-cell.uiflow { color: var(--purple-700); }
+.type-badge {
+  width: 18px; height: 18px; border-radius: 4px;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 10px; color: white; font-weight: 700;
+}
+.type-cell.proc .type-badge { background: var(--green-500); }
+.type-cell.uiflow .type-badge { background: var(--purple-500); }
+
+/* ============ GLOSSARY PANEL ============ */
+.glossary-panel {
+  position: fixed;
+  top: 48px; right: 0; bottom: 0;
+  width: 420px;
+  background: var(--bg);
+  border-left: 1px solid var(--border);
+  box-shadow: var(--shadow-l);
+  transform: translateX(100%);
+  transition: transform 250ms cubic-bezier(0.32, 0.72, 0, 1);
+  z-index: 102;
+  display: flex;
+  flex-direction: column;
+}
+.glossary-panel.open { transform: translateX(0); }
+.glossary-panel .head {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+}
+.glossary-panel .head h3 { margin: 0; font-size: 18px; line-height: 28px; font-weight: 700; }
+.glossary-panel .head .sub { color: var(--text-muted); font-size: 12px; margin-top: 4px; }
+.glossary-panel .search-row { padding: 10px 18px; border-bottom: 1px solid var(--border); }
+.glossary-panel .search-row input {
+  width: 100%;
+  height: 28px;
+  padding: 0 8px;
+  border: 1px solid var(--flowx-border-default);
+  border-radius: var(--flowx-radius-8);
+  font: inherit;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--flowx-text-primary);
+  outline: none;
+  transition: border-color 100ms ease;
+}
+.glossary-panel .search-row input:hover { border-color: var(--flowx-border-strong); }
+.glossary-panel .search-row input:focus { border-color: var(--flowx-blue-500); }
+.glossary-panel .body { overflow-y: auto; flex: 1; padding: 14px 18px; }
+.glossary-term { margin-bottom: 16px; }
+.glossary-term h4 { margin: 0 0 4px; font-size: 13px; font-weight: 700; color: var(--text); }
+.glossary-term p { margin: 0; font-size: 12px; line-height: 18px; color: var(--text-muted); }
+
+/* ============ HELP POPOVER ============ */
+.help-popover {
+  position: fixed;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: var(--shadow-m);
+  padding: 12px 14px;
+  font-size: 12px;
+  max-width: 280px;
+  z-index: 200;
+  display: none;
+  pointer-events: auto;
+}
+.help-popover.open { display: block; }
+.help-popover h5 { margin: 0 0 6px; font-size: 12px; font-weight: 700; color: var(--text); }
+.help-popover p { margin: 0 0 6px; color: var(--text-muted); line-height: 18px; }
+.help-popover a {
+  display: inline-block;
+  color: var(--blue-500);
+  font-weight: 600;
+  font-size: 11px;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+/* ============ DETAIL PANEL — embedded slices ============ */
+.le-slice {
+  background: var(--purple-50);
+  border: 1px solid var(--purple-100);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+.le-slice .head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  color: var(--purple-700);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 8px;
+}
+.le-slice .head a {
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 600;
+  font-size: 11px;
+  color: var(--purple-500);
+  cursor: pointer;
+}
+.le-row {
+  display: grid;
+  grid-template-columns: 28px 1fr auto auto;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 0;
+  font-size: 12px;
+  border-bottom: 1px solid var(--purple-100);
+}
+.le-row:last-child { border-bottom: none; }
+.le-row .icon {
+  width: 24px; height: 24px;
+  border-radius: var(--flowx-radius-6);
+  background: var(--purple-500);
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.le-row .name { color: var(--text); }
+.le-row .name small { display: block; color: var(--text-muted); font-size: 10px; }
+.le-row .scorer { font-size: 11px; color: var(--purple-700); }
+.le-row .scorer.bad { color: var(--red-700); font-weight: 600; }
+.le-row .when { font-size: 11px; color: var(--text-dim); }
+
+/* Tree (Activity tree) */
+.tree-node {
+  display: flex; align-items: center; gap: 8px;
+  padding: 7px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  margin-bottom: 4px;
+  background: var(--bg-alt);
+  border: 1px solid var(--border);
+}
+.tree-node .lbl { color: var(--text); flex: 1; }
+.tree-node .pos { font-size: 11px; color: var(--text-muted); }
+.tree-node.bad { background: var(--red-50); border-color: var(--red-100); }
+.tree-node.bad .pos { color: var(--red-700); }
+.tree-child {
+  margin-left: 24px;
+  position: relative;
+}
+.tree-child::before {
+  content: '';
+  position: absolute;
+  left: -12px;
+  top: 14px;
+  width: 8px;
+  height: 1px;
+  background: var(--border-strong);
+}
+.related-card .ic { border-radius: var(--flowx-radius-6); }
+.feed-row .glyph { border-radius: var(--flowx-radius-6); }
+
+/* Spawn anchor inline indicator */
+.spawn-anchor {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--yellow-700);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+/* Tabs/stage tabs (used by Incidents) */
+.stage-tabs {
+  display: flex;
+  background: var(--bg-alt);
+  border-bottom: 1px solid var(--border);
+  padding: 0 16px;
+}
+.stage-tab {
+  padding: 8px 12px;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--flowx-neutrals-500);
+  border: none;
+  background: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: color 100ms ease, background 100ms ease;
+}
+.stage-tab:hover { color: var(--flowx-text-primary); }
+.stage-tab.active {
+  color: var(--flowx-blue-500);
+  font-weight: 600;
+  border-bottom-color: var(--flowx-blue-500);
+  background: var(--flowx-surface-primary);
+}
+.stage-tab .count {
+  font-size: 10px;
+  line-height: 12px;
+  padding: 1px 6px;
+  border-radius: var(--flowx-radius-pill);
+  background: var(--flowx-neutrals-100);
+  color: var(--flowx-neutrals-500);
+  font-weight: 600;
+}
+.stage-tab.active .count { background: var(--flowx-blue-500); color: var(--flowx-white); }
+.stage-tab .count.alert { background: var(--flowx-red-50); color: var(--flowx-red-700); }
+.stage-tab .count.warn  { background: var(--flowx-orange-50); color: var(--flowx-orange-700); }
+
+/* Severity bands (Incidents) */
+.inc-row {
+  display: grid;
+  grid-template-columns: 8px 1fr 120px 150px;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-soft);
+  cursor: pointer;
+  gap: 12px;
+}
+.inc-row:hover { background: var(--bg-alt); }
+.inc-row.selected { background: var(--blue-50); }
+.sev-bar { width: 4px; height: 38px; border-radius: 2px; }
+.sev-bar.critical { background: var(--red-500); }
+.sev-bar.high { background: var(--orange-500); }
+.sev-bar.medium { background: var(--yellow-500); }
+.sev-bar.low { background: var(--text-muted); }
+.inc-body .title { font-size: 13px; color: var(--text); font-weight: 600; line-height: 1.3; }
+.inc-body .sub { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+.inc-meta { font-size: 11px; color: var(--text-dim); text-align: right; }
+.inc-meta .when { margin-top: 4px; }
+.inc-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 9px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 600;
+  justify-self: end;
+}
+.inc-status .dot { width: 6px; height: 6px; border-radius: 50%; }
+.inc-status.open { background: var(--red-50); color: var(--red-700); }
+.inc-status.open .dot { background: var(--red-500); box-shadow: 0 0 0 3px rgba(230,34,0,0.15); }
+.inc-status.ack { background: var(--yellow-50); color: var(--yellow-700); }
+.inc-status.ack .dot { background: var(--yellow-500); }
+.inc-status.resolved { background: var(--green-50); color: var(--green-700); }
+.inc-status.resolved .dot { background: var(--green-500); }
+
+/* Related entity cards (in incident detail) */
+.related-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg-alt);
+  margin-bottom: 6px;
+  cursor: pointer;
+}
+.related-card:hover { background: var(--bg); }
+.related-card .ic {
+  width: 26px; height: 26px;
+  border-radius: var(--flowx-radius-6);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: white;
+}
+.related-card .ic.proc { background: var(--green-500); }
+.related-card .ic.flow { background: var(--purple-500); }
+.related-card .ic.bld { background: var(--blue-500); }
+.related-card .name { flex: 1; font-size: 12px; color: var(--text); }
+.related-card .name small { display: block; font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text-muted); }
+.related-card .arr { color: var(--text-dim); }
+
+.stack-trace {
+  background: #1d232c;
+  color: #cbd1db;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px;
+  line-height: 18px;
+  padding: 12px 14px;
+  border-radius: 6px;
+  overflow-x: auto;
+  white-space: pre;
+}
+.stack-trace .err { color: var(--orange-500); }
+
+.timeline { display: flex; flex-direction: column; gap: 6px; font-size: 12px; }
+.timeline .tl-row { display: flex; gap: 10px; align-items: flex-start; }
+.timeline .tl-row .when { color: var(--text-dim); font-size: 11px; min-width: 60px; padding-top: 2px; font-variant-numeric: tabular-nums; }
+.timeline .tl-row .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border-strong); margin-top: 6px; flex-shrink: 0; }
+.timeline .tl-row.bad .dot { background: var(--red-500); }
+.timeline .tl-row.deploy .dot { background: var(--purple-500); }
+.timeline .tl-row .lbl { color: var(--text-muted); }
+.timeline .tl-row .lbl strong { color: var(--text); }
+
+/* Builds row anatomy */
+.b-row {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border-soft);
+  cursor: pointer;
+}
+.b-row:hover { background: var(--bg-alt); }
+.b-row.selected { background: var(--blue-50); }
+.b-row .top { display: flex; align-items: center; gap: 10px; }
+.b-row .tag-monospace {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--text);
+  padding: 2px 10px;
+  background: var(--border-soft);
+  border-radius: 6px;
+}
+.b-row.selected .tag-monospace { background: var(--blue-500); color: white; }
+.b-row .tag-monospace.archived { color: var(--text-dim); }
+.b-row .branch-pill {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10px;
+  color: var(--text-muted);
+  padding: 1px 6px;
+  background: var(--bg);
+  border: 1px solid var(--border-strong);
+  border-radius: 4px;
+}
+.b-row .active-mark {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--green-700);
+}
+.b-row .active-mark .dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--green-500);
+  box-shadow: 0 0 0 3px rgba(0,128,96,0.15);
+}
+.b-row .meta { margin-left: auto; font-size: 11px; color: var(--text-dim); }
+.coverage-row { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+.coverage-bar { display: flex; height: 8px; border-radius: 9999px; overflow: hidden; flex: 1; background: var(--border); }
+.coverage-bar span { display: block; }
+.coverage-label { font-size: 11px; font-weight: 600; }
+.coverage-label.active { color: var(--blue-700); }
+.coverage-label.dim { color: var(--text-dim); }
+.b-stats { display: flex; gap: 18px; margin-top: 10px; font-size: 11px; color: var(--text-muted); flex-wrap: wrap; }
+.b-stats .k { color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.04em; font-size: 10px; font-weight: 700; margin-right: 4px; }
+.b-stats strong { color: var(--text); font-weight: 600; }
+.delta.up { color: var(--green-700); font-weight: 700; }
+.delta.down { color: var(--red-700); font-weight: 700; }
+.delta.flat { color: var(--text-muted); }
+
+/* Comparison cells */
+.cmp-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 4px; }
+.cmp-cell {
+  background: var(--bg-alt);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px 12px;
+}
+.cmp-cell .k { font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.04em; font-weight: 700; }
+.cmp-cell .v { font-size: 15px; font-weight: 700; color: var(--text); margin-top: 2px; font-variant-numeric: tabular-nums; }
+.cmp-cell .d { font-size: 11px; margin-top: 2px; }
+
+/* Configuration */
+.axis-section { padding: 0 24px 24px; border-bottom: 1px solid var(--border); }
+.axis-section:last-of-type { border-bottom: none; }
+.axis-header {
+  display: flex; align-items: center; gap: 10px;
+  padding: 18px 0 12px;
+}
+.axis-icon {
+  width: 32px; height: 32px;
+  border-radius: var(--flowx-radius-8);
+  display: flex; align-items: center; justify-content: center;
+  color: white;
+  font-weight: 700;
+  font-size: 14px;
+}
+.axis-icon.build { background: var(--blue-500); }
+.axis-icon.params { background: var(--purple-500); }
+.axis-header h3 { margin: 0; font-size: 18px; line-height: 28px; font-weight: 700; }
+.axis-header .sub { color: var(--text-muted); font-size: 12px; margin-left: auto; }
+.default-card {
+  background: var(--bg-alt);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--blue-500);
+  border-radius: 6px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.default-card.params { border-left-color: var(--purple-500); }
+.default-card .lbl { font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.04em; font-weight: 700; }
+.default-card .val { font-size: 13px; font-weight: 600; color: var(--text); margin-top: 4px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.default-card .val code {
+  font-family: 'JetBrains Mono', monospace;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 11px;
+}
+.default-card .right { margin-left: auto; display: flex; gap: 8px; }
+.override-section { margin-top: 14px; }
+.override-section .head {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 6px;
+}
+.override-section .head h4 {
+  margin: 0;
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 700;
+}
+.override-section .count { font-size: 11px; color: var(--text-dim); }
+.target-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: var(--flowx-radius-4);
+}
+.target-badge.user { background: var(--blue-50); color: var(--blue-700); border: 1px solid var(--blue-100); }
+.target-badge.role { background: var(--purple-50); color: var(--purple-700); border: 1px solid var(--purple-100); }
+.toggle {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 11px;
+  background: none; border: none; padding: 0;
+  cursor: pointer;
+  color: var(--text-muted);
+}
+/* FlowX Switch (small): track 28x16 r20 · ON blue-500 + white knob 12x12 · OFF white + neutrals-200 stroke + neutrals-500 knob 10x10 */
+.toggle .switch {
+  width: 28px; height: 16px;
+  background: var(--flowx-blue-500);
+  border-radius: 20px;
+  position: relative;
+  transition: background 150ms ease, border-color 150ms ease;
+  border: 1.5px solid transparent;
+}
+.toggle .switch::after {
+  content: '';
+  position: absolute;
+  top: 50%; left: calc(100% - 14px);
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  background: var(--flowx-white);
+  transform: translateY(-50%);
+  transition: left 150ms ease, width 150ms ease, height 150ms ease, background 150ms ease;
+}
+.toggle.off .switch {
+  background: var(--flowx-white);
+  border-color: var(--flowx-neutrals-200);
+}
+.toggle.off .switch::after {
+  width: 10px; height: 10px;
+  left: 2px;
+  background: var(--flowx-neutrals-500);
+}
+
+/* Resolver panel */
+.cfg-shell {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+}
+@media (max-width: 1100px) { .cfg-shell { grid-template-columns: 1fr; } }
+.resolver {
+  background: var(--bg-soft);
+  border-left: 1px solid var(--border);
+  padding: 18px 20px;
+  overflow-y: auto;
+}
+.resolver h3 { margin: 0 0 4px; font-size: 14px; font-weight: 700; }
+.resolver .sub { font-size: 11px; color: var(--text-muted); margin-bottom: 16px; }
+.resolver .field { margin-bottom: 12px; }
+.resolver .field label { display: block; font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; font-weight: 700; margin-bottom: 4px; }
+.resolver .field input {
+  width: 100%;
+  height: 28px;
+  padding: 0 8px;
+  border: 1px solid var(--flowx-border-default);
+  border-radius: var(--flowx-radius-8);
+  font: inherit;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--flowx-text-primary);
+  font-family: 'JetBrains Mono', monospace;
+  outline: none;
+  transition: border-color 100ms ease;
+}
+.resolver .field input:hover { border-color: var(--flowx-border-strong); }
+.resolver .field input:focus { border-color: var(--flowx-blue-500); }
+.role-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  background: var(--purple-50);
+  color: var(--purple-700);
+  border: 1px solid var(--purple-100);
+  border-radius: 9999px;
+  font-size: 11px;
+  font-family: 'JetBrains Mono', monospace;
+  margin: 2px 4px 2px 0;
+}
+.role-chip .x {
+  color: var(--text-dim);
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+}
+.resolved-card { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; margin-top: 14px; }
+.resolved-card h4 { margin: 0 0 8px; font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; font-weight: 700; }
+.resolved-row { display: flex; justify-content: space-between; align-items: flex-start; padding: 7px 0; border-bottom: 1px solid var(--border-soft); font-size: 12px; }
+.resolved-row:last-child { border-bottom: none; }
+.resolved-row .key { color: var(--text-muted); font-size: 11px; }
+.resolved-row .val { color: var(--text); font-weight: 600; text-align: right; }
+.resolved-row .val code { font-family: 'JetBrains Mono', monospace; background: var(--bg-alt); border: 1px solid var(--border); padding: 1px 6px; border-radius: var(--flowx-radius-4); font-size: 10px; }
+.resolved-row .src { font-size: 10px; color: var(--text-dim); margin-top: 2px; text-align: right; }
+.resolved-row .src.override { color: var(--purple-700); }
+.resolved-row .src.warn { color: var(--yellow-700); }
+.path-step { display: flex; align-items: flex-start; gap: 8px; padding: 6px 0; font-size: 11px; }
+.path-step .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border-strong); margin-top: 5px; flex-shrink: 0; }
+.path-step.matched .dot { background: var(--green-500); box-shadow: 0 0 0 3px rgba(0,128,96,0.15); }
+.path-step.matched .label { color: var(--green-700); font-weight: 600; }
+.path-step.skipped .dot { background: var(--border); }
+.path-step.skipped .label { color: var(--text-dim); text-decoration: line-through; }
+.path-step .label code { font-family: 'JetBrains Mono', monospace; font-size: 10px; background: var(--bg-alt); border: 1px solid var(--border); padding: 1px 4px; border-radius: var(--flowx-radius-4); }
+
+/* Triggers */
+.t-trigger-tabs {
+  display: flex;
+  background: var(--bg-alt);
+  border-bottom: 1px solid var(--border);
+  padding: 0 16px;
+}
+
+/* Live Evals tiers */
+.le-tier {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+}
+.le-tier h4 { margin: 0 0 4px; font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+.le-tier .pill-mini { font-size: 10px; padding: 1px 6px; border-radius: 4px; font-weight: 700; }
+.le-tier .pill-mini.free { background: var(--green-50); color: var(--green-700); }
+.le-tier .pill-mini.optin { background: var(--yellow-50); color: var(--yellow-700); }
+.le-tier .pill-mini.scope { background: var(--purple-50); color: var(--purple-700); }
+.le-tier .descr { font-size: 11px; color: var(--text-muted); margin-bottom: 10px; }
+.le-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.le-stat { background: var(--bg-alt); border: 1px solid var(--border); border-radius: 6px; padding: 10px 12px; }
+.le-stat .k { font-size: 9px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.04em; font-weight: 700; }
+.le-stat .v { font-size: 16px; font-weight: 700; color: var(--text); margin-top: 4px; font-variant-numeric: tabular-nums; }
+.le-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+@media (max-width: 760px) { .le-stats, .le-cards { grid-template-columns: repeat(2, 1fr); } }
+.le-node { background: var(--bg-alt); border: 1px solid var(--border); border-radius: 6px; padding: 10px 12px; font-size: 11px; cursor: pointer; }
+.le-node .nm { font-weight: 600; color: var(--text); font-size: 12px; }
+.le-node .ty { color: var(--text-dim); font-size: 10px; margin-top: 2px; }
+.le-node .scrs { margin-top: 6px; font-size: 10px; color: var(--text-muted); }
+.le-node .scrs .alert { color: var(--red-700); font-weight: 700; }
+.le-scorer-row {
+  display: grid; grid-template-columns: 1fr auto auto; gap: 12px;
+  padding: 8px 0;
+  font-size: 12px;
+  border-bottom: 1px solid var(--border-soft);
+  align-items: center;
+}
+.le-scorer-row:last-child { border-bottom: none; }
+.le-scorer-row .value { font-variant-numeric: tabular-nums; font-weight: 600; }
+.le-scorer-row .value.bad { color: var(--red-700); }
+
+/* Tasks */
+.task-row {
+  display: grid;
+  grid-template-columns: 32px 1fr auto auto;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-soft);
+  align-items: center;
+  background: var(--bg);
+}
+.task-row .who {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: var(--blue-500);
+  color: white;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+}
+.task-row .who.unas { background: var(--border-strong); color: var(--text-muted); }
+.task-row .title { font-size: 13px; color: var(--text); font-weight: 600; }
+.task-row .src { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.task-row .due { font-size: 11px; color: var(--text-muted); text-align: right; }
+.task-row .due.overdue { color: var(--red-700); font-weight: 600; }
+.task-row .due.soon { color: var(--yellow-700); }
+
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ============ APP BAR ============ -->
+  <header class="app-bar">
+    <div class="brand">FlowX Designer</div>
+    <span class="sep">/</span>
+    <a class="tab active" href="#/overview">Runtime</a>
+    <a class="tab" href="#" onclick="event.preventDefault()">Config</a>
+    <div class="env">us-east · production</div>
+  </header>
+
+  <!-- ============ SHELL ============ -->
+  <div class="shell">
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar"></aside>
+
+    <!-- Main -->
+    <main class="main">
+      <div id="page"></div>
+    </main>
+
+  </div>
+</div>
+
+<!-- Right-slide detail panel -->
+<div class="detail-overlay" id="detailOverlay"></div>
+<aside class="detail-panel" id="detailPanel">
+  <div class="detail-head" id="detailHead"></div>
+  <div class="detail-tabs" id="detailTabs"></div>
+  <div class="detail-body" id="detailBody"></div>
+</aside>
+
+<!-- Glossary panel -->
+<aside class="glossary-panel" id="glossaryPanel">
+  <div class="head" style="display:flex;justify-content:space-between;align-items:flex-start;">
+    <div>
+      <h3>Runtime glossary</h3>
+      <div class="sub">Single source of truth for every concept.</div>
+    </div>
+    <button onclick="closeGlossary()" style="background:none;border:none;color:var(--text-muted);font-size:18px;cursor:pointer;padding:0;">×</button>
+  </div>
+  <div class="search-row">
+    <input type="text" placeholder="Search terms…" id="glossarySearch" oninput="renderGlossary(this.value)">
+  </div>
+  <div class="body" id="glossaryBody"></div>
+</aside>
+
+<!-- Help popover -->
+<div class="help-popover" id="helpPopover"></div>
+
+<script>
+// ============================================================
+//  MOCK DATA
+// ============================================================
+const MOCK_DATA = {
+  builds: [
+    { id: 'b_v142', tag: 'v1.4.2', branch: 'main', cutAt: '11m ago', cutBy: 'alice', isActive: true, isArchived: false,
+      coverage: { percent: 78, userCount: 347, totalUsers: 445 },
+      liveStats: { runsLastHour: 1892, errors: 12, errorsDelta: 5, avgQuality: 0.84, qualityDelta: -0.03, openIncidentCount: 3 } },
+    { id: 'b_v141', tag: 'v1.4.1', branch: 'main', cutAt: '2d ago', cutBy: 'bob', isActive: false, isArchived: false,
+      coverage: { percent: 15, userCount: 67, totalUsers: 445, note: 'role: legacy-tier' },
+      liveStats: { runsLastHour: 364, errors: 7, errorsDelta: 0, avgQuality: 0.87, qualityDelta: 0.02, openIncidentCount: 0 } },
+    { id: 'b_v140b', tag: 'v1.4.0-beta', branch: 'beta', cutAt: '5d ago', cutBy: 'alice', isActive: false, isArchived: false,
+      coverage: { percent: 7, userCount: 31, totalUsers: 445, note: 'role: beta-testers' },
+      liveStats: { runsLastHour: 92, errors: 1, errorsDelta: 0, avgQuality: 0.81, qualityDelta: 0, openIncidentCount: 0 } },
+    { id: 'b_v137', tag: 'v1.3.7', branch: 'main', cutAt: '18d ago', cutBy: 'carlos', isActive: false, isArchived: true,
+      coverage: { percent: 0, userCount: 0, totalUsers: 445, note: 'last served 16d ago' },
+      liveStats: { runsLastHour: 0, errors: 0, errorsDelta: 0, avgQuality: 0, qualityDelta: 0, openIncidentCount: 0 } },
+    { id: 'b_v136', tag: 'v1.3.6', branch: 'main', cutAt: '22d ago', cutBy: 'dave', isActive: false, isArchived: true,
+      coverage: { percent: 0, userCount: 0, totalUsers: 445, note: 'last served 21d ago' },
+      liveStats: { runsLastHour: 0, errors: 0, errorsDelta: 0, avgQuality: 0, qualityDelta: 0, openIncidentCount: 0 } },
+  ],
+  instances: [
+    { id: 'sess_a82c91', type: 'uiflow', definitionName: 'Onboarding chat', status: 'running', rawStatus: 'active', rawDesc: 'session in progress',
+      buildTag: 'v1.4.2', atStep: 'Step 3 / 7 · Verify email', startedAt: '1m ago', user: 'u_4419', spawnedCount: 1,
+      variables: { user_id: 'u_4419', plan: 'pro', step_count: 7, current_step: 3, locale: 'en-US' } },
+    { id: 'inst_19f3d4', type: 'process', definitionName: 'KYC review', status: 'failed', rawStatus: 'FINISHED_WITH_ERROR', rawDesc: 'raised exception during execution',
+      buildTag: 'v1.4.2', atStep: 'Document upload · 3 incidents', startedAt: '3m ago',
+      spawnedBy: { type: 'uiflow', id: 'sess_a82c91' }, activeIncidentCount: 3,
+      variables: { applicant: 'u_4419', doc_type: 'passport', risk_score: 0.42 } },
+    { id: 'inst_55a1c0', type: 'process', definitionName: 'Loan application', status: 'waiting', rawStatus: 'ON_HOLD', rawDesc: 'paused awaiting input',
+      buildTag: 'v1.4.2', atStep: 'Manager approval · awaiting task', startedAt: '12m ago',
+      variables: { applicant: 'u_5512', amount: 42000, currency: 'USD' } },
+    { id: 'sess_b34f0e', type: 'uiflow', definitionName: 'Support chat', status: 'completed', rawStatus: 'completed', rawDesc: 'session ended normally',
+      buildTag: 'v1.4.2', atStep: 'Resolved · 12 turns', startedAt: '28m ago',
+      variables: { topic: 'billing', satisfaction: 5, turns: 12 } },
+    { id: 'inst_7c20fa', type: 'process', definitionName: 'Document classifier', status: 'running', rawStatus: 'STARTED', rawDesc: 'executing',
+      buildTag: 'v1.4.1', atStep: 'AI scoring · 2 tokens active', startedAt: '31m ago',
+      variables: { batch_id: 'b_9921', doc_count: 14 } },
+    { id: 'inst_a01b3e', type: 'process', definitionName: 'Nightly retention sweep', status: 'terminated', rawStatus: 'ABORTED', rawDesc: 'manually terminated',
+      buildTag: 'v1.4.1', atStep: 'Manually aborted by ops', startedAt: '2h ago',
+      variables: { sweep_id: 's_2031', processed: 412 } },
+    { id: 'sess_c12d40', type: 'uiflow', definitionName: 'Application form', status: 'running', rawStatus: 'active', rawDesc: 'session in progress',
+      buildTag: 'v1.4.2', atStep: 'Step 5 / 8', startedAt: '45m ago',
+      variables: { applicant: 'u_8830', form_id: 'f_loan' } },
+    { id: 'inst_91ab23', type: 'process', definitionName: 'Email verification', status: 'completed', rawStatus: 'FINISHED', rawDesc: 'completed successfully',
+      buildTag: 'v1.4.2', atStep: 'Done', startedAt: '1h ago',
+      variables: { email: 'jane@example.com' } },
+    { id: 'inst_b73e1c', type: 'process', definitionName: 'Payment retry', status: 'failed', rawStatus: 'FAILED', rawDesc: 'unrecoverable failure',
+      buildTag: 'v1.4.2', atStep: 'Validation error', startedAt: '2h ago',
+      variables: { txn: 't_4029', amount: 199.99, attempts: 3 } },
+    { id: 'sess_d56f78', type: 'uiflow', definitionName: 'Survey', status: 'completed', rawStatus: 'completed', rawDesc: 'session ended normally',
+      buildTag: 'v1.4.2', atStep: 'All 5 questions done', startedAt: '3h ago',
+      variables: { survey_id: 'q1_2026' } },
+    { id: 'inst_e1a234', type: 'process', definitionName: 'Document signature', status: 'waiting', rawStatus: 'ON_HOLD', rawDesc: 'paused awaiting input',
+      buildTag: 'v1.4.2', atStep: 'Awaiting customer signature', startedAt: '4h ago',
+      variables: { contract_id: 'c_8821' } },
+    { id: 'inst_a5b6c7', type: 'process', definitionName: 'Risk assessment', status: 'running', rawStatus: 'STARTED', rawDesc: 'executing',
+      buildTag: 'v1.4.0-beta', atStep: 'Token: AI scoring', startedAt: '6h ago',
+      variables: { case_id: 'r_3344' } },
+    { id: 'sess_f8e9d0', type: 'uiflow', definitionName: 'Quick chat', status: 'completed', rawStatus: 'completed', rawDesc: 'session ended normally',
+      buildTag: 'v1.4.2', atStep: 'Resolved · 3 turns', startedAt: '8h ago',
+      variables: { intent: 'cancel' } },
+    { id: 'inst_c2d3e4', type: 'process', definitionName: 'Account creation', status: 'completed', rawStatus: 'FINISHED', rawDesc: 'completed successfully',
+      buildTag: 'v1.4.1', atStep: 'Done', startedAt: '10h ago',
+      variables: { new_user: 'u_9981' } },
+    { id: 'inst_d5e6f7', type: 'process', definitionName: 'Welcome email', status: 'failed', rawStatus: 'FAILED', rawDesc: 'unrecoverable failure',
+      buildTag: 'v1.4.2', atStep: 'SMTP timeout', startedAt: '12h ago',
+      variables: { user: 'u_9981', template: 'welcome_v3' } },
+  ],
+  incidents: [
+    { id: 'inc_001', stage: 'mid-execution', severity: 'critical', status: 'open',
+      title: 'Process failed — token stuck at Document upload',
+      sublineParts: ['{pill}inst_19f3d4', 'KYC review', '{code}NullPointerException', 'at {code}DocumentService.scan()', '3 incidents on this instance', 'spawned by {link}sess_a82c91'],
+      sourceEntity: { kind: 'instance', id: 'inst_19f3d4' },
+      buildTag: 'v1.4.2', when: '3m ago',
+      rootCause: { exception: 'NullPointerException', location: 'DocumentService.scan()', line: 142, node: 'Document upload', tokenId: 'tok_p3', firstRaised: '3 min ago', recurrence: 3 },
+      stackTrace: "java.lang.NullPointerException\n  at DocumentService.scan(DocumentService.java:142)\n  at KycProcess.execute(KycProcess.java:88)\n  at ProcessEngine.runToken(ProcessEngine.java:312)\n  at NodeExecutor.advance(NodeExecutor.java:144)\n  ...",
+      timeline: [
+        { when: '3m ago', kind: 'bad', label: '**Exception raised** — NullPointerException at DocumentService.scan()' },
+        { when: '3m ago', kind: 'bad', label: 'Token *tok_p3* halted at **Document upload**' },
+        { when: '5m ago', kind: 'default', label: 'Token entered *Document upload*' },
+        { when: '8m ago', kind: 'default', label: 'Process started — spawned by sess_a82c91' },
+        { when: '11m ago', kind: 'deploy', label: '**Build v1.4.2 deployed**' },
+      ],
+      related: [
+        { kind: 'proc', name: 'KYC review', id: 'inst_19f3d4', meta: 'failed' },
+        { kind: 'flow', name: 'Onboarding chat — parent session', id: 'sess_a82c91', meta: 'running' },
+        { kind: 'bld', name: 'v1.4.2 — deployed 11 min ago', id: 'b_v142', meta: 'cut from main · 4 workflows changed' },
+      ],
+    },
+    { id: 'inc_002', stage: 'ai-quality', severity: 'high', status: 'open',
+      title: 'Coherence scorer breached — Checkout / Reasoner',
+      sublineParts: ['value **0.71**', 'threshold 0.72', '12 affected runs in last hour', 'first cross 18 min ago'],
+      sourceEntity: { kind: 'scorer', id: 'sc_coherence_reasoner' },
+      buildTag: 'v1.4.2', when: '18m ago',
+      rootCause: { scorer: 'Coherence', node: 'Reasoner (Checkout flow)', currentValue: 0.71, threshold: 0.72, affectedRuns: 12, firstRaised: '18m ago', recurrence: 12 },
+      related: [
+        { kind: 'bld', name: 'v1.4.2 — deployed 11m ago', id: 'b_v142', meta: 'regressed vs v1.4.1' },
+      ],
+      timeline: [
+        { when: '18m ago', kind: 'bad', label: '**Coherence breached** — value 0.71 (threshold 0.72)' },
+        { when: '11m ago', kind: 'deploy', label: '**Build v1.4.2 deployed** — coherence regressed vs v1.4.1' },
+      ],
+    },
+    { id: 'inc_003', stage: 'trigger', severity: 'high', status: 'ack',
+      title: 'Webhook validation failed — Salesforce sync',
+      sublineParts: ['{pill}trg_sf_sync', 'invalid signature', '1 of 14 attempts failed in last hour', 'last good fire 12 min ago'],
+      sourceEntity: { kind: 'trigger', id: 'webhook_sf_sync' },
+      buildTag: 'v1.4.2', when: '22m ago',
+      rootCause: { trigger: 'Salesforce sync webhook', reason: 'invalid signature', recurrence: 1, firstRaised: '22m ago' },
+      related: [
+        { kind: 'bld', name: 'v1.4.2', id: 'b_v142', meta: 'active' },
+      ],
+      timeline: [
+        { when: '22m ago', kind: 'bad', label: '**Webhook signature failed** — Salesforce sync' },
+      ],
+    },
+    { id: 'inc_004', stage: 'pre-start', severity: 'medium', status: 'open',
+      title: 'Process refused to start — missing required variable',
+      sublineParts: ['Loan application', 'variable {code}customer_id not provided', '3 starts blocked in last 10 min', 'trigger {link}trg_loans_api'],
+      sourceEntity: { kind: 'trigger', id: 'webhook_loans_api' },
+      buildTag: 'v1.4.2', when: '31m ago',
+      rootCause: { definition: 'Loan application', missingVar: 'customer_id', blockedStarts: 3, firstRaised: '31m ago' },
+      related: [],
+      timeline: [
+        { when: '31m ago', kind: 'bad', label: 'First refused start — missing customer_id' },
+      ],
+    },
+    { id: 'inc_005', stage: 'ai-quality', severity: 'medium', status: 'open',
+      title: 'Toxicity scorer alert — Support chat / Responder',
+      sublineParts: ['value 0.04 (threshold 0.03)', '2 affected runs', 'build comparison shows regression vs v1.4.1'],
+      sourceEntity: { kind: 'scorer', id: 'sc_toxicity_responder' },
+      buildTag: 'v1.4.2', when: '42m ago',
+      rootCause: { scorer: 'Toxicity', node: 'Responder (Support chat)', currentValue: 0.04, threshold: 0.03, affectedRuns: 2, firstRaised: '42m ago' },
+      related: [
+        { kind: 'bld', name: 'v1.4.2', id: 'b_v142', meta: 'regressed vs v1.4.1' },
+      ],
+      timeline: [
+        { when: '42m ago', kind: 'bad', label: '**Toxicity breached** — value 0.04 (threshold 0.03)' },
+      ],
+    },
+    { id: 'inc_006', stage: 'trigger', severity: 'low', status: 'resolved',
+      title: 'Scheduled fire missed — Nightly retention sweep',
+      sublineParts: ['{pill}cron_retention', 'cron expression was invalid', 'skipped at 02:00 UTC · later fixed'],
+      sourceEntity: { kind: 'trigger', id: 'cron_retention' },
+      buildTag: 'v1.4.2', when: '8h ago',
+      rootCause: { trigger: 'Nightly retention sweep', reason: 'invalid cron expression', firstRaised: '8h ago' },
+      related: [],
+      timeline: [
+        { when: '8h ago', kind: 'bad', label: 'Cron fire skipped — expression invalid' },
+        { when: '7h ago', kind: 'default', label: 'Expression corrected · auto-resolved' },
+      ],
+    },
+    { id: 'inc_007', stage: 'pre-start', severity: 'medium', status: 'resolved',
+      title: 'Failed start — Welcome email (SMTP config issue)',
+      sublineParts: ['{pill}inst_d5e6f7', 'SMTP credentials invalid', '12h ago'],
+      sourceEntity: { kind: 'instance', id: 'inst_d5e6f7' },
+      buildTag: 'v1.4.2', when: '12h ago',
+      rootCause: { reason: 'SMTP credentials invalid', firstRaised: '12h ago' },
+      related: [],
+      timeline: [],
+    },
+    { id: 'inc_008', stage: 'mid-execution', severity: 'high', status: 'resolved',
+      title: 'Database connection timeout in Risk assessment',
+      sublineParts: ['{pill}inst_a5b6c7', 'PSQL timeout 30s', '14h ago · resolved 12h ago'],
+      sourceEntity: { kind: 'instance', id: 'inst_a5b6c7' },
+      buildTag: 'v1.4.0-beta', when: '14h ago',
+      rootCause: { exception: 'PSQLTimeoutException', recurrence: 1, firstRaised: '14h ago' },
+      related: [],
+      timeline: [],
+    },
+  ],
+  policies: {
+    build: {
+      default: { type: 'LATEST_ON_BRANCH', branchId: 'main', resolvesToTag: 'v1.4.2' },
+      overrides: [
+        { id: 'bo_1', target: { type: 'ROLE', value: 'legacy-tier' }, policy: { type: 'FIXED_VERSION', buildId: 'b_v141', resolvesToTag: 'v1.4.1' }, priority: 10, enabled: true },
+        { id: 'bo_2', target: { type: 'ROLE', value: 'beta-testers' }, policy: { type: 'LATEST_ON_BRANCH', branchId: 'beta', resolvesToTag: 'v1.4.0-beta' }, priority: 20, enabled: true },
+        { id: 'bo_3', target: { type: 'USER', value: 'u_4419' }, policy: { type: 'FIXED_VERSION', buildId: 'b_v142', resolvesToTag: 'v1.4.2' }, priority: 100, enabled: true },
+      ],
+    },
+    param: {
+      defaults: { max_retries: 3, llm_temperature: 0.7, timeout_ms: 30000, region: 'us-east', logging: 'info' },
+      overrides: [
+        { id: 'po_1', target: { type: 'ROLE', value: 'admins' }, params: { logging: 'debug', timeout_ms: 60000 }, priority: 10, enabled: true },
+        { id: 'po_2', target: { type: 'ROLE', value: 'beta-testers' }, params: { llm_temperature: 0.9 }, priority: 20, enabled: false },
+      ],
+    },
+  },
+  triggers: [
+    { id: 'cron_retention', name: 'Nightly retention sweep', type: 'cron', schedule: '0 2 * * *', spawns: 'retention_v2', lastFire: '14:02 today', status: 'active', errorCount24h: 0 },
+    { id: 'cron_kpi', name: 'Hourly KPI rollup', type: 'cron', schedule: '0 * * * *', spawns: 'kpi_rollup', lastFire: '15:00 today', status: 'active', errorCount24h: 0 },
+    { id: 'cron_reconcile', name: 'Quarterly reconciliation', type: 'cron', schedule: '0 0 1 */3 *', spawns: 'reconcile', lastFire: 'Apr 1 02:00', status: 'paused', errorCount24h: 0 },
+    { id: 'cron_cleanup', name: 'Cleanup logs', type: 'cron', schedule: '30 3 * * *', spawns: 'cleanup', lastFire: '03:30 today', status: 'active', errorCount24h: 0 },
+    { id: 'webhook_sf_sync', name: 'Salesforce sync', type: 'webhook', schedule: 'on event', spawns: 'sf_sync', lastFire: '22m ago', status: 'erroring', errorCount24h: 1 },
+    { id: 'webhook_stripe', name: 'Stripe webhook', type: 'webhook', schedule: 'on event', spawns: 'stripe_handler', lastFire: '5m ago', status: 'active', errorCount24h: 0 },
+  ],
+  triggerFires: [
+    { id: 'fire_001', triggerId: 'cron_retention', triggerName: 'Nightly retention sweep', triggerType: 'cron', firedAt: '14:02 today', outcome: 'success', spawnedInstanceId: 'inst_a01b3e' },
+    { id: 'fire_002', triggerId: 'cron_kpi', triggerName: 'Hourly KPI rollup', triggerType: 'cron', firedAt: '15:00 today', outcome: 'success' },
+    { id: 'fire_003', triggerId: 'webhook_stripe', triggerName: 'Stripe webhook', triggerType: 'webhook', firedAt: '5m ago', outcome: 'success' },
+    { id: 'fire_004', triggerId: 'webhook_sf_sync', triggerName: 'Salesforce sync', triggerType: 'webhook', firedAt: '22m ago', outcome: 'failed', failureReason: 'invalid signature' },
+    { id: 'fire_005', triggerId: 'webhook_loans_api', triggerName: 'Loans API webhook', triggerType: 'webhook', firedAt: '31m ago', outcome: 'failed', failureReason: 'missing customer_id' },
+    { id: 'fire_006', triggerId: 'cron_retention', triggerName: 'Nightly retention sweep', triggerType: 'cron', firedAt: '8h ago', outcome: 'failed', failureReason: 'invalid cron expression' },
+  ],
+  tasks: [
+    { id: 'task_1', title: 'Approve loan application — $42,000', source: { instanceId: 'inst_55a1c0', definitionName: 'Loan application', atStep: 'waiting at Manager approval' }, assignee: { userId: 'me', displayName: 'AB' }, dueAt: 'in 4h', isOverdue: false, priority: 'high' },
+    { id: 'task_2', title: 'Verify identity documents — passport + utility bill', source: { instanceId: 'inst_19f3d4', definitionName: 'KYC review', atStep: 'awaiting agent' }, assignee: null, dueAt: 'overdue 2h', isOverdue: true, priority: 'high' },
+    { id: 'task_3', title: 'Confirm escalation — high-value support case', source: { instanceId: 'sess_b34f0e', definitionName: 'Support chat session', atStep: 'awaiting confirmation' }, assignee: { userId: 'me', displayName: 'AB' }, dueAt: 'due tomorrow', isOverdue: false },
+    { id: 'task_4', title: 'Review payment refund — $199.99', source: { instanceId: 'inst_b73e1c', definitionName: 'Payment retry', atStep: 'awaiting review' }, assignee: null, dueAt: 'in 12h', isOverdue: false },
+    { id: 'task_5', title: 'Sign agreement', source: { instanceId: 'inst_e1a234', definitionName: 'Document signature', atStep: 'awaiting customer signature' }, assignee: { userId: 'other', displayName: 'CD' }, dueAt: 'in 3 days', isOverdue: false },
+    { id: 'task_6', title: 'Risk decision — case r_3344', source: { instanceId: 'inst_a5b6c7', definitionName: 'Risk assessment', atStep: 'awaiting decision' }, assignee: { userId: 'me', displayName: 'AB' }, dueAt: 'in 22h', isOverdue: false },
+    { id: 'task_7', title: 'Manual override review', source: { instanceId: 'inst_91ab23', definitionName: 'Email verification', atStep: 'completed' }, assignee: { userId: 'me', displayName: 'AB' }, dueAt: 'completed', isOverdue: false, completed: true },
+    { id: 'task_8', title: 'Customer escalation review', source: { instanceId: 'sess_c12d40', definitionName: 'Application form', atStep: 'awaiting review' }, assignee: null, dueAt: 'in 8h', isOverdue: false },
+  ],
+  workflows: [
+    {
+      id: 'wf_checkout', name: 'Checkout flow', activeBuild: 'v1.4.2',
+      telemetry: { throughput: 1892, p95: 2.8, cost: 184, errorRate: 0.63 },
+      scorers: [
+        { name: 'Coherence', node: 'Reasoner', value: 0.71, threshold: 0.72, breached: true },
+        { name: 'Helpfulness', node: 'Reasoner', value: 0.88, threshold: 0.80, breached: false },
+      ],
+      nodes: [
+        { name: 'Reasoner', type: 'LLM call', desc: 'Reasoning node for checkout', scorers: ['coherence', 'helpfulness'], alertCount: 1 },
+        { name: 'Validator', type: 'classifier', desc: 'Validate order completeness', scorers: ['accuracy'], alertCount: 0 },
+        { name: 'Embedder', type: 'embedding', desc: 'Embed cart contents', scorers: [], alertCount: 0 },
+      ],
+    },
+    {
+      id: 'wf_support', name: 'Support chat', activeBuild: 'v1.4.2',
+      telemetry: { throughput: 412, p95: 1.7, cost: 48, errorRate: 0.18 },
+      scorers: [
+        { name: 'Toxicity', node: 'Responder', value: 0.04, threshold: 0.03, breached: true },
+      ],
+      nodes: [
+        { name: 'Responder', type: 'LLM call', desc: 'Generates support replies', scorers: ['toxicity'], alertCount: 1 },
+        { name: 'Intent classifier', type: 'classifier', desc: 'Classify customer intent', scorers: [], alertCount: 0 },
+        { name: 'KB retriever', type: 'retriever', desc: 'Pull relevant KB articles', scorers: [], alertCount: 0 },
+      ],
+    },
+    {
+      id: 'wf_classify', name: 'Document classifier', activeBuild: 'v1.4.1',
+      telemetry: { throughput: 145, p95: 4.2, cost: 22, errorRate: 0.04 },
+      scorers: [],
+      nodes: [
+        { name: 'Vision OCR', type: 'vision', desc: 'OCR documents', scorers: [], alertCount: 0 },
+        { name: 'Classifier', type: 'classifier', desc: 'Categorize doc types', scorers: [], alertCount: 0 },
+        { name: 'Verifier', type: 'LLM call', desc: 'Verify classification', scorers: [], alertCount: 0 },
+      ],
+    },
+  ],
+  // Seeded activity feed — newest first
+  activityEvents: [
+    { id: 'ev_001', when: 'just now', whenSec: 0, type: 'ai-alert', title: '**Coherence scorer breached** on Checkout flow / Reasoner', sub: 'value 0.71 · threshold 0.72 · affects {pill}v1.4.2 · 12 affected runs', linkKind: 'incident', linkId: 'inc_002' },
+    { id: 'ev_002', when: '1m ago', whenSec: 60, type: 'start', title: '**UI Flow session** started — Onboarding chat', sub: '{pill}sess_a82c91 · user {mono}u_4419 · running on {pill}v1.4.2', linkKind: 'instance', linkId: 'sess_a82c91' },
+    { id: 'ev_003', when: '3m ago', whenSec: 180, type: 'error', title: '**Process failed** mid-execution — KYC review (3 active incidents)', sub: '{pill}inst_19f3d4 · token stuck at *Document upload* · started 12 min ago', linkKind: 'incident', linkId: 'inc_001' },
+    { id: 'ev_004', when: '6m ago', whenSec: 360, type: 'finish', title: '**34 instances finished** in last 5 min', sub: 'avg latency 2.3s · 31 success · 3 errored', linkKind: null },
+    { id: 'ev_005', when: '11m ago', whenSec: 660, type: 'deploy', title: '**Build deployed** — v1.4.2 cut from main', sub: 'Policy default updated · now serving 78% of traffic · diff: 4 workflows changed', linkKind: 'build', linkId: 'b_v142' },
+    { id: 'ev_006', when: '18m ago', whenSec: 1080, type: 'ai-alert', title: '**Toxicity scorer breached** on Support chat / Responder', sub: 'value 0.04 · threshold 0.03 · build comparison shows regression vs v1.4.1', linkKind: 'incident', linkId: 'inc_005' },
+    { id: 'ev_007', when: '22m ago', whenSec: 1320, type: 'error', title: '**Trigger failed** — Salesforce sync webhook', sub: 'validation error · 1 of 14 attempts failed in last hour', linkKind: 'incident', linkId: 'inc_003' },
+    { id: 'ev_008', when: '31m ago', whenSec: 1860, type: 'error', title: '**Process refused to start** — Loan application', sub: 'missing required variable customer_id · 3 starts blocked', linkKind: 'incident', linkId: 'inc_004' },
+    { id: 'ev_009', when: '14:02', whenSec: 5400, type: 'trigger', title: '**Scheduled trigger fired** — Nightly retention sweep', sub: 'spawned 412 process instances · 8 failed at start', linkKind: 'trigger', linkId: 'cron_retention' },
+    { id: 'ev_010', when: '13:48', whenSec: 6240, type: 'error', title: '**Trigger failed** — Loans API webhook', sub: 'validation error · missing customer_id', linkKind: null },
+    { id: 'ev_011', when: '13:00', whenSec: 7800, type: 'finish', title: '**Hourly KPI rollup** finished', sub: 'processed 9,142 records in 38 seconds', linkKind: null },
+    { id: 'ev_012', when: '12:30', whenSec: 9000, type: 'start', title: '**Process started** — Document classifier', sub: '{pill}inst_7c20fa · batch of 14 documents · running on {pill}v1.4.1', linkKind: 'instance', linkId: 'inst_7c20fa' },
+  ],
+  // Embedded glossary (subset of full doc)
+  glossary: {
+    'Build': { short: 'An immutable, published snapshot of an application.', long: 'An immutable, published snapshot of an application. Carries all process definitions, UI flows, workflows, AI nodes, and config params for that snapshot. Each Build has a tag (e.g. v1.4.2), a branch it was cut from, and a build date.' },
+    'Branch': { short: 'A line of build evolution.', long: 'A line of build evolution. Most apps have at least a main branch; many have staging, beta, or feature branches. A policy can track a branch\'s latest build or pin to a specific build.' },
+    'Active policy': { short: 'The default rule for picking which Build serves a runtime caller.', long: 'Either LATEST_ON_BRANCH (track the tip of a branch) or FIXED_VERSION (pin to a specific Build). Per-user/role overrides can replace the default for specific callers.' },
+    'Policy override': { short: 'A rule that replaces the default policy for a specific user or role.', long: 'Has a priority; higher priority wins when multiple overrides match. Can be toggled off without deletion.' },
+    'Config parameter': { short: 'A configurable value the running app consumes.', long: 'Examples include max_retries, llm_temperature, region. Has a default; per-user/role overrides work like policy overrides.' },
+    'Process Instance': { short: 'One execution of a process definition.', long: 'Has state (running/waiting/completed/failed/terminated), tokens at active nodes, variables, and optionally sub-processes.' },
+    'Token': { short: 'A pointer inside a Process Instance marking a currently-active node.', long: 'A process can have multiple tokens running in parallel branches. Each token has its own state and history.' },
+    'UI Flow Session': { short: 'One user-facing execution of a UI flow — chat or multi-step form.', long: 'Can spawn Process Instances as sub-work. Lighter than a Process Instance: status, variables, audit, and a bridge into the process layer.' },
+    'Incident': { short: 'Something that broke or breached.', long: 'Four stages: pre-start (process refused to start), trigger (trigger fired but didn\'t start a process), mid-execution (process threw mid-run), AI quality (an AI scorer crossed its threshold).' },
+    'Trigger': { short: 'A configured way for processes to start.', long: 'Cron triggers fire on a schedule; webhooks/events fire on external signals.' },
+    'Live Evals': { short: 'The runtime observability surface for AI workflow quality.', long: 'Telemetry (free), workflow scorers (opt-in), and AI node detail. Inbound integrations into Instance details, Incidents, and Builds.' },
+    'Scorer': { short: 'A configured quality measurement against AI workflow output.', long: 'Has a threshold; crossing the threshold creates an AI quality incident. Examples: coherence, helpfulness, toxicity, accuracy.' },
+    'Task': { short: 'A unit of human work created when a Process Instance reaches a human-task node.', long: 'The instance waits until the task is completed. Tasks appear in the Tasks inbox; the same task surfaces in the Instance\'s Activity tree.' },
+    'Normalized status': { short: 'The simplified five-state vocabulary the UI uses for all instance types.', long: 'Running, Waiting, Completed, Failed, Terminated. Hover any status pill to see the underlying engineering state.' },
+  },
+};
+
+// ============================================================
+//  STATE
+// ============================================================
+const STATE = {
+  currentRoute: null,
+  detail: { open: false, kind: null, id: null, tab: 0 },
+  glossary: { open: false, scrollToTerm: null },
+  filters: {
+    overview: { type: 'all', search: '' },
+    instances: { type: 'all', status: 'any', build: 'any', search: '' },
+    incidents: { stage: 'all', search: '' },
+    builds: { branch: 'all' },
+    triggers: { tab: 'scheduled' },
+    tasks: { assignee: 'anyone', status: 'pending' },
+  },
+  liveEvals: { workflowId: 'wf_checkout' },
+  dismissedBanners: new Set(JSON.parse(sessionStorage.getItem('dismissedBanners') || '[]')),
+  configResolver: { username: 'u_4419', roles: ['admins', 'beta-testers'], result: null },
+  recentEventId: null,
+};
+
+// ============================================================
+//  DERIVED COUNTERS
+// ============================================================
+function liveCounters() {
+  const activeStates = ['running', 'waiting'];
+  return {
+    activeInstanceCount: MOCK_DATA.instances.filter(i => activeStates.includes(i.status)).length,
+    openIncidentCount: MOCK_DATA.incidents.filter(i => i.status === 'open').length,
+    openAlertCount: MOCK_DATA.incidents.filter(i => i.status === 'open' && i.stage === 'ai-quality').length,
+    activeBuildTag: MOCK_DATA.builds.find(b => b.isActive)?.tag || '—',
+    pendingTaskCount: MOCK_DATA.tasks.filter(t => !t.completed).length,
+  };
+}
+
+// ============================================================
+//  NAV (sidebar)
+// ============================================================
+const NAV = [
+  { group: null, items: [
+    { id: 'overview', route: '#/overview', icon: '⌂', label: 'Overview', badge: null },
+  ]},
+  { group: 'Live state', items: [
+    { id: 'instances', route: '#/instances', icon: '▸', label: 'Instances', badge: () => ({ kind: 'info', value: liveCounters().activeInstanceCount }) },
+    { id: 'incidents', route: '#/incidents', icon: '⚠', label: 'Incidents', badge: () => ({ kind: 'alert', value: liveCounters().openIncidentCount }) },
+    { id: 'live-evals', route: '#/live-evals', icon: '∿', label: 'Live Evals', badge: () => ({ kind: 'warn', value: liveCounters().openAlertCount }) },
+  ]},
+  { group: 'Deployment', items: [
+    { id: 'builds', route: '#/builds', icon: '◆', label: 'Builds', badge: () => ({ kind: 'info', value: liveCounters().activeBuildTag }) },
+    { id: 'configuration', route: '#/configuration', icon: '⚙', label: 'Configuration', badge: null },
+    { id: 'triggers', route: '#/triggers', icon: '⟳', label: 'Schedules & Triggers', badge: null },
+  ]},
+  { group: 'Work', items: [
+    { id: 'tasks', route: '#/tasks', icon: '☐', label: 'Tasks', badge: () => ({ kind: 'info', value: liveCounters().pendingTaskCount }) },
+  ]},
+];
+
+let prevBadges = {};
+
+function renderSidebar() {
+  const sb = document.getElementById('sidebar');
+  const route = STATE.currentRoute;
+  const cnt = liveCounters();
+  let html = '';
+  NAV.forEach(grp => {
+    if (grp.group) html += `<div class="nav-group">${grp.group}</div>`;
+    grp.items.forEach(item => {
+      const active = route === item.id;
+      let badgeHtml = '';
+      if (item.badge) {
+        const b = item.badge();
+        if (b && (b.value || b.value === 0)) {
+          // Hide '0' for alert badges
+          const visible = !(b.kind === 'alert' && b.value === 0);
+          if (visible) badgeHtml = `<span class="nav-badge ${b.kind}">${b.value}</span>`;
+        }
+      }
+      html += `<button class="nav-item ${active ? 'active' : ''}" onclick="location.hash='${item.route}'">
+        <span class="icon">${item.icon}</span>
+        <span class="label">${item.label}</span>
+        ${badgeHtml}
+      </button>`;
+    });
+  });
+  // footer
+  const footerHealthy = cnt.openIncidentCount === 0;
+  html += `<div class="nav-bottom">
+    <div class="nav-help ${footerHealthy ? '' : 'alert'}">
+      <span class="dot"></span>
+      <span class="text">${footerHealthy ? 'All systems active' : `${cnt.openIncidentCount} incident${cnt.openIncidentCount === 1 ? '' : 's'} open`}</span>
+    </div>
+    <button class="nav-help" onclick="openGlossary()">
+      <span style="opacity:0.6">?</span>
+      <span class="text">Tour &amp; help</span>
+    </button>
+  </div>`;
+  sb.innerHTML = html;
+}
+
+// ============================================================
+//  ROUTER
+// ============================================================
+const ROUTES = {
+  overview: renderOverview,
+  instances: renderInstances,
+  incidents: renderIncidents,
+  builds: renderBuilds,
+  configuration: renderConfiguration,
+  'live-evals': renderLiveEvals,
+  triggers: renderTriggers,
+  tasks: renderTasks,
+};
+
+function router() {
+  let hash = location.hash.replace(/^#\//, '');
+  if (!hash || !ROUTES[hash]) hash = 'overview';
+  STATE.currentRoute = hash;
+  // Close detail panel on route change
+  closeDetail();
+  renderSidebar();
+  const renderer = ROUTES[hash];
+  document.getElementById('page').innerHTML = '';
+  renderer(document.getElementById('page'));
+  window.scrollTo(0, 0);
+}
+
+window.addEventListener('hashchange', router);
+
+// ============================================================
+//  HELPERS
+// ============================================================
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+function md(s) {
+  // Tiny inline markdown for **bold** and *italic*, plus our custom {pill}…/{code}…/{mono}…/{link}… token expansion
+  if (!s) return '';
+  let out = escapeHtml(s);
+  out = out.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+  out = out.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+  return out;
+}
+function inlineParts(parts) {
+  // Renders subline parts where some are tagged: {pill}xxx, {code}xxx, {mono}xxx, {link}xxx
+  return parts.map(p => {
+    const m = p.match(/^\{(pill|code|mono|link)\}(.+)$/);
+    if (!m) return md(p);
+    const kind = m[1], v = escapeHtml(m[2]);
+    if (kind === 'pill') return `<span class="pill">${v}</span>`;
+    if (kind === 'code') return `<code style="font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--bg);border:1px solid var(--border);padding:1px 5px;border-radius:4px;">${v}</code>`;
+    if (kind === 'mono') return `<code style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-muted);">${v}</code>`;
+    if (kind === 'link') return `<a style="color:var(--blue-500);font-weight:600;font-family:'JetBrains Mono',monospace;font-size:10px;text-decoration:none;cursor:pointer;">${v}</a>`;
+    return v;
+  }).join(' · ');
+}
+function statePill(state, rawState, rawDesc) {
+  const labels = { running: 'Running', waiting: 'Waiting', completed: 'Completed', failed: 'Failed', terminated: 'Terminated' };
+  const tip = rawState ? `${rawState} · ${rawDesc || ''}` : labels[state];
+  return `<span class="state-pill state-${state}" data-tip="${escapeHtml(tip)}"><span class="dot"></span>${labels[state]}</span>`;
+}
+function buildChip(tag) {
+  return `<span class="build-chip">${escapeHtml(tag)}</span>`;
+}
+function helpIcon(term) {
+  return `<span class="help-icon-inline" onclick="showHelpPopover(event, '${escapeHtml(term)}')">?</span>`;
+}
+function panelHeading(label, term) {
+  return `<h4>${escapeHtml(label)}${term ? helpIcon(term) : ''}</h4>`;
+}
+
+// ============================================================
+//  PAGE: OVERVIEW
+// ============================================================
+function renderOverview(root) {
+  const cnt = liveCounters();
+  const openIncidents = MOCK_DATA.incidents.filter(i => i.status === 'open');
+  const aiAlerts = openIncidents.filter(i => i.stage === 'ai-quality');
+  const failedStartsLastHr = MOCK_DATA.incidents.filter(i => i.stage === 'pre-start' && i.status === 'open').length;
+
+  // Build the banner only if there are open issues
+  let bannerHtml = '';
+  if (openIncidents.length > 0) {
+    const summaryBits = [];
+    if (aiAlerts.length) summaryBits.push(`${aiAlerts.length} scorer${aiAlerts.length === 1 ? '' : 's'} breached`);
+    summaryBits.push(`${openIncidents.length} active incident${openIncidents.length === 1 ? '' : 's'}`);
+    if (failedStartsLastHr) summaryBits.push(`${failedStartsLastHr} failed start${failedStartsLastHr === 1 ? '' : 's'} in last hour`);
+    const lead = openIncidents[0];
+    bannerHtml = `<div class="banner alert">
+      <div class="icon-dot"></div>
+      <div class="lhs">
+        <div class="title">${summaryBits.join(' · ')}</div>
+        <div class="summary">${escapeHtml(lead.title)} — ${escapeHtml(lead.when)}</div>
+      </div>
+      <button class="btn" style="background:white;border:1px solid var(--red-100);color:var(--red-700);font-weight:600;" onclick="location.hash='#/incidents'">Review →</button>
+    </div>`;
+  }
+
+  const filter = STATE.filters.overview;
+  const filterChips = ['all', 'start', 'finish', 'incident-error', 'deploy', 'trigger', 'ai-alert'];
+  const chipLabels = { all: 'All', start: 'Starts', finish: 'Finishes', 'incident-error': 'Incidents', deploy: 'Deploys', trigger: 'Triggers', 'ai-alert': 'AI alerts' };
+
+  // Filtered + sorted events (newest first)
+  let events = MOCK_DATA.activityEvents.slice();
+  if (filter.type !== 'all') {
+    events = events.filter(e => {
+      if (filter.type === 'incident-error') return e.type === 'error' || e.type === 'ai-alert';
+      return e.type === filter.type;
+    });
+  }
+  if (filter.search) {
+    const q = filter.search.toLowerCase();
+    events = events.filter(e => (e.title + ' ' + (e.sub||'')).toLowerCase().includes(q));
+  }
+
+  // Day-divider rhythm
+  function dividerFor(e, i, list) {
+    if (i === 0) return '<div class="day-divider">Now</div>';
+    const prev = list[i-1];
+    if (prev.whenSec < 3600 && e.whenSec >= 3600) return '<div class="day-divider">Earlier today</div>';
+    return '';
+  }
+
+  const feedRows = events.map((e, i, all) => `
+    ${dividerFor(e, i, all)}
+    <div class="feed-row ${e.id === STATE.recentEventId ? 'new-row' : ''}" onclick="${e.linkKind ? `openDetail('${e.linkKind}','${e.linkId}')` : ''}">
+      <div class="time">${escapeHtml(e.when)}</div>
+      <div class="glyph glyph-${e.type === 'error' ? 'error' : e.type}">${
+        ({ start: '▶', finish: '✓', error: '✕', 'ai-alert': '!', deploy: '↑', trigger: '⟳' })[e.type] || '·'
+      }</div>
+      <div class="body">
+        <div class="title">${md(e.title)}</div>
+        <div class="sub">${expandTokens(e.sub)}</div>
+      </div>
+      <div class="actions">${e.linkKind ? 'Open →' : ''}</div>
+    </div>`).join('');
+
+  // KPI cards
+  const proc = MOCK_DATA.instances.filter(i => i.type === 'process' && ['running','waiting'].includes(i.status)).length;
+  const flow = MOCK_DATA.instances.filter(i => i.type === 'uiflow' && ['running','waiting'].includes(i.status)).length;
+
+  // AI quality scorer movements
+  const scorerMovements = [
+    { name: 'Coherence · Reasoner', value: 0.71, delta: -0.06, dir: 'down' },
+    { name: 'Helpfulness · Chat', value: 0.88, delta: 0.02, dir: 'up' },
+    { name: 'Toxicity · all nodes', value: 0.01, delta: 0.00, dir: 'flat' },
+    { name: 'Cost / 1k runs', value: 4.20, delta: 0.42, dir: 'up' },
+  ];
+
+  root.innerHTML = `
+    <div class="page-head">
+      <h2>Overview</h2>
+      ${helpIcon('Normalized status')}
+      <span class="sub">Real-time view of what's happening across this app right now.</span>
+      <span class="meta">live · last 24 h</span>
+    </div>
+    <div class="page-body">
+      ${bannerHtml}
+
+      <div class="ov-grid">
+        <!-- Activity feed -->
+        <div class="card">
+          <div class="card-head">
+            <h3>Activity${helpIcon('Incident')}</h3>
+            <span class="meta">live · last 24 h</span>
+          </div>
+          <div class="feed-filters">
+            ${filterChips.map(c => `<button class="chip ${filter.type === c ? 'active' : ''}" onclick="setOverviewFilter('${c}')">${chipLabels[c]}</button>`).join('')}
+            <div class="search">
+              <input type="text" placeholder="Search…" value="${escapeHtml(filter.search)}" oninput="STATE.filters.overview.search = this.value; renderOverview(document.getElementById('page'))">
+            </div>
+          </div>
+          <div id="feedRows">${feedRows || '<div class="empty"><h4>No matching events</h4><p>Try a different filter or expand the time window.</p></div>'}</div>
+        </div>
+
+        <!-- KPI sidebar -->
+        <div class="stack">
+          <div class="kpi-card">
+            <h4>In flight${helpIcon('Process Instance')}</h4>
+            <div class="kpi-row">
+              <div class="kpi-big">${proc + flow + cnt.pendingTaskCount}</div>
+              <div class="kpi-sub kpi-trend up">↑ 12% vs 24h avg</div>
+            </div>
+            <div class="kpi-list">
+              <div class="row"><span>Process instances</span><strong>${proc}</strong></div>
+              <div class="row"><span>UI flow sessions</span><strong>${flow}</strong></div>
+              <div class="row"><span>Tasks pending</span><strong>${cnt.pendingTaskCount}</strong></div>
+            </div>
+          </div>
+
+          <div class="kpi-card">
+            <h4>Deployment${helpIcon('Active policy')}</h4>
+            <div class="kpi-row">
+              <div class="kpi-big" style="font-size:18px">${cnt.activeBuildTag}</div>
+              <div class="kpi-sub">active build · 11m ago</div>
+            </div>
+            <div class="build-bar">
+              <span style="width:78%;background:var(--blue-500)"></span>
+              <span style="width:15%;background:var(--purple-500)"></span>
+              <span style="width:7%;background:var(--border-strong)"></span>
+            </div>
+            <div class="build-legend">
+              <span><i style="background:var(--blue-500)"></i> v1.4.2 78%</span>
+              <span><i style="background:var(--purple-500)"></i> v1.4.1 15%</span>
+              <span><i style="background:var(--border-strong)"></i> beta 7%</span>
+            </div>
+          </div>
+
+          <div class="kpi-card">
+            <h4>AI quality${helpIcon('Scorer')}</h4>
+            ${scorerMovements.map(s => `
+              <div class="scorer-row">
+                <span>${escapeHtml(s.name)}</span>
+                <span class="delta ${s.dir}">${s.dir === 'up' ? '▲' : s.dir === 'down' ? '▼' : '—'} ${typeof s.value === 'number' && s.value >= 1 ? '$'+s.value.toFixed(2) : s.value.toFixed(2)}</span>
+              </div>`).join('')}
+          </div>
+        </div>
+      </div>
+
+      <!-- Trends strip -->
+      <div class="trends-strip">
+        <div class="trend-card"><h5>Throughput / min</h5><div class="val">47</div>
+          <svg class="spark" viewBox="0 0 100 24" preserveAspectRatio="none"><polyline points="0,18 12,15 24,16 36,12 48,14 60,8 72,9 84,6 96,4 100,5" fill="none" stroke="var(--blue-500)" stroke-width="1.5"/></svg>
+        </div>
+        <div class="trend-card"><h5>p95 latency</h5><div class="val">2.8s</div>
+          <svg class="spark" viewBox="0 0 100 24" preserveAspectRatio="none"><polyline points="0,12 12,10 24,11 36,14 48,12 60,15 72,14 84,18 96,20 100,21" fill="none" stroke="var(--orange-500)" stroke-width="1.5"/></svg>
+        </div>
+        <div class="trend-card"><h5>Errors / hr</h5><div class="val">12</div>
+          <svg class="spark" viewBox="0 0 100 24" preserveAspectRatio="none"><polyline points="0,16 12,18 24,14 36,17 48,15 60,19 72,16 84,12 96,8 100,6" fill="none" stroke="var(--red-500)" stroke-width="1.5"/></svg>
+        </div>
+        <div class="trend-card"><h5>Cost / hr</h5><div class="val">$184</div>
+          <svg class="spark" viewBox="0 0 100 24" preserveAspectRatio="none"><polyline points="0,20 12,18 24,15 36,16 48,12 60,10 72,8 84,11 96,9 100,7" fill="none" stroke="var(--green-500)" stroke-width="1.5"/></svg>
+        </div>
+      </div>
+    </div>
+  `;
+}
+function setOverviewFilter(type) { STATE.filters.overview.type = type; renderOverview(document.getElementById('page')); }
+
+function expandTokens(s) {
+  // Handles tokens like {pill}xxx, {mono}xxx in plain text strings (single occurrences)
+  if (!s) return '';
+  return escapeHtml(s)
+    .replace(/\{pill\}(\S+)/g, '<span class="pill">$1</span>')
+    .replace(/\{mono\}(\S+)/g, '<code style="font-family:\'JetBrains Mono\',monospace;font-size:10px;color:var(--text-muted);">$1</code>')
+    .replace(/\*([^*]+)\*/g, '<em>$1</em>')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>');
+}
+
+// ============================================================
+//  PAGE STUBS (filled in by later tasks)
+// ============================================================
+function renderInstances(root) {
+  const f = STATE.filters.instances;
+  const buildTags = [...new Set(MOCK_DATA.instances.map(i => i.buildTag))];
+  let rows = MOCK_DATA.instances.slice();
+  if (f.type !== 'all') rows = rows.filter(i => i.type === f.type);
+  if (f.status !== 'any') rows = rows.filter(i => i.status === f.status);
+  if (f.build !== 'any') rows = rows.filter(i => i.buildTag === f.build);
+  if (f.search) {
+    const q = f.search.toLowerCase();
+    rows = rows.filter(i => (i.id + ' ' + i.definitionName + ' ' + Object.values(i.variables || {}).join(' ')).toLowerCase().includes(q));
+  }
+  const totalActive = MOCK_DATA.instances.filter(i => ['running','waiting'].includes(i.status)).length;
+  const selectedId = STATE.detail.open && STATE.detail.kind === 'instance' ? STATE.detail.id : null;
+
+  const filterPickr = (label, key, value, options) => `
+    <div class="pickr ${f[key] !== (key === 'type' ? 'all' : 'any') ? 'active' : ''}" onclick="cycleInstancesFilter('${key}', ${JSON.stringify(options).replace(/"/g, '&quot;')})">
+      ${label} <span class="v">${escapeHtml(value === 'all' || value === 'any' ? (key === 'type' ? 'All' : 'Any') : value)}</span>
+    </div>`;
+
+  const rowsHtml = rows.map(it => {
+    const isAnchor = it.spawnedBy && rows.some(r => r.id === it.spawnedBy.id);
+    return `<tr class="${selectedId === it.id ? 'selected' : ''} ${isAnchor ? 'anchor' : ''}" onclick="openDetail('instance','${it.id}')">
+      <td><span class="type-cell ${it.type === 'process' ? 'proc' : 'uiflow'}"><span class="type-badge">${it.type === 'process' ? 'P' : 'F'}</span>${it.type === 'process' ? 'Process' : 'UI Flow'}</span></td>
+      <td>
+        <div class="mono">${escapeHtml(it.id)}${isAnchor ? `<span class="spawn-anchor" onclick="event.stopPropagation(); openDetail('instance','${it.spawnedBy.id}')">↑ spawned by ${escapeHtml(it.spawnedBy.id)}</span>` : ''}</div>
+        <div style="color:var(--text);font-size:12px;margin-top:2px;">${escapeHtml(it.definitionName)}</div>
+      </td>
+      <td>${statePill(it.status, it.rawStatus, it.rawDesc)}</td>
+      <td>${buildChip(it.buildTag)}</td>
+      <td style="color:var(--text-muted);font-size:11px;">${escapeHtml(it.atStep)}</td>
+      <td style="color:var(--text-muted);font-size:11px;">${escapeHtml(it.startedAt)}</td>
+    </tr>`;
+  }).join('');
+
+  root.innerHTML = `
+    <div class="page-head">
+      <h2>Instances</h2>
+      ${helpIcon('Process Instance')}
+      <span class="sub">Any user-facing session or engine-driven process running in this app.</span>
+      <span class="meta">${totalActive} active · ${MOCK_DATA.instances.length} in view</span>
+    </div>
+    <div style="padding:10px 24px;background:var(--bg);border-bottom:1px solid var(--border);display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+      ${filterPickr('Type', 'type', f.type, ['all','process','uiflow'])}
+      ${filterPickr('Status', 'status', f.status, ['any','running','waiting','completed','failed','terminated'])}
+      ${filterPickr('Build', 'build', f.build, ['any', ...buildTags])}
+      <div class="search">
+        <input type="text" placeholder="Search by ID, variable…" value="${escapeHtml(f.search)}" oninput="STATE.filters.instances.search = this.value; renderInstances(document.getElementById('page'))">
+      </div>
+      <span style="margin-left:auto;color:var(--text-dim);font-size:11px;">Time: <strong style="color:var(--text)">Last 24h</strong></span>
+    </div>
+    <div style="background:var(--bg);">
+    ${rows.length === 0 ? `<div class="empty"><h4>No instances match these filters</h4><p>Clear filters or expand the time window. When a UI flow runs or a process starts, it'll appear here.</p></div>` : `
+      <table class="list-table">
+        <thead><tr>
+          <th style="width:120px">Type</th>
+          <th>Identity</th>
+          <th>Status</th>
+          <th>Build</th>
+          <th>At step</th>
+          <th>Started</th>
+        </tr></thead>
+        <tbody>${rowsHtml}</tbody>
+      </table>
+    `}
+    </div>
+  `;
+}
+function cycleInstancesFilter(key, options) {
+  const cur = STATE.filters.instances[key];
+  const list = Array.isArray(options) ? options : JSON.parse(options.replace(/&quot;/g, '"'));
+  const i = list.indexOf(cur);
+  STATE.filters.instances[key] = list[(i + 1) % list.length];
+  renderInstances(document.getElementById('page'));
+}
+function renderIncidents(root) {
+  const f = STATE.filters.incidents;
+  const all = MOCK_DATA.incidents;
+  const countsByStage = {
+    all: all.length,
+    'pre-start': all.filter(i => i.stage === 'pre-start').length,
+    trigger: all.filter(i => i.stage === 'trigger').length,
+    'mid-execution': all.filter(i => i.stage === 'mid-execution').length,
+    'ai-quality': all.filter(i => i.stage === 'ai-quality').length,
+  };
+  let rows = f.stage === 'all' ? all.slice() : all.filter(i => i.stage === f.stage);
+  if (f.search) {
+    const q = f.search.toLowerCase();
+    rows = rows.filter(i => (i.title + ' ' + i.id).toLowerCase().includes(q));
+  }
+  const selectedId = STATE.detail.open && STATE.detail.kind === 'incident' ? STATE.detail.id : null;
+  const openCount = all.filter(i => i.status === 'open').length;
+  const criticalCount = all.filter(i => i.severity === 'critical' && i.status !== 'resolved').length;
+
+  const stageLabel = {
+    'all': 'All',
+    'pre-start': 'Pre-start',
+    'trigger': 'Trigger',
+    'mid-execution': 'Mid-execution',
+    'ai-quality': 'AI quality',
+  };
+  const stageCountCss = (s) => {
+    if (s === 'all') return '';
+    if (s === 'mid-execution') return 'alert';
+    if (s === 'ai-quality') return 'warn';
+    return '';
+  };
+
+  const tagClass = { 'pre-start': 'tag-pre', 'trigger': 'tag-trig', 'mid-execution': 'tag-exec', 'ai-quality': 'tag-ai' };
+
+  const rowsHtml = rows.map(it => `
+    <div class="inc-row ${selectedId === it.id ? 'selected' : ''}" onclick="openDetail('incident','${it.id}')">
+      <div class="sev-bar ${it.severity}"></div>
+      <div class="inc-body">
+        <div class="title"><span class="tag ${tagClass[it.stage]}" style="margin-right:8px">${escapeHtml(stageLabel[it.stage])}</span>${escapeHtml(it.title)}</div>
+        <div class="sub">${inlineParts(it.sublineParts)}</div>
+      </div>
+      <div class="inc-meta">
+        <div>${buildChip(it.buildTag)}</div>
+        <div class="when">${escapeHtml(it.when)}</div>
+      </div>
+      <span class="inc-status ${it.status}"><span class="dot"></span>${it.status === 'ack' ? 'Ack' : it.status.charAt(0).toUpperCase() + it.status.slice(1)}</span>
+    </div>
+  `).join('');
+
+  root.innerHTML = `
+    <div class="page-head">
+      <h2>Incidents</h2>
+      ${helpIcon('Incident')}
+      <span class="sub">Anything that broke or breached — across the full lifecycle.</span>
+      <span class="meta">${openCount} open · ${criticalCount} critical</span>
+    </div>
+    <div class="stage-tabs">
+      ${['all','pre-start','trigger','mid-execution','ai-quality'].map(s => `
+        <button class="stage-tab ${f.stage === s ? 'active' : ''}" onclick="STATE.filters.incidents.stage = '${s}'; renderIncidents(document.getElementById('page'))">
+          ${stageLabel[s]} <span class="count ${stageCountCss(s)}">${countsByStage[s]}</span>
+        </button>
+      `).join('')}
+    </div>
+    <div style="padding:10px 24px;background:var(--bg);border-bottom:1px solid var(--border);display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+      <div class="pickr"><span>Severity</span><span class="v">Any</span></div>
+      <div class="pickr"><span>Status</span><span class="v">Open + Ack</span></div>
+      <div class="pickr"><span>Build</span><span class="v">Any</span></div>
+      <div class="pickr"><span>Source</span><span class="v">Any</span></div>
+      <div class="search"><input type="text" placeholder="Search…" oninput="STATE.filters.incidents.search = this.value; renderIncidents(document.getElementById('page'))"></div>
+      <span style="margin-left:auto;color:var(--text-dim);font-size:11px;">Time: <strong style="color:var(--text)">Last 24h</strong></span>
+    </div>
+    <div style="background:var(--bg);">
+      ${rows.length === 0 ? (f.stage === 'all' && all.filter(i => i.status === 'open').length === 0
+          ? `<div class="empty positive"><h4>All clear</h4><p>No open incidents.</p></div>`
+          : `<div class="empty"><h4>No incidents match</h4><p>Try a different stage or expand the time window.</p></div>`)
+        : rowsHtml}
+    </div>
+  `;
+}
+function renderBuilds(root) {
+  const f = STATE.filters.builds;
+  const all = MOCK_DATA.builds;
+  const branches = [...new Set(all.map(b => b.branch))];
+  const branchCounts = { all: all.length };
+  branches.forEach(br => branchCounts[br] = all.filter(b => b.branch === br).length);
+  let rows = f.branch === 'all' ? all.slice() : all.filter(b => b.branch === f.branch);
+  const selectedId = STATE.detail.open && STATE.detail.kind === 'build' ? STATE.detail.id : null;
+
+  const rowsHtml = rows.map(b => {
+    const coverageBarHtml = b.coverage.percent === 0
+      ? `<div class="coverage-bar"><span style="width:100%;background:var(--border-strong)"></span></div>`
+      : `<div class="coverage-bar">
+          <span style="width:${b.coverage.percent}%;background:${b.isActive ? 'var(--blue-500)' : 'var(--purple-500)'}"></span>
+          <span style="width:${100 - b.coverage.percent}%;background:var(--border)"></span>
+        </div>`;
+    const dlt = (d, suffix = '', invertColor = false) => {
+      if (d === 0) return `<span class="delta flat">flat</span>`;
+      const dir = d > 0 ? 'up' : 'down';
+      const colorClass = invertColor ? (dir === 'up' ? 'down' : 'up') : dir;
+      return `<span class="delta ${colorClass}">${dir === 'up' ? '↑' : '↓'} ${d > 0 ? '+' : ''}${d}${suffix}</span>`;
+    };
+    return `<div class="b-row ${selectedId === b.id ? 'selected' : ''}" onclick="openDetail('build','${b.id}')">
+      <div class="top">
+        <div class="tag-monospace ${b.isArchived ? 'archived' : ''}">${escapeHtml(b.tag)}</div>
+        <div class="branch-pill">${escapeHtml(b.branch)}</div>
+        ${b.isActive ? '<span class="active-mark"><span class="dot"></span>ACTIVE</span>' : ''}
+        ${b.isArchived ? '<span style="font-size:11px;color:var(--text-dim)">archived</span>' : ''}
+        <div class="meta">cut ${escapeHtml(b.cutAt)} · by ${escapeHtml(b.cutBy)}</div>
+      </div>
+      <div class="coverage-row">
+        <span class="coverage-label ${b.isActive ? 'active' : 'dim'}">${b.coverage.percent}% of traffic${b.coverage.note ? ` — ${escapeHtml(b.coverage.note)}` : ''}</span>
+        ${coverageBarHtml}
+        <span class="coverage-label dim">${b.coverage.note && !b.isActive ? '' : `${b.coverage.userCount} / ${b.coverage.totalUsers} users`}</span>
+      </div>
+      ${!b.isArchived ? `<div class="b-stats">
+        <span><span class="k">Runs (1h)</span><strong>${b.liveStats.runsLastHour.toLocaleString()}</strong></span>
+        <span><span class="k">Errors</span><strong>${b.liveStats.errors}</strong> ${dlt(b.liveStats.errorsDelta, ' vs prev', true)}</span>
+        <span><span class="k">Avg quality</span><strong>${b.liveStats.avgQuality.toFixed(2)}</strong> ${b.liveStats.qualityDelta !== 0 ? dlt(b.liveStats.qualityDelta) : '<span class="delta flat">flat</span>'}</span>
+        <span><span class="k">Incidents</span><strong>${b.liveStats.openIncidentCount} open</strong></span>
+      </div>` : ''}
+    </div>`;
+  }).join('');
+
+  root.innerHTML = `
+    <div class="page-head">
+      <h2>Builds</h2>
+      ${helpIcon('Build')}
+      <span class="sub">Immutable, published app snapshots. Each shows what it serves and how it compares.</span>
+      <span class="meta">${all.length} builds · ${branches.length} branches</span>
+    </div>
+    <div class="stage-tabs">
+      <button class="stage-tab ${f.branch === 'all' ? 'active' : ''}" onclick="STATE.filters.builds.branch='all'; renderBuilds(document.getElementById('page'))">All <span class="count">${branchCounts.all}</span></button>
+      ${branches.map(br => `<button class="stage-tab ${f.branch === br ? 'active' : ''}" onclick="STATE.filters.builds.branch='${br}'; renderBuilds(document.getElementById('page'))">${escapeHtml(br)} <span class="count">${branchCounts[br]}</span></button>`).join('')}
+    </div>
+    <div style="padding:10px 24px;background:var(--bg);border-bottom:1px solid var(--border);display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+      <div class="pickr"><span>Status</span><span class="v">Any</span></div>
+      <div class="pickr"><span>Date</span><span class="v">Last 30d</span></div>
+      <div class="pickr"><span>Author</span><span class="v">Anyone</span></div>
+      <span style="margin-left:auto;color:var(--text-dim);font-size:11px;">Sort: <strong style="color:var(--text)">Newest first</strong></span>
+    </div>
+    <div style="background:var(--bg);">${rowsHtml}</div>
+  `;
+}
+function renderConfiguration(root) {
+  const policy = MOCK_DATA.policies.build;
+  const params = MOCK_DATA.policies.param;
+  const resolver = STATE.configResolver;
+
+  const buildOverridesHtml = policy.overrides.map(o => `
+    <tr>
+      <td><span class="target-badge ${o.target.type === 'USER' ? 'user' : 'role'}">${o.target.type}</span> <code style="font-family:'JetBrains Mono',monospace;font-size:11px;margin-left:4px;">${escapeHtml(o.target.value)}</code></td>
+      <td>${escapeHtml(o.policy.type)} → <code style="font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--bg-alt);border:1px solid var(--border);padding:1px 5px;border-radius:4px;">${escapeHtml(o.policy.resolvesToTag)}</code></td>
+      <td style="font-family:'JetBrains Mono',monospace;color:var(--text-muted);font-size:11px;text-align:center;width:50px;">${o.priority}</td>
+      <td><button class="toggle ${o.enabled ? '' : 'off'}" onclick="toggleOverride('build','${o.id}')"><span class="switch"></span>${o.enabled ? 'On' : 'Off'}</button></td>
+      <td style="text-align:right"><a style="color:var(--blue-500);cursor:pointer;font-size:11px;font-weight:600;margin-right:8px">Edit</a><a class="btn danger" style="color:var(--red-700);cursor:pointer;font-size:11px;font-weight:600;background:none;border:none;padding:0;">Delete</a></td>
+    </tr>
+  `).join('');
+
+  const paramOverridesHtml = params.overrides.map(o => `
+    <tr>
+      <td><span class="target-badge ${o.target.type === 'USER' ? 'user' : 'role'}">${o.target.type}</span> <code style="font-family:'JetBrains Mono',monospace;font-size:11px;margin-left:4px;">${escapeHtml(o.target.value)}</code></td>
+      <td>${Object.entries(o.params).map(([k, v]) => `<code style="font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--bg-alt);border:1px solid var(--border);padding:1px 5px;border-radius:4px;margin-right:4px;">${escapeHtml(k)}=${escapeHtml(String(v))}</code>`).join('')}</td>
+      <td style="font-family:'JetBrains Mono',monospace;color:var(--text-muted);font-size:11px;text-align:center;width:50px;">${o.priority}</td>
+      <td><button class="toggle ${o.enabled ? '' : 'off'}" onclick="toggleOverride('param','${o.id}')"><span class="switch"></span>${o.enabled ? 'On' : 'Off'}</button></td>
+      <td style="text-align:right"><a style="color:var(--blue-500);cursor:pointer;font-size:11px;font-weight:600;margin-right:8px">Edit</a><a style="color:var(--red-700);cursor:pointer;font-size:11px;font-weight:600;">Delete</a></td>
+    </tr>
+  `).join('');
+
+  const rolesChipsHtml = resolver.roles.map(r => `
+    <span class="role-chip">${escapeHtml(r)} <button class="x" onclick="removeRole('${escapeHtml(r)}')">×</button></span>
+  `).join('') + `<input style="display:inline-block;width:130px;border:none;outline:none;font:inherit;background:transparent;padding:0 4px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text);" placeholder="+ add role" onkeydown="if(event.key==='Enter'||event.key===',') { addRole(this.value.replace(/,/g, '').trim()); this.value=''; event.preventDefault(); }">`;
+
+  let resolvedHtml = '<div class="resolved-card"><h4>Enter a username and roles, then click Resolve.</h4></div>';
+  if (resolver.result) {
+    const r = resolver.result;
+    resolvedHtml = `
+      <div class="resolved-card">
+        <h4>Build version</h4>
+        <div class="resolved-row">
+          <div>
+            <div class="key">Resolves to</div>
+            <div class="val"><code>${escapeHtml(r.build.resolvesToTag)}</code></div>
+            <div class="src ${r.build.source === 'override' ? 'override' : ''}">${r.build.source === 'override' ? `via ${escapeHtml(r.build.via)} override · ${escapeHtml(r.build.viaTarget)} · priority ${r.build.viaPriority}` : 'from default'}</div>
+          </div>
+        </div>
+        <div style="margin-top:8px;">
+          <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.04em;font-weight:700;margin-bottom:4px;">Resolution path</div>
+          ${r.build.resolutionPath.map(p => `
+            <div class="path-step ${p.matched ? 'matched' : 'skipped'}">
+              <span class="dot"></span>
+              <div class="label">${escapeHtml(p.description)}</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+
+      <div class="resolved-card">
+        <h4>Config parameters</h4>
+        ${Object.entries(r.params).map(([k, info]) => `
+          <div class="resolved-row">
+            <div class="key">${escapeHtml(k)}</div>
+            <div>
+              <div class="val">${escapeHtml(String(info.value))}</div>
+              <div class="src ${info.source === 'override' ? 'override' : ''}">${info.source === 'override' ? `via ${escapeHtml(info.via)} override · ${escapeHtml(info.viaTarget)} · priority ${info.viaPriority}` : 'from default'}${info.note ? `<span class="src warn"> · ${escapeHtml(info.note)}</span>` : ''}</div>
+            </div>
+          </div>
+        `).join('')}
+      </div>`;
+  }
+
+  root.innerHTML = `
+    <div class="page-head">
+      <h2>Configuration</h2>
+      ${helpIcon('Active policy')}
+      <span class="sub">Two axes a runtime caller can be configured on — what build they run, and what params it uses.</span>
+      <button class="btn ghost" style="margin-left:auto">+ New override</button>
+    </div>
+    <div class="cfg-shell">
+      <div>
+        ${docBanner('How configuration works.', 'Every caller has a default for each axis. Overrides match users or roles and replace the default for those callers. Higher-priority overrides win when multiple match. The resolver on the right shows the effective values for a specific user.', 'cfg-howto')}
+
+        <div class="axis-section">
+          <div class="axis-header">
+            <div class="axis-icon build">◆</div>
+            <h3>Build version</h3>
+            <span class="sub">${policy.overrides.length} overrides · ${policy.default.resolvesToTag} on default</span>
+          </div>
+
+          <div class="default-card">
+            <div>
+              <div class="lbl">Default policy</div>
+              <div class="val">
+                <code>${escapeHtml(policy.default.type)}</code> →
+                <code>${escapeHtml(policy.default.branchId || policy.default.buildId)}</code>
+                · currently resolves to <code>${escapeHtml(policy.default.resolvesToTag)}</code>
+              </div>
+            </div>
+            <div class="right"><button class="btn ghost">Edit default</button></div>
+          </div>
+
+          <div class="override-section">
+            <div class="head"><h4>Overrides</h4><span class="count">${policy.overrides.filter(o => o.enabled).length} active</span></div>
+            <table class="list-table" style="border:1px solid var(--border);border-radius:6px;overflow:hidden;background:var(--bg);">
+              <thead><tr>
+                <th>Target</th><th>Resolves to</th><th style="text-align:center;width:60px">Priority</th><th>Enabled</th><th></th>
+              </tr></thead>
+              <tbody>${buildOverridesHtml}</tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="axis-section">
+          <div class="axis-header">
+            <div class="axis-icon params">⚙</div>
+            <h3>Config parameters</h3>
+            <span class="sub">${Object.keys(params.defaults).length} params · ${params.overrides.length} overrides</span>
+          </div>
+
+          <div class="default-card params">
+            <div>
+              <div class="lbl">Defaults</div>
+              <div class="val">
+                ${Object.entries(params.defaults).map(([k, v]) => `<code>${escapeHtml(k)}=${escapeHtml(String(v))}</code>`).join('')}
+              </div>
+            </div>
+            <div class="right"><button class="btn ghost">Edit defaults</button></div>
+          </div>
+
+          <div class="override-section">
+            <div class="head"><h4>Overrides</h4><span class="count">${params.overrides.filter(o => o.enabled).length} active</span></div>
+            <table class="list-table" style="border:1px solid var(--border);border-radius:6px;overflow:hidden;background:var(--bg);">
+              <thead><tr>
+                <th>Target</th><th>Param overrides</th><th style="text-align:center;width:60px">Priority</th><th>Enabled</th><th></th>
+              </tr></thead>
+              <tbody>${paramOverridesHtml}</tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <aside class="resolver">
+        <h3>Test as user</h3>
+        <p class="sub">See exactly what a caller would get for both axes — and why.</p>
+        <div class="field">
+          <label>Username</label>
+          <input type="text" id="resolverUsername" value="${escapeHtml(resolver.username)}" oninput="STATE.configResolver.username = this.value">
+        </div>
+        <div class="field">
+          <label>Roles</label>
+          <div style="border:1px solid var(--border-strong);border-radius:6px;padding:6px 8px;background:white;min-height:34px;">${rolesChipsHtml}</div>
+        </div>
+        <button class="btn primary" style="width:100%;margin-top:4px;" onclick="resolveConfig()">Resolve →</button>
+        ${resolvedHtml}
+      </aside>
+    </div>
+  `;
+}
+
+function addRole(role) {
+  if (!role) return;
+  if (!STATE.configResolver.roles.includes(role)) STATE.configResolver.roles.push(role);
+  renderConfiguration(document.getElementById('page'));
+}
+function removeRole(role) {
+  STATE.configResolver.roles = STATE.configResolver.roles.filter(r => r !== role);
+  renderConfiguration(document.getElementById('page'));
+}
+function toggleOverride(axis, id) {
+  const list = axis === 'build' ? MOCK_DATA.policies.build.overrides : MOCK_DATA.policies.param.overrides;
+  const o = list.find(x => x.id === id);
+  if (o) o.enabled = !o.enabled;
+  // Re-resolve if there was a previous result
+  if (STATE.configResolver.result) resolveConfig();
+  else renderConfiguration(document.getElementById('page'));
+}
+
+function resolveConfig() {
+  const { username, roles } = STATE.configResolver;
+  const policy = MOCK_DATA.policies.build;
+  const params = MOCK_DATA.policies.param;
+
+  // Build axis resolution
+  const overridesSorted = policy.overrides.slice().sort((a, b) => b.priority - a.priority);
+  const buildPath = [];
+  let buildMatch = null;
+  for (const o of overridesSorted) {
+    const matchesTarget = o.target.type === 'USER' ? o.target.value === username : roles.includes(o.target.value);
+    if (!o.enabled) {
+      buildPath.push({ description: `${o.target.type} override ${o.target.value} · priority ${o.priority} — disabled`, matched: false });
+      continue;
+    }
+    if (matchesTarget) {
+      if (buildMatch === null) {
+        buildPath.push({ description: `${o.target.type} override ${o.target.value} matched · priority ${o.priority}`, matched: true });
+        buildMatch = o;
+      } else {
+        buildPath.push({ description: `${o.target.type} override ${o.target.value} priority ${o.priority} — lower than winning rule`, matched: false });
+      }
+    } else {
+      buildPath.push({ description: `${o.target.type} override ${o.target.value} priority ${o.priority} — does not match`, matched: false });
+    }
+  }
+  if (buildMatch) {
+    buildPath.push({ description: 'Default policy — not reached', matched: false });
+  } else {
+    buildPath.push({ description: `Default policy applied → ${policy.default.resolvesToTag}`, matched: true });
+  }
+  const buildResult = buildMatch
+    ? { resolvesToTag: buildMatch.policy.resolvesToTag, source: 'override', via: buildMatch.target.type, viaTarget: buildMatch.target.value, viaPriority: buildMatch.priority, resolutionPath: buildPath }
+    : { resolvesToTag: policy.default.resolvesToTag, source: 'default', resolutionPath: buildPath };
+
+  // Param axis resolution — per key
+  const paramOverridesSorted = params.overrides.slice().sort((a, b) => b.priority - a.priority);
+  const resolvedParams = {};
+  for (const [key, defaultValue] of Object.entries(params.defaults)) {
+    let winner = null;
+    let suppressedHigherEnabled = false;
+    let suppressedHigherDisabled = null;
+    for (const o of paramOverridesSorted) {
+      const matches = o.target.type === 'USER' ? o.target.value === username : roles.includes(o.target.value);
+      if (!matches) continue;
+      if (key in o.params) {
+        if (o.enabled && !winner) {
+          winner = o;
+        } else if (!o.enabled && !winner && !suppressedHigherDisabled) {
+          suppressedHigherDisabled = o;
+        }
+      }
+    }
+    if (winner) {
+      resolvedParams[key] = {
+        value: winner.params[key],
+        source: 'override',
+        via: winner.target.type,
+        viaTarget: winner.target.value,
+        viaPriority: winner.priority,
+        note: suppressedHigherDisabled ? `${suppressedHigherDisabled.target.value} override would also match but is OFF` : null,
+      };
+    } else {
+      resolvedParams[key] = {
+        value: defaultValue,
+        source: 'default',
+        note: suppressedHigherDisabled ? `${suppressedHigherDisabled.target.value} override would set ${suppressedHigherDisabled.params[key]} but is OFF` : null,
+      };
+    }
+  }
+
+  STATE.configResolver.result = { build: buildResult, params: resolvedParams };
+  renderConfiguration(document.getElementById('page'));
+}
+function renderLiveEvals(root) {
+  const wfId = STATE.liveEvals.workflowId;
+  const wf = MOCK_DATA.workflows.find(w => w.id === wfId) || MOCK_DATA.workflows[0];
+
+  root.innerHTML = `
+    <div class="page-head">
+      <h2>Live Evals</h2>
+      ${helpIcon('Live Evals')}
+      <span class="sub">Runtime observability for AI workflow quality, telemetry, and cost.</span>
+      <span class="meta">active build: <strong>${escapeHtml(wf.activeBuild)}</strong></span>
+    </div>
+    <div style="padding:10px 24px;background:var(--bg);border-bottom:1px solid var(--border);display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+      <span style="font-size:11px;color:var(--text-muted);margin-right:6px;">Workflow:</span>
+      ${MOCK_DATA.workflows.map(w => `<button class="chip ${w.id === wfId ? 'active' : ''}" onclick="STATE.liveEvals.workflowId='${w.id}'; renderLiveEvals(document.getElementById('page'))">${escapeHtml(w.name)}</button>`).join('')}
+    </div>
+    <div class="page-body">
+
+      <div class="le-tier">
+        <h4>Tier 1 — Telemetry <span class="pill-mini free">FREE</span></h4>
+        <div class="descr">Always on. Throughput, latency, cost, error rate.</div>
+        <div class="le-stats">
+          <div class="le-stat"><div class="k">Throughput</div><div class="v">${wf.telemetry.throughput.toLocaleString()}/h</div></div>
+          <div class="le-stat"><div class="k">p95 latency</div><div class="v">${wf.telemetry.p95}s</div></div>
+          <div class="le-stat"><div class="k">Cost / hr</div><div class="v">$${wf.telemetry.cost}</div></div>
+          <div class="le-stat"><div class="k">Error rate</div><div class="v">${wf.telemetry.errorRate}%</div></div>
+        </div>
+      </div>
+
+      <div class="le-tier">
+        <h4>Tier 2 — Workflow scorers <span class="pill-mini optin">OPT-IN</span></h4>
+        <div class="descr">Configured scorers attached to nodes. Crossing a threshold creates an AI quality incident.</div>
+        ${wf.scorers.length === 0 ? '<div style="font-size:11px;color:var(--text-dim);">No scorers bound to this workflow yet.</div>' :
+          wf.scorers.map(s => `<div class="le-scorer-row">
+            <span><strong>${escapeHtml(s.name)}</strong> · ${escapeHtml(s.node)}${s.breached ? ' <span style="color:var(--red-700);font-weight:600;font-size:10px;">BREACHED</span>' : ''}</span>
+            <span class="value ${s.breached ? 'bad' : ''}">${s.value.toFixed(2)}</span>
+            <span style="font-size:10px;color:var(--text-dim);">threshold ${s.threshold.toFixed(2)}</span>
+          </div>`).join('')}
+      </div>
+
+      <div class="le-tier">
+        <h4>Tier 3 — AI nodes <span class="pill-mini scope">PER NODE</span></h4>
+        <div class="descr">Each AI node in the workflow with its scorers and any open alerts.</div>
+        <div class="le-cards">
+          ${wf.nodes.map(n => `<div class="le-node">
+            <div class="nm">${escapeHtml(n.name)}</div>
+            <div class="ty">${escapeHtml(n.type)} · ${escapeHtml(n.desc)}</div>
+            <div class="scrs">${n.scorers.length ? n.scorers.join(' · ') : '—'}${n.alertCount ? ` · <span class="alert">${n.alertCount} alert</span>` : ''}</div>
+          </div>`).join('')}
+        </div>
+      </div>
+
+    </div>
+  `;
+}
+function renderTriggers(root) {
+  const tab = STATE.filters.triggers.tab;
+  const triggers = MOCK_DATA.triggers;
+  const fires = MOCK_DATA.triggerFires;
+  const counts = {
+    scheduled: triggers.filter(t => t.type === 'cron').length,
+    external: triggers.filter(t => t.type !== 'cron').length,
+    'recent-fires': fires.length,
+    'failed-fires': fires.filter(f => f.outcome === 'failed').length,
+  };
+
+  const tabLabel = { scheduled: 'Scheduled', external: 'External', 'recent-fires': 'Recent fires', 'failed-fires': 'Failed fires' };
+
+  let bodyHtml = '';
+  if (tab === 'scheduled' || tab === 'external') {
+    const rows = tab === 'scheduled' ? triggers.filter(t => t.type === 'cron') : triggers.filter(t => t.type !== 'cron');
+    bodyHtml = `
+      <table class="list-table">
+        <thead><tr>
+          <th>Name</th><th>Type</th><th>Schedule</th><th>Spawns</th><th>Last fire</th><th>Status</th>
+        </tr></thead>
+        <tbody>
+          ${rows.map(t => `<tr class="${t.status === 'erroring' ? 'anchor' : ''}" onclick="openDetail('trigger','${t.id}')">
+            <td><strong>${escapeHtml(t.name)}</strong></td>
+            <td style="text-transform:capitalize">${escapeHtml(t.type)}</td>
+            <td class="mono">${escapeHtml(t.schedule)}</td>
+            <td><span class="pill">${escapeHtml(t.spawns)}</span></td>
+            <td style="color:var(--text-muted);font-size:11px;">${escapeHtml(t.lastFire)}</td>
+            <td>${triggerStatusPill(t)}<button class="btn ghost" style="margin-left:8px;padding:3px 8px;font-size:11px;" onclick="event.stopPropagation(); toggleTrigger('${t.id}')">${t.status === 'paused' ? 'Resume' : 'Pause'}</button></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>`;
+  } else if (tab === 'recent-fires' || tab === 'failed-fires') {
+    const rows = tab === 'recent-fires' ? fires : fires.filter(f => f.outcome === 'failed');
+    bodyHtml = `
+      <table class="list-table">
+        <thead><tr>
+          <th>Trigger</th><th>Type</th><th>Fired at</th><th>Outcome</th><th>${tab === 'failed-fires' ? 'Failure reason' : 'Spawned'}</th>
+        </tr></thead>
+        <tbody>
+          ${rows.map(f => `<tr onclick="openDetail('trigger','${f.triggerId}')">
+            <td><strong>${escapeHtml(f.triggerName)}</strong></td>
+            <td style="text-transform:capitalize">${escapeHtml(f.triggerType)}</td>
+            <td style="color:var(--text-muted);font-size:11px;">${escapeHtml(f.firedAt)}</td>
+            <td>${f.outcome === 'success' ? '<span style="color:var(--green-700);font-weight:600;font-size:11px;">Success</span>' : '<span style="color:var(--red-700);font-weight:600;font-size:11px;">Failed</span>'}</td>
+            <td>${f.outcome === 'success' ? (f.spawnedInstanceId ? `<a class="mono" style="color:var(--blue-500);cursor:pointer" onclick="event.stopPropagation(); openDetail('instance','${f.spawnedInstanceId}')">${escapeHtml(f.spawnedInstanceId)}</a>` : '<span style="color:var(--text-dim)">—</span>') : `<span style="color:var(--red-700);font-size:11px">${escapeHtml(f.failureReason)}</span>`}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>`;
+  }
+
+  root.innerHTML = `
+    <div class="page-head">
+      <h2>Schedules & Triggers</h2>
+      ${helpIcon('Trigger')}
+      <span class="sub">Scheduled processes + external triggers + their failure history.</span>
+      <span class="meta">${counts.scheduled} scheduled · ${counts.external} external · ${counts['failed-fires']} failed</span>
+    </div>
+    <div class="stage-tabs">
+      ${['scheduled','external','recent-fires','failed-fires'].map(t => `
+        <button class="stage-tab ${tab === t ? 'active' : ''}" onclick="STATE.filters.triggers.tab='${t}'; renderTriggers(document.getElementById('page'))">
+          ${tabLabel[t]} <span class="count ${t === 'failed-fires' && counts[t] > 0 ? 'alert' : ''}">${counts[t]}</span>
+        </button>`).join('')}
+    </div>
+    ${docBanner("What's combined here.", "Old Scheduled Processes + old Manage Triggers + the trigger-failure subset of Failed Triggers. Mid-execution / Pre-start failures live in Incidents. The 'Failed fires' tab here is just for fires that didn't reach a process start.", 'triggers-howto')}
+    <div style="background:var(--bg);">${bodyHtml}</div>
+  `;
+}
+
+function triggerStatusPill(t) {
+  if (t.status === 'active') return '<span class="state-pill state-running"><span class="dot"></span>Active</span>';
+  if (t.status === 'paused') return '<span class="state-pill state-completed"><span class="dot"></span>Paused</span>';
+  if (t.status === 'erroring') return `<span class="state-pill state-failed"><span class="dot"></span>${t.errorCount24h} failure${t.errorCount24h === 1 ? '' : 's'}</span>`;
+  return `<span class="state-pill state-completed"><span class="dot"></span>${escapeHtml(t.status)}</span>`;
+}
+function toggleTrigger(id) {
+  const t = MOCK_DATA.triggers.find(x => x.id === id);
+  if (!t) return;
+  if (t.status === 'active') t.status = 'paused';
+  else if (t.status === 'paused') t.status = 'active';
+  renderTriggers(document.getElementById('page'));
+}
+function renderTasks(root) {
+  const f = STATE.filters.tasks;
+  let rows = MOCK_DATA.tasks.slice();
+  if (f.status === 'pending') rows = rows.filter(t => !t.completed);
+  if (f.status === 'completed') rows = rows.filter(t => t.completed);
+  if (f.assignee === 'me') rows = rows.filter(t => t.assignee && t.assignee.userId === 'me');
+  if (f.assignee === 'unassigned') rows = rows.filter(t => !t.assignee);
+
+  const pendingCount = MOCK_DATA.tasks.filter(t => !t.completed).length;
+
+  const rowsHtml = rows.map(t => {
+    const avatar = t.assignee ? `<div class="who" style="${t.assignee.userId === 'me' ? '' : 'background:var(--purple-500)'}">${escapeHtml(t.assignee.displayName)}</div>` : '<div class="who unas">?</div>';
+    const dueClass = t.isOverdue ? 'overdue' : (t.dueAt && t.dueAt.includes('in 4h') ? 'soon' : '');
+    const action = t.completed ? '<span style="font-size:11px;color:var(--text-dim)">Done</span>'
+      : !t.assignee ? `<button class="btn primary" onclick="event.stopPropagation(); claimTask('${t.id}')">Claim</button>`
+      : (t.assignee.userId === 'me' ? `<button class="btn primary">Open</button>` : `<button class="btn ghost">View</button>`);
+    return `<div class="task-row" onclick="openDetail('task','${t.id}')">
+      ${avatar}
+      <div>
+        <div class="title">${escapeHtml(t.title)}</div>
+        <div class="src">from <a class="mono" style="color:var(--blue-500);cursor:pointer" onclick="event.stopPropagation(); openDetail('instance','${t.source.instanceId}')">${escapeHtml(t.source.instanceId)}</a> · ${escapeHtml(t.source.definitionName)} · ${escapeHtml(t.source.atStep)}</div>
+      </div>
+      <div class="due ${dueClass}">${escapeHtml(t.dueAt)}</div>
+      ${action}
+    </div>`;
+  }).join('');
+
+  root.innerHTML = `
+    <div class="page-head">
+      <h2>Tasks</h2>
+      ${helpIcon('Task')}
+      <span class="sub">User-task inbox. Tasks are created by Process Instances reaching a human-task node.</span>
+      <span class="meta">${pendingCount} pending</span>
+    </div>
+    <div style="padding:10px 24px;background:var(--bg);border-bottom:1px solid var(--border);display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+      <div class="pickr ${f.assignee !== 'anyone' ? 'active' : ''}" onclick="cycleFilter('tasks','assignee', ['anyone','me','unassigned'])">Assignee <span class="v">${f.assignee.charAt(0).toUpperCase() + f.assignee.slice(1)}</span></div>
+      <div class="pickr ${f.status !== 'pending' ? 'active' : ''}" onclick="cycleFilter('tasks','status', ['pending','completed','all'])">Status <span class="v">${f.status.charAt(0).toUpperCase() + f.status.slice(1)}</span></div>
+      <div class="pickr"><span>Due</span><span class="v">All</span></div>
+    </div>
+    <div style="background:var(--bg-alt);">
+      ${rows.length === 0 ? '<div class="empty"><h4>No tasks match these filters</h4><p>Clear filters or try a different assignee.</p></div>' : rowsHtml}
+    </div>
+  `;
+}
+
+function claimTask(id) {
+  const t = MOCK_DATA.tasks.find(x => x.id === id);
+  if (!t) return;
+  t.assignee = { userId: 'me', displayName: 'AB' };
+  renderTasks(document.getElementById('page'));
+}
+function cycleFilter(page, key, options) {
+  const cur = STATE.filters[page][key];
+  const i = options.indexOf(cur);
+  STATE.filters[page][key] = options[(i + 1) % options.length];
+  ROUTES[page](document.getElementById('page'));
+}
+
+// ============================================================
+//  DETAIL PANEL
+// ============================================================
+function openDetail(kind, id) {
+  STATE.detail = { open: true, kind, id, tab: 0 };
+  renderDetail();
+  document.getElementById('detailPanel').classList.add('open');
+  document.getElementById('detailOverlay').classList.add('open');
+}
+function closeDetail() {
+  STATE.detail = { open: false, kind: null, id: null, tab: 0 };
+  document.getElementById('detailPanel').classList.remove('open');
+  document.getElementById('detailOverlay').classList.remove('open');
+}
+document.getElementById('detailOverlay').addEventListener('click', closeDetail);
+
+function renderDetail() {
+  // Initial placeholder until specific detail renderers are added in later tasks
+  const { kind, id, tab } = STATE.detail;
+  let head = '', tabs = '', body = '';
+
+  if (kind === 'instance') {
+    const it = MOCK_DATA.instances.find(x => x.id === id);
+    if (it) [head, tabs, body] = renderInstanceDetail(it, tab);
+  } else if (kind === 'incident') {
+    const it = MOCK_DATA.incidents.find(x => x.id === id);
+    if (it) [head, tabs, body] = renderIncidentDetail(it, tab);
+  } else if (kind === 'build') {
+    const it = MOCK_DATA.builds.find(x => x.id === id);
+    if (it) [head, tabs, body] = renderBuildDetail(it, tab);
+  } else if (kind === 'trigger') {
+    const it = MOCK_DATA.triggers.find(x => x.id === id);
+    if (it) [head, tabs, body] = renderTriggerDetail(it, tab);
+  } else if (kind === 'task') {
+    const it = MOCK_DATA.tasks.find(x => x.id === id);
+    if (it) [head, tabs, body] = renderTaskDetail(it, tab);
+  }
+
+  if (!head) {
+    head = `<div class="topline"><span class="crumb">Detail</span><button class="x" onclick="closeDetail()">×</button></div><h3>Not found</h3><div class="sub">Entity ${kind}:${id} not in the prototype data.</div>`;
+    tabs = '';
+    body = '<div class="empty"><h4>Coming soon</h4><p>This entity type isn\'t wired in this prototype yet.</p></div>';
+  }
+  document.getElementById('detailHead').innerHTML = head;
+  document.getElementById('detailTabs').innerHTML = tabs;
+  document.getElementById('detailBody').innerHTML = body;
+}
+
+function renderInstanceDetail(it, tabIdx) {
+  // Tab structure
+  const incidentsForThis = MOCK_DATA.incidents.filter(i => i.sourceEntity.kind === 'instance' && i.sourceEntity.id === it.id);
+  const baseTabs = ['Overview', 'Variables', 'Activity tree', 'AI runs'];
+  const tabs = baseTabs.slice();
+  if (incidentsForThis.length > 0) tabs.push('Incidents');
+  tabs.push('Audit');
+
+  const head = `
+    <div class="topline">
+      <span class="crumb">Instance details</span>
+      <span style="color:var(--border-strong)">/</span>
+      <span style="font-family:'JetBrains Mono',monospace">${escapeHtml(it.id)}</span>
+      <button class="x" onclick="closeDetail()">×</button>
+    </div>
+    <h3>${escapeHtml(it.definitionName)}</h3>
+    <div class="sub">${it.type === 'process' ? 'Process instance' : 'UI Flow session'} · started ${escapeHtml(it.startedAt)}${it.user ? ` · user <code style="font-family:'JetBrains Mono',monospace;font-size:11px">${escapeHtml(it.user)}</code>` : ''}</div>
+    <div class="meta-row">
+      ${statePill(it.status, it.rawStatus, it.rawDesc)}
+      ${buildChip(it.buildTag)}
+      <span style="color:var(--text-dim);font-size:11px">${escapeHtml(it.atStep)}</span>
+    </div>`;
+
+  const tabsHtml = tabs.map((t, i) => {
+    let countHtml = '';
+    if (t === 'Incidents') countHtml = `<span class="count alert">${incidentsForThis.length}</span>`;
+    if (t === 'Variables') countHtml = `<span class="count">${Object.keys(it.variables || {}).length}</span>`;
+    if (t === 'Activity tree') {
+      const cnt = it.type === 'uiflow' ? (MOCK_DATA.instances.filter(x => x.spawnedBy && x.spawnedBy.id === it.id).length) : 1;
+      countHtml = `<span class="count">${cnt}</span>`;
+    }
+    if (t === 'AI runs') countHtml = `<span class="count">3</span>`;
+    return `<button class="tab ${i === tabIdx ? 'active' : ''}" onclick="STATE.detail.tab = ${i}; renderDetail();">${t}${countHtml}</button>`;
+  }).join('');
+
+  const active = tabs[tabIdx];
+  let body = '';
+  if (active === 'Overview') {
+    const spawnedProcs = MOCK_DATA.instances.filter(x => x.spawnedBy && x.spawnedBy.id === it.id);
+    body = `
+      ${docBanner('What an Instance overview shows.', 'A snapshot of identity, timing, build context, and where the instance came from / spawned.', `inst-overview-${it.type}`)}
+      <div class="panel-block">
+        ${panelHeading('Status', 'Normalized status')}
+        <div class="kv">
+          <span>Started</span><span>${escapeHtml(it.startedAt)}</span>
+          <span>Updated</span><span>just now</span>
+          <span>Definition</span><span>${escapeHtml(it.definitionName)}</span>
+          <span>Build at start</span><span>${escapeHtml(it.buildTag)} (committed)</span>
+          <span>Spawned by</span><span>${it.spawnedBy ? `<a style="color:var(--blue-500);cursor:pointer" onclick="openDetail('instance','${it.spawnedBy.id}')">${escapeHtml(it.spawnedBy.id)}</a>` : '<span style="color:var(--text-muted)">—</span>'}</span>
+          <span>Spawned</span><span>${spawnedProcs.length ? spawnedProcs.map(p => `<a style="color:var(--blue-500);cursor:pointer" onclick="openDetail('instance','${p.id}')">${escapeHtml(p.id)}</a>`).join(', ') : '<span style="color:var(--text-muted)">—</span>'}</span>
+        </div>
+      </div>
+    `;
+  } else if (active === 'Variables') {
+    body = `<div class="panel-block">
+      ${panelHeading('Variables', null)}
+      <table style="width:100%;font-size:12px;">
+        ${Object.entries(it.variables || {}).map(([k, v]) => `<tr>
+          <td style="padding:6px 0;color:var(--text-muted);width:140px;font-family:'JetBrains Mono',monospace;font-size:11px;">${escapeHtml(k)}</td>
+          <td style="padding:6px 0;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:11px;">${escapeHtml(String(v))}</td>
+        </tr>`).join('')}
+      </table>
+    </div>`;
+  } else if (active === 'Activity tree') {
+    body = renderActivityTree(it);
+  } else if (active === 'AI runs') {
+    body = renderAiRunsSlice(it);
+  } else if (active === 'Incidents') {
+    body = `<div class="panel-block">
+      ${panelHeading('Active incidents', 'Incident')}
+      ${incidentsForThis.map(inc => `
+        <div class="related-card" onclick="openDetail('incident','${inc.id}')">
+          <div class="ic" style="background:var(--red-500)">!</div>
+          <div class="name">${escapeHtml(inc.title)}<small>${escapeHtml(inc.id)} · ${escapeHtml(inc.severity)}</small></div>
+          <div class="arr">→</div>
+        </div>`).join('')}
+    </div>`;
+  } else if (active === 'Audit') {
+    body = `<div class="panel-block">
+      ${panelHeading('Audit timeline', null)}
+      <div class="timeline">
+        <div class="tl-row"><div class="when">${escapeHtml(it.startedAt)}</div><div class="dot"></div><div class="lbl">Instance <strong>started</strong> on build ${escapeHtml(it.buildTag)}</div></div>
+        ${it.status === 'failed' ? `<div class="tl-row bad"><div class="when">recently</div><div class="dot"></div><div class="lbl"><strong>Execution failed</strong> at ${escapeHtml(it.atStep)}</div></div>` : ''}
+        ${it.status === 'completed' ? `<div class="tl-row"><div class="when">earlier</div><div class="dot"></div><div class="lbl">Instance <strong>completed</strong></div></div>` : ''}
+      </div>
+    </div>`;
+  }
+
+  return [head, tabsHtml, body];
+}
+
+function renderActivityTree(it) {
+  if (it.type === 'uiflow') {
+    const spawned = MOCK_DATA.instances.filter(x => x.spawnedBy && x.spawnedBy.id === it.id);
+    return `${docBanner("What's an Activity tree?", "For UI Flow sessions, this lists the process instances the session spawned. For processes, it shows active tokens and subprocesses. Same idea, different content.", 'inst-activity-tree')}
+      <div class="panel-block">
+        ${panelHeading('Activity tree', 'UI Flow Session')}
+        <div class="tree-node">
+          <span style="color:var(--purple-500)">◆</span>
+          <span class="lbl"><strong>${escapeHtml(it.definitionName)}</strong> · ${escapeHtml(it.atStep)}</span>
+          <span class="pos">${it.status}</span>
+        </div>
+        ${spawned.map(s => `
+          <div class="tree-child">
+            <div class="tree-node ${s.status === 'failed' ? 'bad' : ''}">
+              <span style="color:var(--green-500)">▸</span>
+              <span class="lbl"><strong>${escapeHtml(s.definitionName)}</strong> · ${escapeHtml(s.id)}</span>
+              <span class="pos">${s.status}${s.activeIncidentCount ? ` · ${s.activeIncidentCount} incidents` : ''}</span>
+            </div>
+          </div>`).join('') || '<div style="font-size:11px;color:var(--text-dim);padding:8px 10px;">No spawned processes yet.</div>'}
+      </div>`;
+  } else {
+    // Process: tokens + subprocesses
+    return `${docBanner("What's an Activity tree?", "For processes, this shows active tokens (where execution pointers are right now) and any spawned sub-processes.", 'inst-activity-tree-p')}
+      <div class="panel-block">
+        ${panelHeading('Active tokens', 'Token')}
+        <div class="tree-node ${it.status === 'failed' ? 'bad' : ''}">
+          <span style="color:var(--green-500)">▸</span>
+          <span class="lbl"><strong>${escapeHtml(it.definitionName)}</strong> · ${escapeHtml(it.atStep)}</span>
+          <span class="pos">${it.status}${it.activeIncidentCount ? ` · ${it.activeIncidentCount} incidents` : ''}</span>
+        </div>
+      </div>
+      <div class="panel-block">
+        ${panelHeading('Subprocesses', null)}
+        <div style="font-size:11px;color:var(--text-dim);padding:8px 10px;">No subprocesses for this instance.</div>
+      </div>`;
+  }
+}
+
+function renderAiRunsSlice(it) {
+  // Embedded Live Evals slice
+  const sampleRuns = [
+    { name: 'Document classifier', sub: 'passport_front.jpg · 2.1s', scorer: 'coherence 0.91', bad: false, when: '2m ago' },
+    { name: 'Reasoner', sub: 'consent flow · 1.4s', scorer: 'coherence ▼ 0.68', bad: true, when: '2m ago' },
+    { name: 'Embedding', sub: 'user profile · 0.3s', scorer: '—', bad: false, when: '1m ago' },
+  ];
+  return `<div class="panel-block" style="padding:12px;">
+    ${panelHeading('AI runs', 'Live Evals')}
+    <div class="le-slice">
+      <div class="head">
+        <span>Embedded from Live Evals — 3 runs scored</span>
+        <a onclick="location.hash='#/live-evals'">Open in Live Evals →</a>
+      </div>
+      ${sampleRuns.map(r => `
+        <div class="le-row">
+          <div class="icon">🜔</div>
+          <div class="name">${escapeHtml(r.name)}<small>${escapeHtml(r.sub)}</small></div>
+          <div class="scorer ${r.bad ? 'bad' : ''}">${escapeHtml(r.scorer)}</div>
+          <div class="when">${escapeHtml(r.when)}</div>
+        </div>`).join('')}
+    </div>
+  </div>`;
+}
+
+// Doc banner with sessionStorage-backed dismissal
+function docBanner(title, body, id) {
+  if (STATE.dismissedBanners.has(id)) return '';
+  return `<div class="doc-banner" data-banner-id="${id}">
+    <span>ℹ</span>
+    <div><b>${escapeHtml(title)}</b> ${escapeHtml(body)}</div>
+    <button class="x" onclick="dismissBanner('${id}'); this.parentElement.remove();">×</button>
+  </div>`;
+}
+function dismissBanner(id) {
+  STATE.dismissedBanners.add(id);
+  sessionStorage.setItem('dismissedBanners', JSON.stringify([...STATE.dismissedBanners]));
+}
+function renderIncidentDetail(it, tabIdx) {
+  const hasStackTrace = !!it.stackTrace;
+  const tabs = ['Context'];
+  if (hasStackTrace) tabs.push('Stack trace');
+  tabs.push('Timeline');
+  tabs.push('Similar');
+
+  const stageLabel = { 'pre-start': 'Pre-start', 'trigger': 'Trigger', 'mid-execution': 'Mid-execution', 'ai-quality': 'AI quality' };
+  const sevLabel = { critical: 'Critical', high: 'High', medium: 'Medium', low: 'Low' };
+
+  const head = `
+    <div class="topline">
+      <span class="crumb">Incident</span>
+      <span style="color:var(--border-strong)">/</span>
+      <span style="font-family:'JetBrains Mono',monospace">${escapeHtml(it.id)}</span>
+      <button class="x" onclick="closeDetail()">×</button>
+    </div>
+    <h3>${escapeHtml(it.title)}</h3>
+    <div class="sub">${escapeHtml(stageLabel[it.stage])} · raised ${escapeHtml(it.when)}${it.rootCause.recurrence > 1 ? ` · ${it.rootCause.recurrence} occurrences` : ''}</div>
+    <div class="meta-row">
+      <span class="inc-status ${it.status}"><span class="dot"></span>${it.status === 'ack' ? 'Ack' : it.status.charAt(0).toUpperCase() + it.status.slice(1)}</span>
+      ${buildChip(it.buildTag)}
+      <span style="color:var(--text-dim);font-size:11px">Severity: ${sevLabel[it.severity]}</span>
+    </div>
+    <div class="actions">
+      ${it.status === 'open' ? `<button class="btn primary" onclick="mutateIncident('${it.id}','ack')">Acknowledge</button>` : ''}
+      ${it.status !== 'resolved' ? `<button class="btn ghost" onclick="mutateIncident('${it.id}','assign')">Assign to me</button>` : ''}
+      ${it.status !== 'resolved' ? `<button class="btn ghost" onclick="mutateIncident('${it.id}','resolved')">Resolve</button>` : ''}
+    </div>`;
+
+  const tabsHtml = tabs.map((t, i) => `<button class="tab ${i === tabIdx ? 'active' : ''}" onclick="STATE.detail.tab = ${i}; renderDetail();">${t}</button>`).join('');
+
+  const active = tabs[tabIdx];
+  let body = '';
+  if (active === 'Context') {
+    body = `
+      ${docBanner('About this incident.', `A "${stageLabel[it.stage]}" incident means ${stageHelpText(it.stage)}.`, `inc-stage-${it.stage}`)}
+      <div class="panel-block">
+        ${panelHeading('Root cause', null)}
+        <div class="kv">
+          ${Object.entries(it.rootCause).map(([k, v]) => {
+            const label = k.replace(/([A-Z])/g, ' $1').replace(/^./, c => c.toUpperCase());
+            const valHtml = (typeof v === 'string' && k === 'exception') ? `<code style="color:var(--red-700);font-weight:600;font-family:'JetBrains Mono',monospace">${escapeHtml(v)}</code>` :
+                            (typeof v === 'string' && k === 'location') ? `<code style="font-family:'JetBrains Mono',monospace">${escapeHtml(v)}</code>` :
+                            escapeHtml(String(v));
+            return `<span>${escapeHtml(label)}</span><span>${valHtml}</span>`;
+          }).join('')}
+        </div>
+      </div>
+      ${it.related.length > 0 ? `<div class="panel-block">
+        ${panelHeading('Related entities', null)}
+        ${it.related.map(r => `
+          <div class="related-card" onclick="openDetail('${r.kind === 'proc' || r.kind === 'flow' ? 'instance' : 'build'}','${r.id}')">
+            <div class="ic ${r.kind}">${r.kind === 'proc' ? 'P' : r.kind === 'flow' ? 'F' : '◆'}</div>
+            <div class="name">${escapeHtml(r.name)}<small>${escapeHtml(r.id)} · ${escapeHtml(r.meta)}</small></div>
+            <div class="arr">→</div>
+          </div>
+        `).join('')}
+      </div>` : ''}
+    `;
+  } else if (active === 'Stack trace') {
+    body = `<div class="panel-block">
+      ${panelHeading('Stack trace', null)}
+      <div class="stack-trace">${escapeHtml(it.stackTrace || 'No stack trace captured.')}</div>
+    </div>`;
+  } else if (active === 'Timeline') {
+    body = `<div class="panel-block">
+      ${panelHeading('Timeline', null)}
+      <div class="timeline">
+        ${(it.timeline || []).map(tl => `
+          <div class="tl-row ${tl.kind === 'bad' ? 'bad' : tl.kind === 'deploy' ? 'deploy' : ''}">
+            <div class="when">${escapeHtml(tl.when)}</div>
+            <div class="dot"></div>
+            <div class="lbl">${md(tl.label)}</div>
+          </div>
+        `).join('') || '<div style="font-size:11px;color:var(--text-dim);">No timeline events.</div>'}
+      </div>
+    </div>`;
+  } else if (active === 'Similar') {
+    body = `<div class="panel-block">
+      ${panelHeading('Similar incidents', null)}
+      <div style="font-size:11px;color:var(--text-dim);">No similar incidents in this window.</div>
+    </div>`;
+  }
+
+  return [head, tabsHtml, body];
+}
+
+function stageHelpText(stage) {
+  return {
+    'pre-start': 'a process refused to start (validation, missing input, etc.). Fix the trigger configuration or the calling code',
+    'trigger': 'a trigger fired but did not reach a process start. Inspect the trigger configuration and external system',
+    'mid-execution': 'a process instance threw while running. The process is paused at the offending node; you can retry, skip, or terminate from the parent instance page',
+    'ai-quality': 'an AI scorer crossed its threshold. The Live Evals page is the canonical source for scorer config and history',
+  }[stage] || 'something went wrong';
+}
+
+function mutateIncident(id, action) {
+  const inc = MOCK_DATA.incidents.find(i => i.id === id);
+  if (!inc) return;
+  if (action === 'ack') inc.status = 'ack';
+  else if (action === 'resolved') inc.status = 'resolved';
+  else if (action === 'assign') inc.assignedTo = 'me'; // no-op visualization
+  renderSidebar();
+  renderDetail();
+  if (STATE.currentRoute === 'incidents') renderIncidents(document.getElementById('page'));
+  if (STATE.currentRoute === 'overview') renderOverview(document.getElementById('page'));
+}
+function renderBuildDetail(it, tabIdx) {
+  const tabs = ['Deployment', 'Comparison', 'Live runs', 'Workflows', 'Changelog'];
+  const liveRuns = MOCK_DATA.instances.filter(i => i.buildTag === it.tag);
+
+  const head = `
+    <div class="topline">
+      <span class="crumb">Build</span>
+      <span style="color:var(--border-strong)">/</span>
+      <span style="font-family:'JetBrains Mono',monospace">${escapeHtml(it.tag)}</span>
+      <button class="x" onclick="closeDetail()">×</button>
+    </div>
+    <h3>${escapeHtml(it.tag)} ${it.isActive ? '<span style="font-size:11px;color:var(--green-700);margin-left:6px;font-weight:600">● ACTIVE</span>' : ''}</h3>
+    <div class="sub">cut from <code style="font-family:'JetBrains Mono',monospace;font-size:11px">${escapeHtml(it.branch)}</code> · ${escapeHtml(it.cutAt)} by ${escapeHtml(it.cutBy)} · ${it.isArchived ? 'archived' : 'live'}</div>
+    <div class="actions">
+      <button class="btn primary" onclick="alert('Comparison flow — pick a build to compare')">Compare to…</button>
+      <button class="btn ghost" onclick="location.hash='#/live-evals'">View in Live Evals</button>
+      ${!it.isActive && !it.isArchived ? `<button class="btn ghost" onclick="alert('Rollback flow stub')">Rollback</button>` : ''}
+    </div>`;
+
+  const tabsHtml = tabs.map((t, i) => {
+    let countHtml = '';
+    if (t === 'Live runs') countHtml = `<span class="count">${liveRuns.length}</span>`;
+    if (t === 'Workflows') countHtml = `<span class="count">${MOCK_DATA.workflows.length}</span>`;
+    return `<button class="tab ${i === tabIdx ? 'active' : ''}" onclick="STATE.detail.tab = ${i}; renderDetail();">${t}${countHtml}</button>`;
+  }).join('');
+
+  const active = tabs[tabIdx];
+  let body = '';
+  if (active === 'Deployment') {
+    // Who's serving / who's not
+    const policy = MOCK_DATA.policies.build;
+    const servedByThis = [];
+    if (policy.default.resolvesToTag === it.tag) {
+      servedByThis.push({ who: 'Default policy', sub: 'everyone not matched by overrides', percent: it.coverage.percent });
+    }
+    policy.overrides.forEach(o => {
+      if (o.policy.resolvesToTag === it.tag && o.enabled) {
+        servedByThis.push({
+          who: `${o.target.type}: <code style="font-family:'JetBrains Mono',monospace;font-size:11px">${escapeHtml(o.target.value)}</code>`,
+          sub: `override · ${o.policy.type}`,
+          percent: 12 // approximated for prototype
+        });
+      }
+    });
+
+    const notServed = MOCK_DATA.builds.filter(b => b.tag !== it.tag && b.coverage.note && b.coverage.note.startsWith('role:'));
+
+    body = `${docBanner("What's a deployment view?", 'Builds are artifacts; deployments are who\'s running them. This tab shows the slice of traffic each policy rule sends to this build.', 'build-deployment')}
+      <div class="panel-block">
+        ${panelHeading("Who it's serving", 'Active policy')}
+        ${servedByThis.length === 0 ? '<div style="font-size:11px;color:var(--text-dim);padding:8px 0;">No policy rule currently targets this build.</div>' :
+          servedByThis.map(s => `<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border-soft);font-size:12px;">
+            <div>${s.who}<small style="display:block;color:var(--text-dim);font-size:10px;">${escapeHtml(s.sub)}</small></div>
+            <div style="width:80px;height:6px;background:var(--border);border-radius:4px;overflow:hidden;margin:0 10px;"><i style="display:block;background:var(--blue-500);height:100%;width:${Math.min(100, s.percent + 10)}%"></i></div>
+            <div style="font-weight:700;color:var(--blue-700);font-variant-numeric:tabular-nums;">${s.percent}%</div>
+          </div>`).join('')}
+        <div style="font-size:11px;color:var(--text-dim);margin-top:8px;padding-top:8px;border-top:1px dashed var(--border);">
+          <strong style="color:var(--text-muted);">Not on this build:</strong> ${notServed.length ? notServed.map(b => `${escapeHtml(b.coverage.note.replace('role: ', ''))} role → ${escapeHtml(b.tag)}`).join(' · ') : 'all callers served by this build'}
+        </div>
+      </div>`;
+  } else if (active === 'Comparison') {
+    const prev = MOCK_DATA.builds.find(b => b.branch === it.branch && b.tag !== it.tag && !b.isArchived);
+    body = `<div class="panel-block">
+      ${panelHeading(`Comparison vs ${prev ? prev.tag : '(no previous)'}`, 'Scorer')}
+      <div class="cmp-grid">
+        <div class="cmp-cell"><div class="k">Throughput</div><div class="v">${it.liveStats.runsLastHour}/h</div><div class="d delta up">↑ +18%</div></div>
+        <div class="cmp-cell"><div class="k">p95 latency</div><div class="v">2.8s</div><div class="d delta down">↑ +0.4s</div></div>
+        <div class="cmp-cell"><div class="k">Error rate</div><div class="v">0.63%</div><div class="d delta down">↑ +0.21pp</div></div>
+      </div>
+      <div style="margin-top:10px;">
+        <div class="scorer-row"><span>Coherence · Reasoner</span><span class="delta down">▼ -0.06</span></div>
+        <div class="scorer-row"><span>Helpfulness · Chat</span><span class="delta up">▲ +0.02</span></div>
+        <div class="scorer-row"><span>Toxicity · all nodes</span><span class="delta flat">— flat</span></div>
+        <div class="scorer-row"><span>Cost / 1k runs</span><span class="delta down">▲ +$0.42</span></div>
+      </div>
+    </div>`;
+  } else if (active === 'Live runs') {
+    body = `<div class="panel-block">
+      ${panelHeading('Live runs on this build', null)}
+      ${liveRuns.length === 0 ? '<div class="empty"><p>No live runs on this build right now.</p></div>' :
+        liveRuns.slice(0, 10).map(r => `
+          <div class="related-card" onclick="openDetail('instance','${r.id}')">
+            <div class="ic ${r.type === 'process' ? 'proc' : 'flow'}">${r.type === 'process' ? 'P' : 'F'}</div>
+            <div class="name">${escapeHtml(r.definitionName)}<small>${escapeHtml(r.id)} · ${escapeHtml(r.status)}</small></div>
+            <div class="arr">→</div>
+          </div>`).join('')}
+      ${liveRuns.length > 10 ? `<div style="text-align:center;margin-top:8px;"><a style="font-size:11px;color:var(--blue-500);font-weight:600;cursor:pointer" onclick="closeDetail(); location.hash='#/instances'">View all ${liveRuns.length} runs →</a></div>` : ''}
+    </div>`;
+  } else if (active === 'Workflows') {
+    body = `<div class="panel-block">
+      ${panelHeading('Workflows in this build', null)}
+      ${MOCK_DATA.workflows.map(w => `
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border-soft);font-size:12px;">
+          <div><strong>${escapeHtml(w.name)}</strong><div style="font-size:10px;color:var(--text-dim);">${w.nodes.length} AI node${w.nodes.length === 1 ? '' : 's'}</div></div>
+          <a style="font-size:11px;color:var(--blue-500);font-weight:600;cursor:pointer" onclick="STATE.liveEvals.workflowId='${w.id}'; closeDetail(); location.hash='#/live-evals'">Open →</a>
+        </div>`).join('')}
+    </div>`;
+  } else if (active === 'Changelog') {
+    body = `<div class="panel-block">
+      ${panelHeading('Changes since previous', null)}
+      <ul style="font-size:12px;color:var(--text-muted);margin:0;padding-left:20px;line-height:22px;">
+        <li>Reasoner prompt updated — added handling for European VAT cases</li>
+        <li>New scorer binding: <code style="font-family:'JetBrains Mono',monospace">helpfulness</code> on Responder</li>
+        <li>Config: <code style="font-family:'JetBrains Mono',monospace">timeout_ms</code> default increased 20s → 30s</li>
+        <li>Process refactor: Document upload retry policy now 3× with jitter</li>
+      </ul>
+    </div>`;
+  }
+
+  return [head, tabsHtml, body];
+}
+function renderTriggerDetail(it, tab) {
+  return [`<div class="topline"><span class="crumb">Trigger</span><span style="font-family:'JetBrains Mono',monospace">${escapeHtml(it.id)}</span><button class="x" onclick="closeDetail()">×</button></div><h3>${escapeHtml(it.name)}</h3><div class="sub">${escapeHtml(it.type)} · ${escapeHtml(it.status)}</div>`, '', '<div class="empty"><p>Detail content coming in Task 8.</p></div>'];
+}
+function renderTaskDetail(it, tab) {
+  return [`<div class="topline"><span class="crumb">Task</span><span style="font-family:'JetBrains Mono',monospace">${escapeHtml(it.id)}</span><button class="x" onclick="closeDetail()">×</button></div><h3>${escapeHtml(it.title)}</h3><div class="sub">From ${escapeHtml(it.source.definitionName)} · ${escapeHtml(it.source.atStep)}</div>`, '', '<div class="empty"><p>Detail content coming in Task 8.</p></div>'];
+}
+
+// ============================================================
+//  GLOSSARY PANEL
+// ============================================================
+function openGlossary(scrollToTerm = null) {
+  STATE.glossary = { open: true, scrollToTerm };
+  document.getElementById('glossaryPanel').classList.add('open');
+  renderGlossary('');
+  if (scrollToTerm) {
+    setTimeout(() => {
+      const el = document.querySelector(`[data-term="${scrollToTerm}"]`);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 300);
+  }
+}
+function closeGlossary() {
+  STATE.glossary.open = false;
+  document.getElementById('glossaryPanel').classList.remove('open');
+}
+function renderGlossary(filter = '') {
+  const q = (filter || '').toLowerCase();
+  const terms = Object.entries(MOCK_DATA.glossary)
+    .filter(([k, v]) => !q || k.toLowerCase().includes(q) || v.long.toLowerCase().includes(q));
+  document.getElementById('glossaryBody').innerHTML = terms.map(([k, v]) =>
+    `<div class="glossary-term" data-term="${escapeHtml(k)}"><h4>${escapeHtml(k)}</h4><p>${escapeHtml(v.long)}</p></div>`
+  ).join('') || '<div class="empty"><p>No terms match.</p></div>';
+}
+
+// ============================================================
+//  HELP POPOVER
+// ============================================================
+let popoverOpenTerm = null;
+function showHelpPopover(ev, term) {
+  ev.stopPropagation();
+  const def = MOCK_DATA.glossary[term];
+  if (!def) return;
+  const pop = document.getElementById('helpPopover');
+  popoverOpenTerm = term;
+  pop.innerHTML = `<h5>${escapeHtml(term)}</h5><p>${escapeHtml(def.short)}</p><a onclick="openGlossary('${escapeHtml(term)}'); document.getElementById('helpPopover').classList.remove('open');">Open glossary →</a>`;
+  const rect = ev.target.getBoundingClientRect();
+  pop.style.top = (rect.bottom + 8) + 'px';
+  pop.style.left = Math.max(8, rect.left - 60) + 'px';
+  pop.classList.add('open');
+}
+document.addEventListener('click', (ev) => {
+  if (!ev.target.closest('.help-popover') && !ev.target.classList.contains('help-icon-inline')) {
+    document.getElementById('helpPopover').classList.remove('open');
+  }
+  // Close glossary on outside click only via button
+});
+
+// ============================================================
+//  ACTIVITY SIMULATOR
+// ============================================================
+const SYNTHETIC_EVENTS = [
+  { type: 'start', title: '**Process started** — Document validation', sub: '{pill}inst_new{id}{pill} · batch processing · {pill}v1.4.2{pill}', linkKind: 'instance' },
+  { type: 'finish', title: '**12 instances finished** in last 30s', sub: 'avg latency 1.9s · 11 success · 1 errored', linkKind: null },
+  { type: 'start', title: '**UI Flow session** started — Customer feedback', sub: '{pill}sess_new{id}{pill} · running on {pill}v1.4.2{pill}', linkKind: 'instance' },
+  { type: 'trigger', title: '**Scheduled trigger fired** — Hourly KPI rollup', sub: 'spawned 1 process instance', linkKind: 'trigger' },
+  { type: 'finish', title: '**8 instances finished** in last 30s', sub: 'avg latency 2.1s · all success', linkKind: null },
+  { type: 'start', title: '**Process started** — Notification dispatch', sub: '{pill}inst_new{id}{pill} · running on {pill}v1.4.2{pill}', linkKind: 'instance' },
+];
+
+let synthIdx = 0;
+let lastIdNum = 100;
+
+function simulateActivity() {
+  const tpl = SYNTHETIC_EVENTS[synthIdx % SYNTHETIC_EVENTS.length];
+  synthIdx++;
+  lastIdNum++;
+  const evId = 'ev_sim_' + lastIdNum;
+  const newEv = {
+    id: evId,
+    when: 'just now',
+    whenSec: 0,
+    type: tpl.type,
+    title: tpl.title.replace(/\{id\}/g, lastIdNum),
+    sub: tpl.sub.replace(/\{id\}/g, lastIdNum),
+    linkKind: tpl.linkKind,
+    linkId: null,
+  };
+
+  // Re-time existing events ("just now" → "1m ago" → "2m ago"… simplified)
+  MOCK_DATA.activityEvents.forEach(e => {
+    if (e.when === 'just now') e.when = '1m ago';
+    e.whenSec = (e.whenSec || 0) + 30;
+  });
+  MOCK_DATA.activityEvents.unshift(newEv);
+  if (MOCK_DATA.activityEvents.length > 40) MOCK_DATA.activityEvents.pop();
+
+  STATE.recentEventId = evId;
+
+  if (STATE.currentRoute === 'overview') renderOverview(document.getElementById('page'));
+  renderSidebar();
+
+  // Clear recent marker after one render so animation only triggers once
+  setTimeout(() => { STATE.recentEventId = null; }, 400);
+}
+
+// Kick off simulator after initial render (every 7s)
+setInterval(simulateActivity, 7000);
+
+// Press Escape to close detail panel or glossary
+document.addEventListener('keydown', (ev) => {
+  if (ev.key === 'Escape') {
+    if (STATE.glossary.open) closeGlossary();
+    else if (STATE.detail.open) closeDetail();
+  }
+});
+
+// Click outside glossary closes it (but not when clicking the panel itself)
+document.getElementById('glossaryPanel').addEventListener('click', (ev) => ev.stopPropagation());
+
+// ============================================================
+//  INIT
+// ============================================================
+renderSidebar();
+router();
+</script>
+</body>
+</html>

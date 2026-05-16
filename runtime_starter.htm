@@ -1,0 +1,1212 @@
+<!DOCTYPE html>
+<!-- saved from url=(0107)file:///Users/bogdandraghici/flowx-code/designer/docs/superpowers/specs/2026-05-14-runtime-tab-anatomy.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <title>FlowX Designer — Runtime Tab Anatomy</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+      :root {
+        --bg: #ffffff;
+        --bg-alt: #f7f8f9;
+        --bg-card: #ffffff;
+        --border: #e3e8ed;
+        --border-strong: #cbd1db;
+        --text: #1d232c;
+        --text-muted: #5b6a7e;
+        --text-dim: #8390a2;
+        --blue-50: #e6f0fb;
+        --blue-100: #b0d1f3;
+        --blue-500: #006bd8;
+        --blue-700: #004c99;
+        --blue-900: #002d5b;
+        --green-50: #e6f2ef;
+        --green-500: #008060;
+        --green-700: #005b44;
+        --yellow-50: #fff8e7;
+        --yellow-100: #ffe9b6;
+        --yellow-500: #feb913;
+        --yellow-700: #b4830d;
+        --orange-50: #fff0e8;
+        --orange-100: #fed1b9;
+        --orange-500: #fd6b1c;
+        --orange-700: #b44c14;
+        --red-50: #fde9e6;
+        --red-500: #e62200;
+        --red-700: #a31800;
+        --purple-50: #f5f0ff;
+        --purple-500: #6e36cd;
+        --shadow-m: 0 8px 16px #1634621a;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family:
+          'Open Sans',
+          -apple-system,
+          BlinkMacSystemFont,
+          'Segoe UI',
+          Roboto,
+          sans-serif;
+        font-size: 14px;
+        line-height: 24px;
+        color: var(--text);
+        background: var(--bg-alt);
+      }
+
+      .layout {
+        display: grid;
+        grid-template-columns: 240px minmax(0, 1fr);
+        max-width: 1320px;
+        margin: 0 auto;
+      }
+
+      /* Sticky TOC */
+      nav.toc {
+        position: sticky;
+        top: 0;
+        align-self: start;
+        height: 100vh;
+        overflow-y: auto;
+        padding: 24px 16px 24px 24px;
+        border-right: 1px solid var(--border);
+        background: var(--bg);
+        font-size: 12px;
+        line-height: 16px;
+      }
+      nav.toc .toc-title {
+        font-weight: 700;
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--text-dim);
+        margin-bottom: 12px;
+      }
+      nav.toc ol {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+      nav.toc li {
+        margin-bottom: 6px;
+      }
+      nav.toc a {
+        text-decoration: none;
+        color: var(--text-muted);
+        display: block;
+        padding: 4px 8px;
+        border-radius: 4px;
+      }
+      nav.toc a:hover {
+        background: var(--bg-alt);
+        color: var(--text);
+      }
+      nav.toc .toc-num {
+        display: inline-block;
+        width: 24px;
+        color: var(--text-dim);
+        font-variant-numeric: tabular-nums;
+      }
+
+      /* Main */
+      main {
+        padding: 32px 48px 96px;
+        max-width: 900px;
+      }
+
+      header.doc-header {
+        margin-bottom: 32px;
+        padding-bottom: 24px;
+        border-bottom: 1px solid var(--border);
+      }
+      header.doc-header h1 {
+        font-size: 28px;
+        line-height: 42px;
+        font-weight: 700;
+        margin: 0 0 8px;
+      }
+      header.doc-header p.lede {
+        color: var(--text-muted);
+        font-size: 14px;
+        line-height: 24px;
+        margin: 0;
+      }
+      header.doc-header .meta {
+        margin-top: 12px;
+        font-size: 12px;
+        line-height: 16px;
+        color: var(--text-dim);
+      }
+
+      section {
+        margin-bottom: 56px;
+        scroll-margin-top: 16px;
+      }
+      section h2 {
+        font-size: 24px;
+        line-height: 32px;
+        font-weight: 700;
+        margin: 0 0 8px;
+        color: var(--text);
+      }
+      section .section-num {
+        color: var(--text-dim);
+        margin-right: 8px;
+        font-variant-numeric: tabular-nums;
+      }
+      section h3 {
+        font-size: 18px;
+        line-height: 28px;
+        font-weight: 700;
+        margin: 24px 0 8px;
+        color: var(--text);
+      }
+      section h4 {
+        font-size: 14px;
+        line-height: 24px;
+        font-weight: 600;
+        margin: 16px 0 4px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: var(--text-dim);
+        font-size: 12px;
+      }
+      section p {
+        margin: 8px 0;
+      }
+      section p.intro {
+        color: var(--text-muted);
+        margin-top: 0;
+      }
+
+      code {
+        font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+        font-size: 12px;
+        background: var(--bg-alt);
+        padding: 1px 6px;
+        border-radius: 4px;
+        color: var(--text);
+        border: 1px solid var(--border);
+      }
+      pre code {
+        display: block;
+        padding: 12px;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+
+      .card {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 16px 20px;
+        box-shadow: var(--shadow-m);
+      }
+
+      .callout {
+        border-left: 3px solid var(--blue-500);
+        background: var(--blue-50);
+        padding: 12px 16px;
+        border-radius: 0 8px 8px 0;
+        margin: 12px 0;
+        font-size: 13px;
+        line-height: 22px;
+      }
+      .callout.warn {
+        border-color: var(--orange-500);
+        background: var(--orange-50);
+      }
+      .callout strong {
+        color: var(--blue-900);
+      }
+
+      ul {
+        padding-left: 20px;
+        margin: 8px 0;
+      }
+      li {
+        margin-bottom: 4px;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 12px 0;
+        font-size: 13px;
+        line-height: 20px;
+      }
+      th,
+      td {
+        text-align: left;
+        padding: 8px 12px;
+        border-bottom: 1px solid var(--border);
+        vertical-align: top;
+      }
+      th {
+        font-size: 11px;
+        line-height: 14px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: var(--text-dim);
+        font-weight: 700;
+        background: var(--bg-alt);
+        border-bottom: 1px solid var(--border-strong);
+      }
+      td code {
+        white-space: nowrap;
+      }
+      table.matrix th:first-child,
+      table.matrix td:first-child {
+        font-weight: 600;
+        color: var(--text);
+        background: var(--bg-alt);
+        border-right: 1px solid var(--border-strong);
+      }
+      table.matrix td {
+        font-size: 12px;
+        line-height: 18px;
+        color: var(--text-muted);
+      }
+      table.matrix td.diag {
+        background: repeating-linear-gradient(
+          45deg,
+          var(--bg-alt),
+          var(--bg-alt) 4px,
+          #eef1f4 4px,
+          #eef1f4 8px
+        );
+        color: var(--text-dim);
+        text-align: center;
+        font-style: italic;
+      }
+
+      .pill {
+        display: inline-block;
+        border-radius: 9999px;
+        padding: 2px 10px;
+        font-size: 11px;
+        line-height: 16px;
+        font-weight: 600;
+        background: var(--bg-alt);
+        color: var(--text-muted);
+        border: 1px solid var(--border);
+      }
+      .pill.blue {
+        background: var(--blue-50);
+        color: var(--blue-700);
+        border-color: var(--blue-100);
+      }
+      .pill.green {
+        background: var(--green-50);
+        color: var(--green-700);
+        border-color: transparent;
+      }
+      .pill.yellow {
+        background: var(--yellow-50);
+        color: var(--yellow-700);
+        border-color: var(--yellow-100);
+      }
+      .pill.orange {
+        background: var(--orange-50);
+        color: var(--orange-700);
+        border-color: var(--orange-100);
+      }
+      .pill.red {
+        background: var(--red-50);
+        color: var(--red-700);
+        border-color: transparent;
+      }
+      .pill.purple {
+        background: var(--purple-50);
+        color: var(--purple-500);
+        border-color: transparent;
+      }
+
+      .field-list {
+        display: grid;
+        grid-template-columns: max-content max-content 1fr;
+        gap: 6px 16px;
+        margin: 8px 0;
+        font-size: 13px;
+        line-height: 20px;
+      }
+      .field-list .name {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 12px;
+        color: var(--blue-700);
+      }
+      .field-list .type {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 12px;
+        color: var(--text-dim);
+      }
+      .field-list .doc {
+        color: var(--text-muted);
+      }
+
+      .tabs-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin: 8px 0 12px;
+      }
+      .tabs-list .tab {
+        background: var(--bg-alt);
+        border: 1px solid var(--border);
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 12px;
+        line-height: 16px;
+        color: var(--text);
+      }
+      .tabs-list .tab small {
+        color: var(--text-dim);
+        margin-left: 6px;
+      }
+
+      .cross-links {
+        list-style: none;
+        padding: 0;
+        margin: 12px 0 0;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .cross-links li {
+        background: var(--bg-alt);
+        padding: 8px 12px;
+        border-radius: 6px;
+        border-left: 3px solid var(--blue-500);
+        font-size: 13px;
+        line-height: 20px;
+        margin: 0;
+      }
+      .cross-links li strong {
+        color: var(--blue-700);
+      }
+
+      .map-frame {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: var(--shadow-m);
+        margin: 12px 0 16px;
+      }
+
+      .small {
+        font-size: 12px;
+        line-height: 18px;
+        color: var(--text-muted);
+      }
+
+      .friction {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 16px 20px;
+        margin: 12px 0;
+        box-shadow: var(--shadow-m);
+      }
+      .friction h3 {
+        margin-top: 0;
+        font-size: 16px;
+        line-height: 24px;
+      }
+      .friction .tag {
+        display: inline-block;
+        font-size: 10px;
+        line-height: 14px;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--orange-700);
+        background: var(--orange-50);
+        padding: 2px 8px;
+        border-radius: 4px;
+        margin-left: 8px;
+        vertical-align: middle;
+        font-weight: 700;
+      }
+
+      @media (max-width: 900px) {
+        .layout {
+          grid-template-columns: 1fr;
+        }
+        nav.toc {
+          position: static;
+          height: auto;
+          border-right: none;
+          border-bottom: 1px solid var(--border);
+        }
+        main {
+          padding: 24px 20px 64px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="layout">
+      <nav class="toc">
+        <div class="toc-title">Contents</div>
+        <ol>
+          <li>
+            <a href="file:///Users/bogdandraghici/flowx-code/designer/docs/superpowers/specs/2026-05-14-runtime-tab-anatomy.html#sec-1"><span class="toc-num">1.</span>System map</a>
+          </li>
+          <li>
+            <a href="file:///Users/bogdandraghici/flowx-code/designer/docs/superpowers/specs/2026-05-14-runtime-tab-anatomy.html#sec-2"><span class="toc-num">2.</span>Interaction matrix</a>
+          </li>
+          <li>
+            <a href="file:///Users/bogdandraghici/flowx-code/designer/docs/superpowers/specs/2026-05-14-runtime-tab-anatomy.html#sec-3"><span class="toc-num">3.</span>Builds</a>
+          </li>
+          <li>
+            <a href="file:///Users/bogdandraghici/flowx-code/designer/docs/superpowers/specs/2026-05-14-runtime-tab-anatomy.html#sec-4"><span class="toc-num">4.</span>Active Policy</a>
+          </li>
+          <li>
+            <a href="file:///Users/bogdandraghici/flowx-code/designer/docs/superpowers/specs/2026-05-14-runtime-tab-anatomy.html#sec-5"><span class="toc-num">5.</span>Process Instances</a>
+          </li>
+          <li>
+            <a href="file:///Users/bogdandraghici/flowx-code/designer/docs/superpowers/specs/2026-05-14-runtime-tab-anatomy.html#sec-6"><span class="toc-num">6.</span>UI Flow Sessions</a>
+          </li>
+          <li>
+            <a href="file:///Users/bogdandraghici/flowx-code/designer/docs/superpowers/specs/2026-05-14-runtime-tab-anatomy.html#sec-7"><span class="toc-num">7.</span>Live Evals</a>
+          </li>
+          <li>
+            <a href="file:///Users/bogdandraghici/flowx-code/designer/docs/superpowers/specs/2026-05-14-runtime-tab-anatomy.html#sec-8"><span class="toc-num">8.</span>Surrounding modules</a>
+          </li>
+          <li>
+            <a href="file:///Users/bogdandraghici/flowx-code/designer/docs/superpowers/specs/2026-05-14-runtime-tab-anatomy.html#sec-9"><span class="toc-num">9.</span>Friction / redesign hooks</a>
+          </li>
+        </ol>
+      </nav>
+
+      <main>
+        <header class="doc-header">
+          <h1>Runtime Tab Anatomy</h1>
+          <p class="lede">
+            How the main concepts in the Runtime Tab of a FlowX project interact — what each
+            holds, what UI surfaces exist for it, and where they overlap. Written as reference
+            for a complete redesign of the section.
+          </p>
+          <div class="meta">2026-05-14 · scope: <code>runtime/*</code> nav within an application</div>
+        </header>
+
+        <!-- ============================== § 1 ============================== -->
+        <section id="sec-1">
+          <h2><span class="section-num">§ 1</span>System map</h2>
+          <p class="intro">
+            The Runtime Tab is the <strong>read side</strong> of a running FlowX app. Five
+            concepts carry almost all the information shown there. Everything orbits around
+            <strong>Builds</strong> — the published artifact — but the user-facing entry points
+            are <strong>Process Instances</strong> and <strong>UI Flow Sessions</strong>. The
+            arrows below are causal: who selects what, who spawns what, who observes what.
+          </p>
+
+          <div class="map-frame">
+            <svg viewBox="0 0 820 460" xmlns="http://www.w3.org/2000/svg" width="100%" height="auto" role="img" aria-label="System map showing how runtime concepts relate">
+              <!-- arrows defs -->
+              <defs>
+                <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                  <path d="M0,0 L10,5 L0,10 z" fill="#5b6a7e"></path>
+                </marker>
+              </defs>
+
+              <!-- Caller -->
+              <rect x="20" y="200" width="120" height="48" rx="8" fill="#f7f8f9" stroke="#cbd1db"></rect>
+              <text x="80" y="222" font-size="13" font-weight="600" text-anchor="middle" fill="#1d232c">
+                Runtime caller
+              </text>
+              <text x="80" y="238" font-size="11" text-anchor="middle" fill="#5b6a7e">
+                end-user / API
+              </text>
+
+              <!-- Active Policy -->
+              <rect x="200" y="80" width="160" height="68" rx="8" fill="#fff0e8" stroke="#fed1b9"></rect>
+              <text x="280" y="106" font-size="13" font-weight="700" text-anchor="middle" fill="#b44c14">
+                Active Policy
+              </text>
+              <text x="280" y="124" font-size="11" text-anchor="middle" fill="#475263">
+                default + overrides
+              </text>
+              <text x="280" y="138" font-size="11" text-anchor="middle" fill="#475263">
+                → effective policy
+              </text>
+
+              <!-- Build -->
+              <rect x="200" y="300" width="160" height="68" rx="8" fill="#e6f0fb" stroke="#b0d1f3"></rect>
+              <text x="280" y="326" font-size="13" font-weight="700" text-anchor="middle" fill="#004c99">
+                Build
+              </text>
+              <text x="280" y="344" font-size="11" text-anchor="middle" fill="#475263">
+                immutable app version
+              </text>
+              <text x="280" y="358" font-size="11" text-anchor="middle" fill="#475263">
+                (processes, UI flows, AI)
+              </text>
+
+              <!-- Process Instance -->
+              <rect x="440" y="60" width="200" height="80" rx="8" fill="#e6f2ef" stroke="#b0d8ce"></rect>
+              <text x="540" y="86" font-size="13" font-weight="700" text-anchor="middle" fill="#005b44">
+                Process Instance
+              </text>
+              <text x="540" y="104" font-size="11" text-anchor="middle" fill="#475263">
+                BPMN-style execution
+              </text>
+              <text x="540" y="118" font-size="11" text-anchor="middle" fill="#475263">
+                state · tokens · vars
+              </text>
+              <text x="540" y="132" font-size="11" text-anchor="middle" fill="#475263">
+                sub-processes · audit
+              </text>
+
+              <!-- UI Flow Session -->
+              <rect x="440" y="180" width="200" height="80" rx="8" fill="#f5f0ff" stroke="#e1d6f5"></rect>
+              <text x="540" y="206" font-size="13" font-weight="700" text-anchor="middle" fill="#51279b">
+                UI Flow Session
+              </text>
+              <text x="540" y="224" font-size="11" text-anchor="middle" fill="#475263">
+                user-facing chat / UI
+              </text>
+              <text x="540" y="238" font-size="11" text-anchor="middle" fill="#475263">
+                status · variables
+              </text>
+              <text x="540" y="252" font-size="11" text-anchor="middle" fill="#475263">
+                spawns process instances
+              </text>
+
+              <!-- Workflow runs -->
+              <rect x="440" y="300" width="200" height="68" rx="8" fill="#fff8e7" stroke="#ffe9b6"></rect>
+              <text x="540" y="326" font-size="13" font-weight="700" text-anchor="middle" fill="#b4830d">
+                Workflow Instances
+              </text>
+              <text x="540" y="344" font-size="11" text-anchor="middle" fill="#475263">
+                AI / integration runs
+              </text>
+              <text x="540" y="358" font-size="11" text-anchor="middle" fill="#475263">
+                triggered by either side
+              </text>
+
+              <!-- Live Evals -->
+              <rect x="690" y="180" width="110" height="80" rx="8" fill="#fde9e6" stroke="#f7bab0"></rect>
+              <text x="745" y="208" font-size="13" font-weight="700" text-anchor="middle" fill="#a31800">
+                Live Evals
+              </text>
+              <text x="745" y="226" font-size="11" text-anchor="middle" fill="#475263">
+                quality + telemetry
+              </text>
+              <text x="745" y="240" font-size="11" text-anchor="middle" fill="#475263">
+                per workflow / Build
+              </text>
+
+              <!-- Arrows -->
+              <!-- Caller -> Active Policy -->
+              <line x1="140" y1="216" x2="200" y2="120" stroke="#5b6a7e" stroke-width="1.5" marker-end="url(#arrow)"></line>
+              <text x="158" y="170" font-size="10" fill="#5b6a7e">resolves</text>
+
+              <!-- Active Policy -> Build -->
+              <line x1="280" y1="148" x2="280" y2="296" stroke="#5b6a7e" stroke-width="1.5" marker-end="url(#arrow)"></line>
+              <text x="288" y="226" font-size="10" fill="#5b6a7e">picks</text>
+
+              <!-- Build -> Process Instance (anchored to) -->
+              <path d="M360 320 C 400 280, 420 180, 440 110" fill="none" stroke="#5b6a7e" stroke-width="1.5" marker-end="url(#arrow)"></path>
+              <text x="380" y="240" font-size="10" fill="#5b6a7e">runs against</text>
+
+              <!-- Build -> UI Flow Session -->
+              <path d="M360 334 C 400 290, 420 240, 440 220" fill="none" stroke="#5b6a7e" stroke-width="1.5" marker-end="url(#arrow)"></path>
+
+              <!-- UI Flow Session -> Process Instance -->
+              <line x1="540" y1="180" x2="540" y2="140" stroke="#5b6a7e" stroke-width="1.5" marker-end="url(#arrow)"></line>
+              <text x="546" y="166" font-size="10" fill="#5b6a7e">spawns</text>
+
+              <!-- Process Instance -> Workflow Instances -->
+              <path d="M540 140 C 540 200, 540 250, 540 300" fill="none" stroke="#5b6a7e" stroke-width="1.5" marker-end="url(#arrow)" stroke-dasharray="4 2"></path>
+              <text x="546" y="280" font-size="10" fill="#5b6a7e">PROCESS_ENGINE</text>
+
+              <!-- UI Flow Session -> Workflow Instances -->
+              <line x1="600" y1="260" x2="600" y2="300" stroke="#5b6a7e" stroke-width="1.5" marker-end="url(#arrow)" stroke-dasharray="4 2"></line>
+              <text x="606" y="284" font-size="10" fill="#5b6a7e">CHAT / UI_FLOW</text>
+
+              <!-- Workflow Instances -> Live Evals -->
+              <line x1="640" y1="334" x2="690" y2="234" stroke="#5b6a7e" stroke-width="1.5" marker-end="url(#arrow)"></line>
+              <text x="652" y="288" font-size="10" fill="#5b6a7e">observed</text>
+
+              <!-- Live Evals -> Build (annotates) -->
+              <path d="M745 260 C 745 320, 600 380, 360 358" fill="none" stroke="#a6b0be" stroke-width="1" stroke-dasharray="2 3"></path>
+              <text x="510" y="402" font-size="10" fill="#8390a2">annotates with build markers</text>
+
+              <!-- Bottom label -->
+              <text x="20" y="430" font-size="10" fill="#8390a2">
+                Solid = causal selection / containment · Dashed = trigger / observation
+              </text>
+            </svg>
+          </div>
+
+          <p>
+            <strong>How to read it.</strong> A runtime caller (end-user or API) hits the
+            application and the <strong>Active Policy</strong> resolves them to a specific
+            <strong>Build</strong>. That Build determines which process / UI-flow / workflow /
+            AI-node definitions are available. The caller's interaction surfaces as either a
+            <strong>Process Instance</strong> (engine-driven) or a <strong>UI Flow Session</strong>
+            (user-facing). Either side can trigger <strong>Workflow Instances</strong>
+            (integration / AI runs), which <strong>Live Evals</strong> observes for quality and
+            cost. Live Evals also anchors its time-series to Builds for before/after comparison.
+          </p>
+        </section>
+
+        <!-- ============================== § 2 ============================== -->
+        <section id="sec-2">
+          <h2><span class="section-num">§ 2</span>Interaction matrix</h2>
+          <p class="intro">
+            Read across: how the row concept relates to the column concept. The diagonal is
+            shaded — a concept's relationship with itself isn't interesting here.
+          </p>
+
+          <table class="matrix">
+            <thead>
+              <tr>
+                <th></th>
+                <th>Builds</th>
+                <th>Active Policy</th>
+                <th>Process Instances</th>
+                <th>UI Flow Sessions</th>
+                <th>Live Evals</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Builds</td>
+                <td class="diag">—</td>
+                <td>A Build is the artifact an Active Policy can <em>point at</em> (either by branch tip or by fixed id).</td>
+                <td>Each Process Instance was started against exactly one Build (<code>buildApplicationVersionId</code>) and reads its definitions from it.</td>
+                <td>Each UI Flow Session was started against exactly one Build (<code>buildAppVersionId</code>).</td>
+                <td>Live Evals time-series are bucketed by Build; deploy markers come from
+                  <code>BuildSummary</code> records.
+                </td>
+              </tr>
+              <tr>
+                <td>Active Policy</td>
+                <td>Holds <code>policyBranchId</code> and/or <code>policyBuildId</code> — the chosen Build target.</td>
+                <td class="diag">—</td>
+                <td>Resolves <em>before</em> a new process starts. Doesn't retroactively change instances already running.</td>
+                <td>Resolves <em>before</em> a new UI flow session starts. Doesn't retroactively change running sessions.</td>
+                <td>No direct relation today. Live Evals reads runs after the fact; the policy decided which Build they ran against.</td>
+              </tr>
+              <tr>
+                <td>Process Instances</td>
+                <td>Pinned to a Build at start (<code>buildStatusAtStart</code> + <code>buildApplicationVersionId</code>).</td>
+                <td>Has no override mechanism of its own — inherits whatever policy was effective at start.</td>
+                <td class="diag">—</td>
+                <td>Can be <em>spawned by</em> a UI Flow Session. The session lists them in its <strong>Processes</strong> tab.</td>
+                <td>Each instance shows AI workflow runs in its <strong>Workflows</strong> tab — these are the same runs Live Evals observes.</td>
+              </tr>
+              <tr>
+                <td>UI Flow Sessions</td>
+                <td>Pinned to a Build at start (<code>buildAppVersionId</code>).</td>
+                <td>Same as Process Instances — inherits effective policy at start.</td>
+                <td><strong>Spawns</strong> them. The Processes tab on the session lists every spawned instance.</td>
+                <td class="diag">—</td>
+                <td>Each session shows AI workflow runs in its <strong>Workflows</strong> tab — same runs as Live Evals.</td>
+              </tr>
+              <tr>
+                <td>Live Evals</td>
+                <td>Buckets all metrics per Build; supports left-vs-right Build comparison.</td>
+                <td>None today.</td>
+                <td>Indirectly: workflow runs triggered by <code>PROCESS_ENGINE</code> belong to a Process Instance.</td>
+                <td>Indirectly: workflow runs triggered by <code>CHAT</code> / <code>UI_FLOW</code> belong to a UI Flow Session.</td>
+                <td class="diag">—</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h3>Named data flows</h3>
+          <ol>
+            <li>
+              <strong>How a Process Instance picks its Build.</strong> The runtime engine asks the
+              build-mgmt service for the effective policy for the calling user (using their
+              username + roles). That returns either a fixed build id or a branch id (the branch's
+              latest build is then used). The resolved id is stamped onto the instance at start as
+              <code>buildApplicationVersionId</code> and never changes.
+            </li>
+            <li>
+              <strong>How a UI Flow Session spawns Process Instances.</strong> While the session is
+              running, the UI flow can trigger sub-processes (engine starts them in the same Build
+              context). Those instances are listed under the session's <strong>Processes</strong>
+              tab and remain navigable individually.
+            </li>
+            <li>
+              <strong>How a workflow run reaches Live Evals.</strong> Workflows can be triggered by
+              <code>PROCESS_ENGINE</code> (from inside a Process Instance), by <code>CHAT</code>
+              (from a UI flow chat node), or by <code>UI_FLOW</code> (from a UI flow action).
+              Every run, regardless of trigger, is emitted to the telemetry / scoring pipeline.
+              Live Evals reads those runs and aggregates by workflow, AI node, Build, observation
+              point values, and time window.
+            </li>
+            <li>
+              <strong>How a Build comparison works in Live Evals.</strong> The user picks two
+              <code>BuildSummary</code> ids on the comparison page. Live Evals computes per-scorer
+              and per-AI-node deltas between the two periods, plus decision-distribution shifts
+              per observation point. Builds with no shared scorers return an "incompatible"
+              result.
+            </li>
+            <li>
+              <strong>How an alert reaches the UI.</strong> A <code>LiveScorerBinding</code> has a
+              <code>threshold</code>. When the rolling score crosses it, a <code>LiveAlertState</code>
+              is emitted with <code>status: 'breached'</code> and a <code>breachedSince</code>
+              timestamp. The Live Evals landing page renders these as an inline orange warning
+              inside the workflow table card, locating the breach as <em>{ScorerName} on
+              {WorkflowName} / {NodeName}</em>.
+            </li>
+          </ol>
+        </section>
+
+        <!-- ============================== § 3 ============================== -->
+        <section id="sec-3">
+          <h2><span class="section-num">§ 3</span>Builds <span class="pill blue">connective tissue</span></h2>
+          <p class="intro">
+            A <strong>Build</strong> is an immutable, published snapshot of an application. It
+            packages every definition the runtime needs — process definitions, UI flows,
+            workflows, AI nodes, configuration parameters. Every other concept in the runtime tab
+            either selects a Build, executes against one, or annotates by one. Builds is therefore
+            the implicit anchor of the entire section.
+          </p>
+
+          <h4>Identity</h4>
+          <div class="field-list">
+            <div class="name">buildId</div>
+            <div class="type">string</div>
+            <div class="doc">Globally unique. Pinned by Active Policy or by an already-running instance.</div>
+            <div class="name">branchId / branchName</div>
+            <div class="type">string</div>
+            <div class="doc">Which branch the build came from. Policy can track <em>latest on branch</em> instead of a fixed id.</div>
+            <div class="name">buildTag</div>
+            <div class="type">string</div>
+            <div class="doc">Human label (e.g. <code>v1.4</code>). Shown on chips and time-series markers.</div>
+            <div class="name">buildDate</div>
+            <div class="type">date</div>
+            <div class="doc">When it was cut. Drives ordering and Live Evals "deploy marker" overlay.</div>
+            <div class="name">isActive</div>
+            <div class="type">boolean</div>
+            <div class="doc">Whether it is currently in use by some policy resolution. Surfaces as a "broadcast" icon on Build chips.</div>
+          </div>
+
+          <h4>UI surface</h4>
+          <ul>
+            <li><strong>Builds list</strong> (<code>runtime/builds-list</code>) — the default landing page for the runtime tab. Lists builds per branch with metadata, status, and a child route at <code>workflow-instances</code> for browsing the workflow runs that happened against a given build.</li>
+          </ul>
+
+          <h4>Connection points</h4>
+          <ul>
+            <li>Active Policy stores either a <code>policyBranchId</code> or a <code>policyBuildId</code> referencing this entity.</li>
+            <li>Process Instance and UI Flow Session each carry a <code>buildApplicationVersionId</code> / <code>buildAppVersionId</code> stamped at start.</li>
+            <li>Live Evals exposes Builds as time-series markers, as the comparison axis, and as the "active build" badge in workflow / node detail pages.</li>
+          </ul>
+
+          <div class="callout">
+            <strong>Asymmetry to note.</strong> Build is the only concept everything else points
+            at, but the Builds page itself has no view of "what's currently deployed where".
+            The "where" lives in Active Policy + overrides. Reconstructing the picture requires
+            visiting both pages.
+          </div>
+        </section>
+
+        <!-- ============================== § 4 ============================== -->
+        <section id="sec-4">
+          <h2><span class="section-num">§ 4</span>Active Policy</h2>
+          <p class="intro">
+            Active Policy decides <strong>which Build</strong> a runtime caller is served. It has
+            a per-application default plus optional per-username / per-role overrides resolved by
+            priority. The resolver — "given this user with these roles, which Build will they
+            get?" — is exposed in the UI as a test-effective dialog.
+          </p>
+
+          <h4>Policy types</h4>
+          <ul>
+            <li><code>LATEST_ON_BRANCH</code> — track a branch's tip. The build resolves to the most recent build cut from <code>policyBranchId</code>.</li>
+            <li><code>FIXED_VERSION</code> — pin to a specific <code>policyBuildId</code>. Does not advance even if newer builds appear on the branch.</li>
+          </ul>
+
+          <h4>ActivePolicy (default)</h4>
+          <div class="field-list">
+            <div class="name">id</div><div class="type">string</div><div class="doc">Policy record id.</div>
+            <div class="name">workspaceId</div><div class="type">string</div><div class="doc">Scope.</div>
+            <div class="name">applicationId</div><div class="type">string</div><div class="doc">The app this policy belongs to.</div>
+            <div class="name">policyType</div><div class="type">PolicyType</div><div class="doc"><code>LATEST_ON_BRANCH</code> or <code>FIXED_VERSION</code>.</div>
+            <div class="name">policyBranchId</div><div class="type">string?</div><div class="doc">Required when type is <code>LATEST_ON_BRANCH</code>.</div>
+            <div class="name">policyBuildId</div><div class="type">string?</div><div class="doc">Required when type is <code>FIXED_VERSION</code>.</div>
+            <div class="name">createdBy / createdDate / modifiedBy / modifiedDate</div><div class="type">audit</div><div class="doc">Standard audit metadata.</div>
+          </div>
+
+          <h4>PolicyOverride (n per application)</h4>
+          <div class="field-list">
+            <div class="name">id</div><div class="type">string</div><div class="doc">Override record id.</div>
+            <div class="name">targetType</div><div class="type">TargetType</div><div class="doc"><code>USERNAME</code> or <code>ROLE</code>.</div>
+            <div class="name">targetValue</div><div class="type">string</div><div class="doc">The username string or role name.</div>
+            <div class="name">policyType / policyBranchId / policyBuildId</div><div class="type">policy</div><div class="doc">Same shape as the default.</div>
+            <div class="name">priority</div><div class="type">number?</div><div class="doc">Ordering when multiple overrides match.</div>
+            <div class="name">enabled</div><div class="type">boolean</div><div class="doc">Soft toggle without deleting the record.</div>
+            <div class="name">createdBy / createdDate / modifiedBy / modifiedDate</div><div class="type">audit</div><div class="doc">Audit metadata.</div>
+          </div>
+
+          <h4>Effective policy resolver</h4>
+          <p>
+            <code>POST /test-effective</code> takes <code>{ username, roles[] }</code> and returns
+            the resolved policy together with a <code>resolutionPath</code> — an ordered list of
+            <code>{ description, matched }</code> entries showing which override rules were
+            checked and which one won. This is the only place the user can see WHY a particular
+            user is getting a particular build.
+          </p>
+
+          <h4>UI surface</h4>
+          <ul>
+            <li>Main view (<code>runtime/active-policy</code>): default-policy form with branch + build pickers and policy-type radio.</li>
+            <li>Overrides sub-view: table of overrides with create / edit / enable-toggle / delete + priority editing.</li>
+            <li>Test-effective dialog: try a username + roles set, see the resolved policy and resolution path.</li>
+          </ul>
+
+          <h4>Connection points</h4>
+          <ul class="cross-links">
+            <li><strong>→ Builds.</strong> Policy points at a Build (fixed) or a branch (latest). Re-pointing the policy doesn't migrate already-running instances.</li>
+            <li><strong>→ Process Instances / UI Flow Sessions.</strong> Resolved <em>before</em> creation; effective for new instances only. Already-running ones keep their original build.</li>
+            <li><strong>↔ Config Param Overrides.</strong> Structurally parallel feature (default + per-target overrides + resolver) on a different page; see <a href="file:///Users/bogdandraghici/flowx-code/designer/docs/superpowers/specs/2026-05-14-runtime-tab-anatomy.html#sec-9">§ 9</a>.</li>
+          </ul>
+        </section>
+
+        <!-- ============================== § 5 ============================== -->
+        <section id="sec-5">
+          <h2><span class="section-num">§ 5</span>Process Instances</h2>
+          <p class="intro">
+            A Process Instance is one BPMN-style execution of a process definition. It has state
+            (running, on hold, finished, errored, aborted, …), a set of <strong>tokens</strong>
+            sitting on currently-active nodes, variables (<code>paramValues</code>), and a tree of
+            sub-processes. The detail panel exposes these through eight tabs, each its own data
+            surface.
+          </p>
+
+          <h4>Top-level fields (UI-relevant)</h4>
+          <div class="field-list">
+            <div class="name">uuid</div><div class="type">string</div><div class="doc">Stable identifier shown in the list and the URL.</div>
+            <div class="name">state</div><div class="type">ProcessState</div><div class="doc"><code>CREATED · STARTED · FINISHED · FINISHED_WITH_ERROR · FAILED · EXPIRED · ABORTED · DISMISSED · ON_HOLD · TERMINATED</code>. <code>STARTED</code> and <code>ON_HOLD</code> are the "active" states.</div>
+            <div class="name">dateStarted / dateFinished</div><div class="type">datetime</div><div class="doc">Lifecycle timestamps.</div>
+            <div class="name">processDefinitionName</div><div class="type">string</div><div class="doc">Resource name shown in the list.</div>
+            <div class="name">processDefinitionFlowxUuid</div><div class="type">string</div><div class="doc">Definition this instance came from.</div>
+            <div class="name">paramValues</div><div class="type">Record</div><div class="doc">Variables. Backs the <strong>Variables</strong> tab; searchable in the list via <code>keyValue</code>.</div>
+            <div class="name">tokens[]</div><div class="type">TokenDefinition[]</div><div class="doc">Active execution pointers; backs the <strong>Tokens</strong> tab.</div>
+            <div class="name">subProcesses</div><div class="type">array</div><div class="doc">Spawned sub-process instances; backs the <strong>Subprocesses</strong> tab.</div>
+            <div class="name">activeIncidents</div><div class="type">number</div><div class="doc">Count of unresolved exceptions; gates the <strong>Exceptions</strong> tab.</div>
+            <div class="name">buildStatusAtStart</div><div class="type">ApplicationStatus</div><div class="doc">The build's state when the instance started (e.g. committed). Pinned at start.</div>
+            <div class="name">parentApplicationId</div><div class="type">string?</div><div class="doc">When this instance was spawned by another app, its parent.</div>
+            <div class="name">resourceName</div><div class="type">string</div><div class="doc">Display name in the list grid.</div>
+          </div>
+
+          <h4>Token anatomy</h4>
+          <div class="field-list">
+            <div class="name">uuid · id</div><div class="type">string · number</div><div class="doc">Token identity.</div>
+            <div class="name">state</div><div class="type">TOKEN_STATE</div><div class="doc"><code>ACTIVE · ON_HOLD · INACTIVE · EXPIRED · ABORTED · DISMISSED · TERMINATED</code>.</div>
+            <div class="name">currentNodeId · currentNodeName</div><div class="type">number · string</div><div class="doc">Where the token is right now.</div>
+            <div class="name">statusCurrentNode</div><div class="type">NodeState</div><div class="doc">Whether the current node is awaiting input, executing, finished, etc.</div>
+            <div class="name">nodesActionStates[]</div><div class="type">NodeActionState[]</div><div class="doc">History per node — arrival, finish, action data.</div>
+            <div class="name">backSeq</div><div class="type">{ nodesSeq[] }</div><div class="doc">Trail used to navigate back through previously-visited nodes.</div>
+            <div class="name">initiatorType / initiatorId</div><div class="type">string</div><div class="doc">Who or what put this token in motion.</div>
+          </div>
+
+          <h4>Detail-panel tabs</h4>
+          <div class="tabs-list">
+            <div class="tab">Variables<small>paramValues editor</small></div>
+            <div class="tab">Tokens<small>active execution pointers</small></div>
+            <div class="tab">Subprocesses<small>spawned tree</small></div>
+            <div class="tab">Exceptions<small>shown only if activeIncidents &gt; 0</small></div>
+            <div class="tab">Workflows<small>AI / integration runs (PROCESS_ENGINE)</small></div>
+            <div class="tab">Trigger<small>shown only if initiator is present</small></div>
+            <div class="tab">Notifications<small>outgoing notifications</small></div>
+            <div class="tab">Audit Log<small>full timeline</small></div>
+          </div>
+
+          <h4>List page</h4>
+          <ul>
+            <li>Columns: <strong>UUID</strong>, <strong>Definition name</strong>, <strong>Exceptions</strong> (count badge), <strong>Status</strong>, <strong>Current Node Name</strong>, <strong>Start date</strong>.</li>
+            <li>Filters: <code>definitionName</code> (definition picker) and <code>keyValue</code> (variable-value search).</li>
+            <li>Row actions: open details, plus edit-variables when the user has <code>wks_process_instance_variables_edit</code>.</li>
+            <li>Routes: <code>runtime/active-instances</code> (list), <code>runtime/active-instances/:uuid</code> (detail).</li>
+          </ul>
+
+          <h4>Connection points</h4>
+          <ul class="cross-links">
+            <li><strong>← Active Policy.</strong> Pinned to a Build at start; never re-pointed.</li>
+            <li><strong>← UI Flow Sessions.</strong> A UI Flow Session can spawn Process Instances. The session-detail endpoint returns both the session and its spawned process instances bundled together — the linkage is resolved server-side, not exposed as a foreign key on <code>ProcessInstance</code>.</li>
+            <li><strong>↔ Failed Process Start / Failed Triggers / Exceptions.</strong> Three sibling pages that surface processes that didn't behave normally (didn't start, were triggered but didn't start, or threw at runtime).</li>
+            <li><strong>→ Workflow Instances.</strong> The <strong>Workflows</strong> tab on the detail panel filters workflow runs to those with trigger type <code>PROCESS_ENGINE</code>.</li>
+            <li><strong>→ Live Evals.</strong> Those same workflow runs feed Live Evals aggregations; the workflow detail page in Live Evals shows them grouped by workflow + Build.</li>
+          </ul>
+        </section>
+
+        <!-- ============================== § 6 ============================== -->
+        <section id="sec-6">
+          <h2><span class="section-num">§ 6</span>UI Flow Sessions</h2>
+          <p class="intro">
+            A UI Flow Session is one user-facing execution of a UI flow — chat, conversational
+            UI, multi-step form, embedded experience. It's lighter than a Process Instance:
+            status, variables, audit, and the bridge into the process layer (it spawns
+            Process Instances). It is the only first-class runtime entity that represents
+            <em>user-facing</em> behavior directly.
+          </p>
+
+          <h4>Top-level fields</h4>
+          <div class="field-list">
+            <div class="name">id</div><div class="type">string</div><div class="doc">Stable identifier. Shown in the list and used as the URL key.</div>
+            <div class="name">status</div><div class="type">string</div><div class="doc">Session lifecycle. Free-form string today (less canonicalised than ProcessState).</div>
+            <div class="name">dateStarted</div><div class="type">datetime</div><div class="doc">Session start.</div>
+            <div class="name">uiFlowName</div><div class="type">string</div><div class="doc">Display name of the UI flow.</div>
+            <div class="name">resourceDefinitionId · resourceId</div><div class="type">string · string</div><div class="doc">Definition + resource identifiers.</div>
+            <div class="name">applicationId · workspaceId</div><div class="type">string · string</div><div class="doc">Scope.</div>
+            <div class="name">buildAppVersionId</div><div class="type">string</div><div class="doc">Build pinned at start (parallel to ProcessInstance.<code>buildApplicationVersionId</code>).</div>
+            <div class="name">variables</div><div class="type">Record</div><div class="doc">Session variables (parallel to ProcessInstance.<code>paramValues</code>).</div>
+          </div>
+
+          <h4>Detail-panel tabs</h4>
+          <div class="tabs-list">
+            <div class="tab">Variables<small>session variables</small></div>
+            <div class="tab">Audit Log<small>session-scoped events</small></div>
+            <div class="tab">Processes<small>spawned Process Instances</small></div>
+            <div class="tab">Workflows<small>AI runs (CHAT / UI_FLOW)</small></div>
+          </div>
+
+          <h4>List page</h4>
+          <ul>
+            <li>Columns: <strong>ID</strong>, <strong>UI Flow</strong>, <strong>Status</strong>, <strong>Start Date</strong>.</li>
+            <li>Filters: <code>definitionName</code> (UI flow picker) and <code>keyValue</code> (variable-value search).</li>
+            <li>Routes: <code>runtime/ui-flows</code> (list), <code>runtime/ui-flows/:uuid</code> (detail).</li>
+            <li>Permission gate: <code>ui_flow_session_read</code> (application-scoped).</li>
+          </ul>
+
+          <h4>Connection points</h4>
+          <ul class="cross-links">
+            <li><strong>← Active Policy.</strong> Same pin-at-start behavior as Process Instances.</li>
+            <li><strong>→ Process Instances.</strong> The Processes tab is populated by the session-detail API, which returns the session and its spawned process instances together. The relationship is server-resolved; there is no direct foreign key on <code>ProcessInstance</code> pointing back at the session.</li>
+            <li><strong>→ Workflow Instances.</strong> The Workflows tab filters workflow runs to triggers <code>CHAT</code> and <code>UI_FLOW</code>.</li>
+            <li><strong>→ Live Evals.</strong> Those same runs feed Live Evals — the same workflow surfaces in three places (here, in the parent Process Instance, and in Live Evals).</li>
+          </ul>
+
+          <div class="callout">
+            <strong>Structural symmetry with Process Instances.</strong> Both have the same
+            anatomy: list page, detail panel with tabs, Build pinned at start, variables, audit
+            log, Workflows tab. They diverge on what they emphasise — UI Flow Sessions emphasise
+            <em>spawned processes</em>, Process Instances emphasise <em>tokens and exceptions</em>.
+            This symmetry is the strongest redesign hook in the runtime tab; see <a href="file:///Users/bogdandraghici/flowx-code/designer/docs/superpowers/specs/2026-05-14-runtime-tab-anatomy.html#sec-9">§ 9</a>.
+          </div>
+        </section>
+
+        <!-- ============================== § 7 ============================== -->
+        <section id="sec-7">
+          <h2><span class="section-num">§ 7</span>Live Evals</h2>
+          <p class="intro">
+            Live Evals is the runtime observability surface for AI workflow quality. It sits next
+            to Builds in the nav and is application-scoped (cross-workflow). It exposes three
+            tiers per workflow — <strong>Telemetry</strong> (always-on), <strong>Workflow scorers</strong>
+            (opt-in), <strong>AI nodes</strong> — under two orthogonal filters: <strong>Time window</strong>
+            and a <strong>Decisions facet</strong> driven by designer-marked observation points.
+          </p>
+
+          <h4>Three-tier workflow page</h4>
+          <ol>
+            <li><strong>Tier 1 — Telemetry.</strong> Free of charge, always on. Terminal-outcome distribution, path-class top 5, mean path length, retry pressure, fallback-model usage, p95 e2e latency, total cost, instance count.</li>
+            <li><strong>Tier 2 — Workflow scorers.</strong> Opt-in. Time-series of bound scorers with Build deploy markers + aggregate scorer tiles + recent workflow instances list.</li>
+            <li><strong>Tier 3 — AI nodes.</strong> One card per AI node in the workflow with bound-scorer chips and an open-alert badge; click drills into the node detail.</li>
+          </ol>
+
+          <h4>Core entities</h4>
+          <div class="field-list">
+            <div class="name">LiveScorer</div><div class="type">entity</div><div class="doc">Named, typed scorer. <code>scorerType</code> covers reference-free quality types (coherence, helpfulness, …) and runtime-only operational types (toxicity, schema-conformance, bias/PII, …).</div>
+            <div class="name">LiveScorerBinding</div><div class="type">entity</div><div class="doc">Attaches a scorer to a node-scope or workflow-scope with <code>sampleRate</code>, <code>dailyTokenBudget</code>, <code>threshold</code>, <code>enabled</code>.</div>
+            <div class="name">BuildSummary</div><div class="type">entity</div><div class="doc">Per-Build metadata: <code>buildTag</code>, <code>buildDate</code>, <code>isActive</code>. Source of truth for the chart's deploy markers.</div>
+            <div class="name">LiveAiNode</div><div class="type">entity</div><div class="doc">Workflow-scoped AI node summary (name, type, description).</div>
+            <div class="name">LiveWorkflowSummary</div><div class="type">entity</div><div class="doc">App-scoped workflow summary with <code>activeBuildId</code> and <code>aiNodeIds[]</code>.</div>
+            <div class="name">Invocation</div><div class="type">entity</div><div class="doc">One AI-node execution. Input, output, latency, cost, model, error state, scored flag.</div>
+            <div class="name">WorkflowInstance</div><div class="type">entity</div><div class="doc">One end-to-end workflow run. Entry input, final state, totals, completion status.</div>
+            <div class="name">Score</div><div class="type">entity</div><div class="doc">One scorer's result against one Invocation or one WorkflowInstance.</div>
+            <div class="name">LiveAlertState</div><div class="type">entity</div><div class="doc">Derived alert: <code>bindingId</code>, <code>currentValue</code>, <code>threshold</code>, <code>status</code>, <code>breachedSince</code>.</div>
+            <div class="name">ObservationPoint</div><div class="type">entity</div><div class="doc">Designer-marked decision dimension. (id, workflowId, nodeId, dimensionLabel, category, uniqueValuesSeen, enabled.)</div>
+            <div class="name">DecisionsFacet</div><div class="type">filter</div><div class="doc"><code>Record&lt;observationPointId, string[]&gt;</code>; empty array = no filter on that point.</div>
+            <div class="name">TimeWindow</div><div class="type">filter</div><div class="doc"><code>'1h' · '24h' · '7d' · { kind: 'custom', from, to }</code>. Default <code>'24h'</code>.</div>
+            <div class="name">BuildComparison</div><div class="type">entity</div><div class="doc">Discriminated union (<code>'ok' | 'incompatible'</code>). The <code>'ok'</code> arm carries aggregate delta, per-node deltas, and decision-distribution deltas.</div>
+          </div>
+
+          <h4>Routes</h4>
+          <ul>
+            <li><code>runtime/live-evals</code> — landing (workflow list with summary scores + alert banner inside the table card)</li>
+            <li><code>runtime/live-evals/:workflowId</code> — workflow detail (three-tier)</li>
+            <li><code>runtime/live-evals/:workflowId/settings</code> — bindings + observation-points tabs</li>
+            <li><code>runtime/live-evals/:workflowId/nodes/:nodeId</code> — AI-node detail</li>
+            <li><code>runtime/live-evals/:workflowId/builds/:leftBuildId/compare/:rightBuildId</code> — Build comparison</li>
+          </ul>
+
+          <h4>Connection points</h4>
+          <ul class="cross-links">
+            <li><strong>← Workflow runs from Process Instances and UI Flow Sessions.</strong> Live Evals reads the same runs that surface in the <em>Workflows</em> tab of both Process Instance and UI Flow Session detail pages.</li>
+            <li><strong>↔ Builds.</strong> Build markers overlay every time-series; comparison is build-anchored; the workflow card's "active build" badge reads the same <code>BuildSummary</code>.</li>
+            <li><strong>↔ Active Policy.</strong> No direct relation today. The policy decides which Build runs, Live Evals reports what happened on each Build.</li>
+          </ul>
+
+          <div class="callout">
+            <strong>Permission piggyback.</strong> The route currently uses <code>wks_builds_read</code>;
+            <code>wks_live_evals_read</code> is reserved in <code>PermissionValue</code> but the
+            backend doesn't grant it yet. A real launch needs to flip this.
+          </div>
+        </section>
+
+        <!-- ============================== § 8 ============================== -->
+        <section id="sec-8">
+          <h2><span class="section-num">§ 8</span>Surrounding runtime modules</h2>
+          <p class="intro">
+            The runtime tab has more entries than the four focal ones. Each below interacts with
+            the core concepts; treat this as a quick map, not full documentation.
+          </p>
+
+          <h3>Builds list</h3>
+          <p>The default landing for the whole runtime tab (<code>runtime/builds-list</code>). Lists every published build, grouped by branch. Has a <code>workflow-instances</code> child outlet for inspecting workflow runs scoped to a specific build. <strong>Links to:</strong> Active Policy (which build the policy points at), every running instance (which build they were started on), Live Evals (per-build time-series).</p>
+
+          <h3>Scheduled Processes</h3>
+          <p>Time-based triggers that auto-start Process Instances on a schedule (<code>runtime/scheduled-processes</code>, gated by <code>wks_active_policy_read</code>). <strong>Links to:</strong> Process Instances (the things it starts), Failed Process Start (when starts go wrong), Failed Triggers (when the schedule fires but the start fails).</p>
+
+          <h3>Manage Triggers</h3>
+          <p>Event / external-trigger configuration that starts Process Instances on external signals (<code>runtime/manage-triggers</code>). <strong>Links to:</strong> Process Instances (the things it starts), the same Failed Triggers / Failed Process Start surfaces.</p>
+
+          <h3>Failed Process Start</h3>
+          <p>Cases where the engine refused to start a process (bad input, missing build, validation, …). Sibling to Process Instances in the Runtime Processes nav group. <strong>Links to:</strong> the Process Instance that <em>would have been</em> created, and the trigger / scheduled process that asked.</p>
+
+          <h3>Failed Triggers</h3>
+          <p>Triggers that fired but didn't successfully reach a process start. Drill-down at <code>runtime/failed-triggers/:id</code>. <strong>Links to:</strong> Manage Triggers (configuration), Failed Process Start (downstream outcome).</p>
+
+          <h3>Exceptions / Exception details</h3>
+          <p>Incidents on running Process Instances (<code>runtime/exceptions</code>, <code>runtime/exceptions/:id</code>). The same data surfaces inside the Process Instance Exceptions tab; this list is a workspace-wide cross-process view. <strong>Links to:</strong> Process Instances (the host instance for each incident).</p>
+
+          <h3>Task Manager</h3>
+          <p>The user-task inbox surface (<code>runtime/task-manager</code>, gated by <code>wks_tasks_read</code>). Tasks are created by Process Instances that reach a human-task node. <strong>Links to:</strong> Process Instances (the source of each task).</p>
+
+          <h3>Config Param Overrides</h3>
+          <p>Per-runtime-user / per-role overrides of configuration parameters (<code>runtime/overrides</code>, gated by <code>wks_config_param_overrides_read</code>). Structurally similar to Active Policy overrides but for arbitrary config params instead of build version. <strong>Links to:</strong> Active Policy (conceptual mirror), every running instance (which params it sees).</p>
+        </section>
+
+        <!-- ============================== § 9 ============================== -->
+        <section id="sec-9">
+          <h2><span class="section-num">§ 9</span>Friction / redesign hooks</h2>
+          <p class="intro">
+            Observations, not recommendations. Each is a place where the current shape of the
+            runtime tab makes a question harder to answer than it should be. They're meant to
+            anchor design conversations, not pre-empt them.
+          </p>
+
+          <div class="friction">
+            <h3>Active Policy and Config Param Overrides have the same shape <span class="tag">duplication</span></h3>
+            <p>
+              Both are "default + per-username/role overrides with priority + effective-resolver".
+              They live on separate pages with different table chrome, different override-form
+              modals, and different test-effective UX — but the underlying conceptual model is
+              identical. A redesign could collapse them into a single "Runtime configuration"
+              surface where Build-version is just one of several configurable axes.
+            </p>
+          </div>
+
+          <div class="friction">
+            <h3>Process Instances and UI Flow Sessions are near-symmetric <span class="tag">parallel concepts</span></h3>
+            <p>
+              They share: list page, detail bottom-panel, Build pinned at start, variables, audit
+              log, Workflows tab. They diverge on: tokens vs status, exceptions vs spawned
+              processes. They live under different top-level nav entries (Runtime Processes &gt;
+              Process Instances vs UI Flow Sessions at top level). A user looking for "a thing
+              that ran in production five minutes ago" has to already know which kind it was.
+            </p>
+          </div>
+
+          <div class="friction">
+            <h3>AI workflow runs appear in three places <span class="tag">duplication</span></h3>
+            <p>
+              The same workflow run shows up in (a) the parent Process Instance's Workflows tab,
+              (b) the parent UI Flow Session's Workflows tab if any, and (c) Live Evals. Each
+              view applies a different lens — engine context, user context, quality
+              aggregations — but the underlying entity is the same workflow execution. There's no
+              way today to navigate from a single workflow run to its sibling lenses.
+            </p>
+          </div>
+
+          <div class="friction">
+            <h3>No unified "what's running right now" entry point <span class="tag">missing surface</span></h3>
+            <p>
+              Process Instances and UI Flow Sessions are the only sources of live state, but a
+              user must already know which kind of artifact they're looking for to choose a page.
+              There's no cross-cutting "live runtime" view that lists both, no global activity
+              feed, and no single place to scan for anomalies across both surfaces.
+            </p>
+          </div>
+
+          <div class="friction">
+            <h3>Three separate "things went wrong" surfaces <span class="tag">fragmentation</span></h3>
+            <p>
+              Failed Process Start, Failed Triggers, and Exceptions are three sibling pages with
+              the same emotional purpose ("show me what's broken"). They differ on <em>when</em>
+              in the lifecycle the failure happened (before start, at trigger, mid-execution).
+              A redesign could consolidate them into a single "incidents" view filtered by
+              failure stage, with deep-links into the originating Process Instance or trigger.
+            </p>
+          </div>
+
+          <div class="friction">
+            <h3>Builds is the implicit centre, but its page has no deployment view <span class="tag">missing surface</span></h3>
+            <p>
+              Every other runtime concept references a Build. But the Builds list itself shows
+              builds-as-artifacts, not builds-as-deployments. Answering "what build is the policy
+              actually serving right now, and to whom?" requires opening Active Policy, then
+              opening test-effective with sample user inputs. A redesign could move the
+              deployment lens onto the Builds page as a first-class column ("currently effective
+              for: 87% of users / role X / username Y").
+            </p>
+          </div>
+
+          <div class="friction">
+            <h3>Status models are inconsistent <span class="tag">data shape</span></h3>
+            <p>
+              Process Instances have a strongly-typed <code>ProcessState</code> enum with ten
+              well-defined values. UI Flow Sessions have a free-form <code>status: string</code>.
+              Live Evals has yet another set (workflow completion status, alert status). A
+              redesign that surfaces multiple kinds of running things together will need a
+              status-domain decision — converge, normalise, or render distinctly.
+            </p>
+          </div>
+
+          <div class="friction">
+            <h3>The detail panel pattern is repeated, slightly differently, three times <span class="tag">component drift</span></h3>
+            <p>
+              Process Instance details, UI Flow Session details, and Live Evals invocation /
+              instance modals all use a bottom-panel-with-tabs metaphor, but each is its own
+              component with slightly different tab chrome, slightly different metadata header,
+              and different state-pill treatment. The recent Live Evals work aligned its modal
+              with the agent-builder report-case modal style; the runtime detail panels haven't
+              been touched. A redesign could reach a shared "runtime entity detail panel".
+            </p>
+          </div>
+
+          <div class="friction">
+            <h3>The Workflows tab on instances is a redundant Live Evals slice <span class="tag">latent integration</span></h3>
+            <p>
+              <code>flx-instance-workflows</code> lists workflow runs filtered by trigger type.
+              Live Evals can already render that exact list (with richer scoring). A redesign
+              could replace the tab content with an embedded Live Evals fragment — same data,
+              one source of truth for AI runs — or invert the relationship and let the Workflows
+              tab deep-link out to Live Evals for any scored run.
+            </p>
+          </div>
+        </section>
+
+        <footer style="margin-top: 80px; padding-top: 24px; border-top: 1px solid var(--border); font-size: 12px; line-height: 18px; color: var(--text-dim)">
+          Written 2026-05-14 · runtime tab map for redesign exploration · all references map to
+          code paths under <code>apps/designer/src/app/modules/{process,ui-flow,projects/components}</code>
+        </footer>
+      </main>
+    </div>
+  
+
+</body></html>

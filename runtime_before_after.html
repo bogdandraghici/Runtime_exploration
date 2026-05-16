@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Runtime Tab — Before / After</title>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --bg-alt: #f7f8f9;
+      --bg-soft: #fafbfc;
+      --border: #e3e8ed;
+      --border-strong: #cbd1db;
+      --text: #1d232c;
+      --text-muted: #5b6a7e;
+      --text-dim: #8390a2;
+      --before: #a31800;
+      --before-bg: #fde9e6;
+      --before-soft: #fef4f2;
+      --after: #005b44;
+      --after-bg: #e6f2ef;
+      --after-soft: #f1f8f5;
+      --blue-500: #006bd8;
+      --blue-700: #004c99;
+      --blue-50: #e6f0fb;
+      --purple-500: #6e36cd;
+      --orange-500: #fd6b1c;
+      --yellow-50: #fff8e7;
+      --yellow-500: #feb913;
+      --yellow-700: #b4830d;
+      --shadow-m: 0 8px 16px #1634621a;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 14px;
+      line-height: 22px;
+      color: var(--text);
+      background: var(--bg-alt);
+    }
+    main {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 40px 32px 80px;
+    }
+    header.doc {
+      margin-bottom: 36px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--border);
+    }
+    header.doc h1 {
+      font-size: 30px;
+      line-height: 40px;
+      font-weight: 700;
+      margin: 0 0 8px;
+    }
+    header.doc p {
+      color: var(--text-muted);
+      font-size: 15px;
+      line-height: 24px;
+      margin: 0;
+      max-width: 800px;
+    }
+    header.doc .meta {
+      margin-top: 14px;
+      font-size: 12px;
+      color: var(--text-dim);
+      display: flex;
+      gap: 16px;
+    }
+
+    section { margin-bottom: 56px; }
+    section h2 {
+      font-size: 22px;
+      line-height: 30px;
+      font-weight: 700;
+      margin: 0 0 8px;
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+    }
+    section h2 .num {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-dim);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      font-variant-numeric: tabular-nums;
+    }
+    section .intro {
+      color: var(--text-muted);
+      font-size: 14px;
+      line-height: 22px;
+      margin: 0 0 20px;
+      max-width: 880px;
+    }
+
+    /* Two-column comparison frame */
+    .ba-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    @media (max-width: 880px) { .ba-grid { grid-template-columns: 1fr; } }
+    .ba-col {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: var(--shadow-m);
+    }
+    .ba-head {
+      padding: 12px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+    }
+    .ba-head.before { background: var(--before-soft); color: var(--before); border-bottom-color: #f7bab0; }
+    .ba-head.after  { background: var(--after-soft); color: var(--after); border-bottom-color: #b0d8ce; }
+    .ba-head .label { font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; font-size: 11px; }
+    .ba-head .meta-tag {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 10px;
+      border-radius: 9999px;
+      background: white;
+      border: 1px solid currentColor;
+    }
+    .ba-body { padding: 14px 18px; }
+
+    /* IA list */
+    .ia-list { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 12px; line-height: 22px; }
+    .ia-list .item { padding: 4px 10px; border-radius: 4px; display: flex; align-items: center; gap: 8px; }
+    .ia-list .item .glyph { color: var(--text-dim); width: 14px; font-size: 10px; }
+    .ia-list .group {
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-size: 10px;
+      font-weight: 700;
+      margin: 10px 0 2px;
+      padding-left: 10px;
+    }
+    .ia-list .child { margin-left: 18px; color: var(--text-muted); }
+    .ia-list .new { background: var(--yellow-50); }
+    .ia-list .new::after { content: 'NEW'; font-size: 9px; background: var(--yellow-700); color: white; padding: 1px 5px; border-radius: 3px; margin-left: auto; letter-spacing: 0.04em; font-family: system-ui; }
+    .ia-list .merged { background: var(--blue-50); color: var(--blue-700); }
+    .ia-list .merged .note { color: var(--text-muted); font-size: 10px; margin-left: auto; font-family: system-ui; font-weight: 500; }
+
+    /* Mapping table */
+    .map-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .map-table thead th {
+      background: var(--bg-alt);
+      padding: 10px 14px;
+      text-align: left;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--text-dim);
+      font-weight: 700;
+      border-bottom: 1px solid var(--border-strong);
+    }
+    .map-table tbody td {
+      padding: 14px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+    .map-table .before-cell {
+      width: 42%;
+      background: var(--before-soft);
+      border-right: 1px solid #f7bab0;
+    }
+    .map-table .arrow-cell {
+      width: 50px;
+      text-align: center;
+      color: var(--text-dim);
+      font-size: 18px;
+      vertical-align: middle;
+    }
+    .map-table .after-cell {
+      background: var(--after-soft);
+    }
+    .map-table .before-cell .name,
+    .map-table .after-cell .name { font-weight: 700; margin-bottom: 2px; }
+    .map-table .before-cell .name { color: var(--before); }
+    .map-table .after-cell .name { color: var(--after); }
+    .map-table .desc { color: var(--text-muted); font-size: 12px; line-height: 18px; }
+    .map-table code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      background: white;
+      border: 1px solid var(--border);
+      padding: 1px 5px;
+      border-radius: 3px;
+    }
+    .change-pill {
+      display: inline-block;
+      font-size: 9px;
+      font-weight: 700;
+      padding: 1px 7px;
+      border-radius: 9999px;
+      margin-right: 5px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .change-pill.merge   { background: #fff8e7; color: #b4830d; }
+    .change-pill.new     { background: #e6f2ef; color: #005b44; }
+    .change-pill.enhance { background: #e6f0fb; color: #004c99; }
+    .change-pill.keep    { background: #f0f3f6; color: #5b6a7e; }
+
+    /* Friction table */
+    .fr-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 8px; }
+    .fr-table thead th {
+      background: var(--bg-alt);
+      padding: 10px 14px;
+      text-align: left;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--text-dim);
+      font-weight: 700;
+      border-bottom: 1px solid var(--border-strong);
+    }
+    .fr-table tbody td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+    .fr-table .num { width: 32px; font-weight: 700; color: var(--text-dim); font-variant-numeric: tabular-nums; }
+    .fr-table .fr-title { font-weight: 700; color: var(--before); margin-bottom: 4px; }
+    .fr-table .fr-desc  { color: var(--text-muted); font-size: 12px; line-height: 18px; }
+    .fr-table .res {
+      background: var(--after-soft);
+      border-left: 3px solid var(--after);
+    }
+    .fr-table .res-title { font-weight: 700; color: var(--after); margin-bottom: 4px; }
+    .fr-table .res-desc  { color: var(--text); font-size: 13px; line-height: 20px; }
+    .fr-table .where { font-size: 11px; color: var(--text-dim); margin-top: 6px; }
+    .fr-table .where code { font-family: 'JetBrains Mono', monospace; background: white; border: 1px solid var(--border); padding: 1px 5px; border-radius: 3px; }
+
+    /* Numbers snapshot */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-top: 16px;
+    }
+    @media (max-width: 760px) { .stats { grid-template-columns: repeat(2, 1fr); } }
+    .stat {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 16px;
+      box-shadow: var(--shadow-m);
+    }
+    .stat .k { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.04em; font-weight: 700; }
+    .stat .row { display: flex; align-items: baseline; gap: 12px; margin-top: 6px; }
+    .stat .before-v {
+      color: var(--before);
+      font-size: 20px;
+      font-weight: 700;
+      text-decoration: line-through;
+      text-decoration-color: rgba(163, 24, 0, 0.5);
+    }
+    .stat .arrow { color: var(--text-dim); font-size: 14px; }
+    .stat .after-v { color: var(--after); font-size: 24px; font-weight: 700; }
+    .stat .delta { font-size: 11px; color: var(--text-muted); margin-top: 6px; }
+    .stat .delta strong { color: var(--text); }
+
+    /* Visual hierarchy mini */
+    .vh-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media (max-width: 880px) { .vh-grid { grid-template-columns: 1fr; } }
+    .vh-wire {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px;
+      font-size: 11px;
+      line-height: 16px;
+    }
+    .vh-wire .box {
+      background: white;
+      border: 1px solid var(--border-strong);
+      border-radius: 4px;
+      padding: 5px 8px;
+      margin-bottom: 4px;
+      min-height: 24px;
+    }
+    .vh-wire .box.flat { background: var(--bg-alt); }
+    .vh-wire .box.hero { background: var(--blue-50); border-color: #b0d1f3; min-height: 60px; font-weight: 700; color: var(--blue-700); }
+    .vh-wire .box.alert { background: var(--before-bg); border-color: #f7bab0; color: var(--before); font-weight: 700; }
+    .vh-wire .row { display: grid; grid-template-columns: 2fr 1fr; gap: 4px; }
+    .vh-wire .row.equal { grid-template-columns: 1fr 1fr 1fr 1fr; }
+    .vh-wire .row.trends { grid-template-columns: repeat(4, 1fr); gap: 4px; }
+    .vh-wire .label { font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.04em; font-weight: 700; margin-bottom: 4px; }
+
+    /* Closing card */
+    .summary-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--blue-500);
+      border-radius: 12px;
+      padding: 18px 22px;
+      box-shadow: var(--shadow-m);
+    }
+    .summary-card h3 { margin: 0 0 8px; font-size: 16px; font-weight: 700; }
+    .summary-card p { margin: 0 0 12px; color: var(--text-muted); font-size: 13px; line-height: 20px; }
+    .summary-card ul { margin: 0; padding-left: 20px; font-size: 13px; line-height: 22px; color: var(--text); }
+
+  </style>
+</head>
+<body>
+<main>
+
+  <header class="doc">
+    <h1>Runtime Tab — Before / After</h1>
+    <p>Side-by-side comparison of the current Runtime tab anatomy (captured in <code>runtime_starter.htm</code>) and the redesigned structure produced in the 2026-05-15 design session. Same content, restructured for clarity, integration, and self-explanation.</p>
+    <div class="meta">
+      <span>Date: 2026-05-15</span>
+      <span>Companion: <a href="docs/superpowers/specs/2026-05-15-runtime-redesign-design.md" style="color: var(--blue-700);">design spec</a></span>
+      <span>Source: <a href="runtime_starter.htm" style="color: var(--blue-700);">runtime_starter.htm</a></span>
+    </div>
+  </header>
+
+  <!-- ============== § 1 — NUMBERS ============== -->
+  <section>
+    <h2><span class="num">§ 1</span>The change in numbers</h2>
+    <p class="intro">A high-level scoreboard before going into the structural detail.</p>
+
+    <div class="stats">
+      <div class="stat">
+        <div class="k">Nav entries</div>
+        <div class="row">
+          <span class="before-v">11</span>
+          <span class="arrow">→</span>
+          <span class="after-v">8</span>
+        </div>
+        <div class="delta">3 merges + 1 new landing</div>
+      </div>
+      <div class="stat">
+        <div class="k">"Things went wrong" pages</div>
+        <div class="row">
+          <span class="before-v">3</span>
+          <span class="arrow">→</span>
+          <span class="after-v">1</span>
+        </div>
+        <div class="delta">Failed Start · Failed Triggers · Exceptions → <strong>Incidents</strong></div>
+      </div>
+      <div class="stat">
+        <div class="k">Detail-panel components</div>
+        <div class="row">
+          <span class="before-v">3</span>
+          <span class="arrow">→</span>
+          <span class="after-v">1</span>
+        </div>
+        <div class="delta">Shared right-slide component reused across surfaces</div>
+      </div>
+      <div class="stat">
+        <div class="k">Surfaces showing AI runs</div>
+        <div class="row">
+          <span class="before-v">3</span>
+          <span class="arrow">→</span>
+          <span class="after-v">1 + slices</span>
+        </div>
+        <div class="delta">Live Evals canonical; embedded slices everywhere</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============== § 2 — IA SIDE BY SIDE ============== -->
+  <section>
+    <h2><span class="num">§ 2</span>Information architecture</h2>
+    <p class="intro">Left nav structure before vs after. The current shape is flat with one nested group; the new shape groups all entries semantically and adds Overview as the default landing.</p>
+
+    <div class="ba-grid">
+
+      <div class="ba-col">
+        <div class="ba-head before">
+          <span class="label">Before — current</span>
+          <span class="meta-tag">11 entries</span>
+        </div>
+        <div class="ba-body">
+          <div class="ia-list">
+            <div class="item"><span class="glyph">▸</span>Builds list <span style="margin-left:auto;font-size:10px;color:var(--text-dim);font-family:system-ui;">default landing</span></div>
+            <div class="item"><span class="glyph">▸</span>Active Policy</div>
+            <div class="item"><span class="glyph">▸</span>Config Param Overrides</div>
+            <div class="item group">Runtime processes</div>
+            <div class="item child"><span class="glyph">▸</span>Process Instances</div>
+            <div class="item child"><span class="glyph">▸</span>Failed Process Start</div>
+            <div class="item child"><span class="glyph">▸</span>Failed Triggers</div>
+            <div class="item child"><span class="glyph">▸</span>Exceptions</div>
+            <div class="item"><span class="glyph">▸</span>UI Flow Sessions</div>
+            <div class="item"><span class="glyph">▸</span>Live Evals</div>
+            <div class="item"><span class="glyph">▸</span>Scheduled Processes</div>
+            <div class="item"><span class="glyph">▸</span>Manage Triggers</div>
+            <div class="item"><span class="glyph">▸</span>Task Manager</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ba-col">
+        <div class="ba-head after">
+          <span class="label">After — proposed</span>
+          <span class="meta-tag">8 entries</span>
+        </div>
+        <div class="ba-body">
+          <div class="ia-list">
+            <div class="item new"><span class="glyph">◆</span>Overview</div>
+            <div class="item group">Live state</div>
+            <div class="item child merged"><span class="glyph">▸</span>Instances<span class="note">Process + UI Flow merged</span></div>
+            <div class="item child merged"><span class="glyph">▸</span>Incidents<span class="note">Failed Start + Triggers + Exceptions + AI breaches</span></div>
+            <div class="item child"><span class="glyph">▸</span>Live Evals</div>
+            <div class="item group">Deployment</div>
+            <div class="item child"><span class="glyph">▸</span>Builds <span style="margin-left:auto;font-size:10px;color:var(--text-dim);font-family:system-ui;">+ deployment lens</span></div>
+            <div class="item child merged"><span class="glyph">▸</span>Configuration<span class="note">Active Policy + Param Overrides</span></div>
+            <div class="item child merged"><span class="glyph">▸</span>Schedules &amp; Triggers<span class="note">Scheduled + Manage + Failed fires</span></div>
+            <div class="item group">Work</div>
+            <div class="item child"><span class="glyph">▸</span>Tasks</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============== § 3 — PAGE-BY-PAGE MAPPING ============== -->
+  <section>
+    <h2><span class="num">§ 3</span>Page-by-page mapping</h2>
+    <p class="intro">How each page or entity in the current Runtime tab moves to the redesign.</p>
+
+    <table class="map-table">
+      <thead>
+        <tr>
+          <th>Current</th>
+          <th></th>
+          <th>New</th>
+        </tr>
+      </thead>
+      <tbody>
+
+        <tr>
+          <td class="before-cell">
+            <div class="name">— (no landing dashboard)</div>
+            <div class="desc">Builds list served as the de-facto landing. No cross-cutting status view; no activity stream; no "is anything broken" affordance.</div>
+          </td>
+          <td class="arrow-cell">→</td>
+          <td class="after-cell">
+            <span class="change-pill new">New</span>
+            <div class="name">Overview</div>
+            <div class="desc">Activity-first dashboard. Conditional incident banner · dominant activity feed · stacked KPI cards (In flight · Deployment · AI quality) · light trends strip. Visual hierarchy explicit.</div>
+          </td>
+        </tr>
+
+        <tr>
+          <td class="before-cell">
+            <div class="name">Process Instances<br>UI Flow Sessions</div>
+            <div class="desc">Two separate top-level entries. Near-symmetric anatomy (list + detail with tabs), but with different chrome, different status models, and live under different parents in the nav.</div>
+          </td>
+          <td class="arrow-cell">→</td>
+          <td class="after-cell">
+            <span class="change-pill merge">Merged</span>
+            <div class="name">Instances</div>
+            <div class="desc">One list, type as a column (green P · purple F). Five-state normalized status pill (Running / Waiting / Completed / Failed / Terminated). Shared detail panel with "Activity tree" tab that adapts to type. Cross-link via "spawned by" indicator.</div>
+          </td>
+        </tr>
+
+        <tr>
+          <td class="before-cell">
+            <div class="name">Failed Process Start<br>Failed Triggers<br>Exceptions</div>
+            <div class="desc">Three sibling pages with the same emotional purpose ("show me what's broken") that differ only on lifecycle stage.</div>
+          </td>
+          <td class="arrow-cell">→</td>
+          <td class="after-cell">
+            <span class="change-pill merge">Merged</span>
+            <div class="name">Incidents</div>
+            <div class="desc">One list, four stage tabs (Pre-start · Trigger · Mid-execution · AI quality). AI scorer breaches surface here too. Severity bands, three-state status (Open / Ack / Resolved), merged timeline that surfaces deploy correlation.</div>
+          </td>
+        </tr>
+
+        <tr>
+          <td class="before-cell">
+            <div class="name">Active Policy<br>Config Param Overrides</div>
+            <div class="desc">Two pages, identical underlying shape (default + per-user/role overrides with priority), separate UIs, two test-effective dialogs.</div>
+          </td>
+          <td class="arrow-cell">→</td>
+          <td class="after-cell">
+            <span class="change-pill merge">Merged</span>
+            <div class="name">Configuration</div>
+            <div class="desc">Two axes (Build version + Config parameters) on one page, shared override grammar. Persistent right-side "Test as user" resolver shows BOTH outcomes in one shot with full resolution path.</div>
+          </td>
+        </tr>
+
+        <tr>
+          <td class="before-cell">
+            <div class="name">Scheduled Processes<br>Manage Triggers</div>
+            <div class="desc">Mutually linked configuration surfaces. Sibling failure pages (Failed Triggers / Failed Process Start) live elsewhere in the nav.</div>
+          </td>
+          <td class="arrow-cell">→</td>
+          <td class="after-cell">
+            <span class="change-pill merge">Merged</span>
+            <div class="name">Schedules &amp; Triggers</div>
+            <div class="desc">One page, four tabs (Scheduled · External · Recent fires · Failed fires). Trigger-stage failures double-surface in Incidents. Two-word label preserves both mental models — users hunting for "the nightly batch job" find it under <em>Schedules</em>, users wiring a webhook find it under <em>Triggers</em>.</div>
+          </td>
+        </tr>
+
+        <tr>
+          <td class="before-cell">
+            <div class="name">Builds list</div>
+            <div class="desc">Lists builds as artifacts. Has no deployment view — "what is currently serving whom" requires bouncing to Active Policy + test-effective.</div>
+          </td>
+          <td class="arrow-cell">→</td>
+          <td class="after-cell">
+            <span class="change-pill enhance">Enhanced</span>
+            <div class="name">Builds</div>
+            <div class="desc">Same list, new <strong>coverage column</strong> per row (% traffic, # users). Detail panel adds Deployment tab (who is and isn't being served) and inline Build comparison pulled from Live Evals.</div>
+          </td>
+        </tr>
+
+        <tr>
+          <td class="before-cell">
+            <div class="name">Live Evals</div>
+            <div class="desc">Three-tier workflow page with telemetry, scorers, AI nodes. Lives in isolation — workflow runs are duplicated in instance detail tabs.</div>
+          </td>
+          <td class="arrow-cell">→</td>
+          <td class="after-cell">
+            <span class="change-pill enhance">Enhanced</span>
+            <div class="name">Live Evals</div>
+            <div class="desc">Same three-tier structure. New: <strong>inbound integration</strong> — embedded slice on Instance detail panels, breached scorers flow into Incidents, comparison data renders inline on Builds. Canonical source for AI run data.</div>
+          </td>
+        </tr>
+
+        <tr>
+          <td class="before-cell">
+            <div class="name">Task Manager</div>
+            <div class="desc">User-task inbox. Tasks list their originating process implicitly. No reverse linkage.</div>
+          </td>
+          <td class="arrow-cell">→</td>
+          <td class="after-cell">
+            <span class="change-pill keep">Preserved + linked</span>
+            <div class="name">Tasks</div>
+            <div class="desc">Same list. Each row carries originating Instance ID with click-through; same task surfaces in the Instance's Activity tree tab. Fully cross-linked.</div>
+          </td>
+        </tr>
+
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ============== § 4 — FRICTION → RESOLUTION ============== -->
+  <section>
+    <h2><span class="num">§ 4</span>Friction → resolution</h2>
+    <p class="intro">Each friction point from the starter doc and the design choice that addresses it. All nine are resolved.</p>
+
+    <table class="fr-table">
+      <thead>
+        <tr>
+          <th style="width: 32px;">#</th>
+          <th>Friction (current)</th>
+          <th>Resolution (new)</th>
+        </tr>
+      </thead>
+      <tbody>
+
+        <tr>
+          <td class="num">1</td>
+          <td>
+            <div class="fr-title">Active Policy + Config Param Overrides have the same shape</div>
+            <div class="fr-desc">Default + overrides + resolver pattern is duplicated across two pages with different chrome.</div>
+          </td>
+          <td class="res">
+            <div class="res-title">Configuration consolidates both axes</div>
+            <div class="res-desc">One page, shared override grammar, one persistent resolver that shows both outcomes simultaneously.</div>
+            <div class="where">See: <code>§ 8 · Configuration</code></div>
+          </td>
+        </tr>
+
+        <tr>
+          <td class="num">2</td>
+          <td>
+            <div class="fr-title">Process Instances + UI Flow Sessions are near-symmetric</div>
+            <div class="fr-desc">Same list + detail anatomy, separate nav entries, divergent status models. Users must know what kind of thing they're looking for before they can find it.</div>
+          </td>
+          <td class="res">
+            <div class="res-title">Instances merges both</div>
+            <div class="res-desc">One list, type as a column, normalized status pill, shared detail panel with type-adaptive "Activity tree".</div>
+            <div class="where">See: <code>§ 5 · Instances</code></div>
+          </td>
+        </tr>
+
+        <tr>
+          <td class="num">3</td>
+          <td>
+            <div class="fr-title">AI workflow runs appear in three places</div>
+            <div class="fr-desc">Process Instance Workflows tab, UI Flow Session Workflows tab, and Live Evals — three lenses, no cross-navigation.</div>
+          </td>
+          <td class="res">
+            <div class="res-title">Live Evals is canonical; everywhere else embeds a slice</div>
+            <div class="res-desc">Instance details show an embedded Live Evals "AI runs" slice with deep-link out. One source of truth.</div>
+            <div class="where">See: <code>§ 5, 7, 9</code></div>
+          </td>
+        </tr>
+
+        <tr>
+          <td class="num">4</td>
+          <td>
+            <div class="fr-title">No unified "what's running right now" entry point</div>
+            <div class="fr-desc">Process Instances and UI Flow Sessions are the only sources of live state, but they're separate pages with no cross-cutting view.</div>
+          </td>
+          <td class="res">
+            <div class="res-title">Overview activity feed + merged Instances list</div>
+            <div class="res-desc">Activity-first dashboard surfaces starts/finishes/incidents across all types in one stream. Instances list combines both.</div>
+            <div class="where">See: <code>§ 4 · Overview · § 5 · Instances</code></div>
+          </td>
+        </tr>
+
+        <tr>
+          <td class="num">5</td>
+          <td>
+            <div class="fr-title">Three separate "things went wrong" surfaces</div>
+            <div class="fr-desc">Failed Process Start, Failed Triggers, and Exceptions are sibling pages differing only on lifecycle stage of the failure.</div>
+          </td>
+          <td class="res">
+            <div class="res-title">Incidents unifies them — plus AI breaches</div>
+            <div class="res-desc">One list, four stage tabs. AI scorer breaches join the same surface from the ops perspective.</div>
+            <div class="where">See: <code>§ 6 · Incidents</code></div>
+          </td>
+        </tr>
+
+        <tr>
+          <td class="num">6</td>
+          <td>
+            <div class="fr-title">Builds is the implicit centre, but has no deployment view</div>
+            <div class="fr-desc">Builds list shows artifacts; "what build is currently serving whom" requires opening Active Policy + test-effective.</div>
+          </td>
+          <td class="res">
+            <div class="res-title">Coverage column + Deployment tab</div>
+            <div class="res-desc">Each build row shows % traffic served. Detail panel's Deployment tab breaks down by policy rule and shows fallback routing.</div>
+            <div class="where">See: <code>§ 7 · Builds</code></div>
+          </td>
+        </tr>
+
+        <tr>
+          <td class="num">7</td>
+          <td>
+            <div class="fr-title">Status models are inconsistent</div>
+            <div class="fr-desc">Process Instances have a 10-value ProcessState enum; UI Flow Sessions have a free-form status string; Live Evals has yet another vocabulary.</div>
+          </td>
+          <td class="res">
+            <div class="res-title">Five-state UI normalization</div>
+            <div class="res-desc">Running / Waiting / Completed / Failed / Terminated render consistently. Raw underlying state revealed on hover.</div>
+            <div class="where">See: <code>§ 5 · § 10.2</code></div>
+          </td>
+        </tr>
+
+        <tr>
+          <td class="num">8</td>
+          <td>
+            <div class="fr-title">Detail panel pattern repeated three times, differently</div>
+            <div class="fr-desc">Process Instance, UI Flow Session, and Live Evals modals each use a bottom-panel-with-tabs metaphor but drifted into three different implementations.</div>
+          </td>
+          <td class="res">
+            <div class="res-title">One shared detail-panel component</div>
+            <div class="res-desc">Right-slide panel, consistent chrome, reused across Instance, Incident, Build, Trigger, Task detail views.</div>
+            <div class="where">See: <code>§ 10.1</code></div>
+          </td>
+        </tr>
+
+        <tr>
+          <td class="num">9</td>
+          <td>
+            <div class="fr-title">The Workflows tab on instances is a redundant Live Evals slice</div>
+            <div class="fr-desc">flx-instance-workflows is a thinner, separate implementation of what Live Evals already renders better.</div>
+          </td>
+          <td class="res">
+            <div class="res-title">Tab now embeds the Live Evals fragment</div>
+            <div class="res-desc">"AI runs" tab on Instance details embeds a Live Evals slice with "Open in Live Evals →" deep-link. Same data, one source of truth.</div>
+            <div class="where">See: <code>§ 5 · § 9</code></div>
+          </td>
+        </tr>
+
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ============== § 5 — VISUAL HIERARCHY ============== -->
+  <section>
+    <h2><span class="num">§ 5</span>Visual hierarchy</h2>
+    <p class="intro">The starter has no landing dashboard, so today's "first impression" is just a flat list of builds. The redesign establishes a deliberate visual hierarchy: incident banner → activity feed → KPI cards → trends.</p>
+
+    <div class="vh-grid">
+
+      <div>
+        <div class="label" style="font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.04em; font-weight: 700; margin-bottom: 6px;">Before — flat builds list</div>
+        <div class="vh-wire">
+          <div class="box" style="display:flex;align-items:center;font-size:11px;color:var(--text-dim);">Builds list (default landing — no hierarchy beyond table)</div>
+          <div class="box flat">v1.4.2 · main · 11m ago</div>
+          <div class="box flat">v1.4.1 · main · 2d ago</div>
+          <div class="box flat">v1.4.0-beta · beta · 5d ago</div>
+          <div class="box flat">v1.3.7 · main · 18d ago</div>
+          <div class="box flat">v1.3.6 · main · 21d ago</div>
+        </div>
+      </div>
+
+      <div>
+        <div class="label" style="font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.04em; font-weight: 700; margin-bottom: 6px;">After — activity-first dashboard</div>
+        <div class="vh-wire">
+          <div class="box alert">⚠ 2 scorers breached · 4 incidents · 3 failed starts</div>
+          <div class="row">
+            <div class="box hero" style="display:flex;flex-direction:column;justify-content:center;">
+              <div>Activity feed</div>
+              <div style="font-weight:400;color:var(--blue-700);font-size:9px;margin-top:2px;opacity:0.7;">live · starts · finishes · incidents · deploys · triggers</div>
+            </div>
+            <div>
+              <div class="box" style="min-height: 28px; font-size: 10px;">In flight · 1,284</div>
+              <div class="box" style="min-height: 28px; font-size: 10px;">Deployment · v1.4.2</div>
+              <div class="box" style="min-height: 28px; font-size: 10px;">AI quality · 0.84</div>
+            </div>
+          </div>
+          <div class="row trends">
+            <div class="box flat" style="font-size: 9px; text-align: center; min-height: 22px; padding: 3px;">47/min</div>
+            <div class="box flat" style="font-size: 9px; text-align: center; min-height: 22px; padding: 3px;">2.8s p95</div>
+            <div class="box flat" style="font-size: 9px; text-align: center; min-height: 22px; padding: 3px;">12 err/h</div>
+            <div class="box flat" style="font-size: 9px; text-align: center; min-height: 22px; padding: 3px;">$184/h</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============== § 6 — DOCUMENTATION LAYER ============== -->
+  <section>
+    <h2><span class="num">§ 6</span>Documentation layer — new</h2>
+    <p class="intro">The current Runtime tab has no in-product documentation affordance. The redesign introduces six consistent patterns so any user can learn every concept by using the product.</p>
+
+    <table class="map-table">
+      <thead>
+        <tr><th>Affordance</th><th></th><th>Manifests as</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="before-cell">
+            <div class="name">— (none)</div>
+            <div class="desc">Concepts like Token, Scorer, Policy, Build are not defined inside the product. Users either know them or guess.</div>
+          </td>
+          <td class="arrow-cell">→</td>
+          <td class="after-cell">
+            <span class="change-pill new">New</span>
+            <div class="name">Inline help icons + glossary side panel</div>
+            <div class="desc">Every page title and panel heading has a <code>?</code> icon opening a definition popover. Popovers link to a single-source-of-truth glossary panel reachable from any "?".</div>
+          </td>
+        </tr>
+        <tr>
+          <td class="before-cell">
+            <div class="name">— (none)</div>
+            <div class="desc">Novel features and renamed tabs land with no explanation; users must infer behavior from labels.</div>
+          </td>
+          <td class="arrow-cell">→</td>
+          <td class="after-cell">
+            <span class="change-pill new">New</span>
+            <div class="name">Contextual doc banners</div>
+            <div class="desc">Yellow inline banner explains a tab or feature on first encounter. Dismissable per-user; resurfaces only when the feature changes meaningfully.</div>
+          </td>
+        </tr>
+        <tr>
+          <td class="before-cell">
+            <div class="name">— (none)</div>
+            <div class="desc">Empty lists show nothing — no explanation of what would appear, how it gets there.</div>
+          </td>
+          <td class="arrow-cell">→</td>
+          <td class="after-cell">
+            <span class="change-pill new">New</span>
+            <div class="name">Empty-state explanations</div>
+            <div class="desc">Every empty list explains what would appear and how. Example: "No incidents — when a process fails, a trigger errors, or an AI scorer breaches, it'll appear here."</div>
+          </td>
+        </tr>
+        <tr>
+          <td class="before-cell">
+            <div class="name">— (none)</div>
+            <div class="desc">No onboarding for new users; the system must be learned page-by-page.</div>
+          </td>
+          <td class="arrow-cell">→</td>
+          <td class="after-cell">
+            <span class="change-pill new">New</span>
+            <div class="name">Tour mode</div>
+            <div class="desc">Persistent "Tour &amp; help" entry in the sidebar footer launches a guided overlay walkthrough of the current page. Auto-runs on first visit to Overview.</div>
+          </td>
+        </tr>
+        <tr>
+          <td class="before-cell">
+            <div class="name">Raw ProcessState everywhere</div>
+            <div class="desc">UI shows engineering vocabulary (FINISHED_WITH_ERROR, ON_HOLD, …) directly.</div>
+          </td>
+          <td class="arrow-cell">→</td>
+          <td class="after-cell">
+            <span class="change-pill new">New</span>
+            <div class="name">State pill tooltips</div>
+            <div class="desc">Normalized state labels (Running / Waiting / Failed / …) shown to users. Hovering reveals the raw underlying state — bridges simplified vocabulary to engineering vocabulary.</div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ============== § 7 — SUMMARY ============== -->
+  <section>
+    <h2><span class="num">§ 7</span>Net effect</h2>
+    <div class="summary-card">
+      <h3>What the redesign actually changes</h3>
+      <p>The same content, the same data sources, the same backend services — but reorganised so that every reason someone opens the tab has a deliberate, scannable entry point, and every concept is explainable from inside the product.</p>
+      <ul>
+        <li>One landing that answers "what's happening right now" in five seconds.</li>
+        <li>Three merges that turn parallel concepts into single surfaces with shared chrome.</li>
+        <li>One unified "what's broken" view spanning every failure stage including AI quality.</li>
+        <li>Build becomes a first-class deployment lens, not just an artifact list.</li>
+        <li>Six documentation patterns applied consistently so the tab teaches itself.</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer style="margin-top: 64px; padding-top: 20px; border-top: 1px solid var(--border); color: var(--text-dim); font-size: 12px;">
+    Runtime redesign · before/after comparison · 2026-05-15 · companion to the full <a href="docs/superpowers/specs/2026-05-15-runtime-redesign-design.md" style="color: var(--blue-700);">design spec</a>.
+  </footer>
+
+</main>
+</body>
+</html>
