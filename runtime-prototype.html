@@ -1639,19 +1639,19 @@ a { color: inherit; }
 // ============================================================
 const MOCK_DATA = {
   builds: [
-    { id: 'b_v142', tag: 'v1.4.2', branch: 'main', cutAt: '11m ago', cutBy: 'alice', isActive: true, isArchived: false,
+    { id: 'b_v142', tag: 'v1.4.2', branch: 'main', cutAt: '11m ago', cutAtHours: 0.18, cutBy: 'alice', isActive: true, isArchived: false,
       coverage: { percent: 78, userCount: 347, totalUsers: 445 },
       liveStats: { runsLastHour: 1892, errors: 12, errorsDelta: 5, avgQuality: 0.84, qualityDelta: -0.03, openIncidentCount: 3 } },
-    { id: 'b_v141', tag: 'v1.4.1', branch: 'main', cutAt: '2d ago', cutBy: 'bob', isActive: false, isArchived: false,
+    { id: 'b_v141', tag: 'v1.4.1', branch: 'main', cutAt: '2d ago', cutAtHours: 48, cutBy: 'bob', isActive: false, isArchived: false,
       coverage: { percent: 15, userCount: 67, totalUsers: 445, note: 'role: legacy-tier' },
       liveStats: { runsLastHour: 364, errors: 7, errorsDelta: 0, avgQuality: 0.87, qualityDelta: 0.02, openIncidentCount: 0 } },
-    { id: 'b_v140b', tag: 'v1.4.0-beta', branch: 'beta', cutAt: '5d ago', cutBy: 'alice', isActive: false, isArchived: false,
+    { id: 'b_v140b', tag: 'v1.4.0-beta', branch: 'beta', cutAt: '5d ago', cutAtHours: 120, cutBy: 'alice', isActive: false, isArchived: false,
       coverage: { percent: 7, userCount: 31, totalUsers: 445, note: 'role: beta-testers' },
       liveStats: { runsLastHour: 92, errors: 1, errorsDelta: 0, avgQuality: 0.81, qualityDelta: 0, openIncidentCount: 0 } },
-    { id: 'b_v137', tag: 'v1.3.7', branch: 'main', cutAt: '18d ago', cutBy: 'carlos', isActive: false, isArchived: true,
+    { id: 'b_v137', tag: 'v1.3.7', branch: 'main', cutAt: '18d ago', cutAtHours: 432, cutBy: 'carlos', isActive: false, isArchived: true,
       coverage: { percent: 0, userCount: 0, totalUsers: 445, note: 'last served 16d ago' },
       liveStats: { runsLastHour: 0, errors: 0, errorsDelta: 0, avgQuality: 0, qualityDelta: 0, openIncidentCount: 0 } },
-    { id: 'b_v136', tag: 'v1.3.6', branch: 'main', cutAt: '22d ago', cutBy: 'dave', isActive: false, isArchived: true,
+    { id: 'b_v136', tag: 'v1.3.6', branch: 'main', cutAt: '22d ago', cutAtHours: 528, cutBy: 'dave', isActive: false, isArchived: true,
       coverage: { percent: 0, userCount: 0, totalUsers: 445, note: 'last served 21d ago' },
       liveStats: { runsLastHour: 0, errors: 0, errorsDelta: 0, avgQuality: 0, qualityDelta: 0, openIncidentCount: 0 } },
   ],
@@ -1852,10 +1852,26 @@ const MOCK_DATA = {
   workflows: [
     {
       id: 'wf_checkout', name: 'Checkout flow', activeBuild: 'v1.4.2',
-      telemetry: { throughput: 1892, p95: 2.8, cost: 184, errorRate: 0.63 },
+      telemetry: {
+        throughput: 1892, p95: 2.8, cost: 184, errorRate: 0.63,
+        instanceCount: 1892, meanPathLength: 3.2, retryPressurePct: 8.4, fallbackModelPct: 2.1,
+        terminalOutcomes: [
+          { label: 'completed', pct: 86, color: 'var(--green-500)' },
+          { label: 'errored',   pct:  8, color: 'var(--red-500)' },
+          { label: 'timed out', pct:  4, color: 'var(--orange-500)' },
+          { label: 'terminated',pct:  2, color: 'var(--text-dim)' },
+        ],
+        topPaths: [
+          { name: 'reasoner → validator → done',  pct: 64 },
+          { name: 'reasoner → validator → retry → done', pct: 18 },
+          { name: 'reasoner → escalate',          pct:  9 },
+          { name: 'reasoner → reject',            pct:  6 },
+          { name: 'reasoner → validator → error', pct:  3 },
+        ],
+      },
       scorers: [
-        { name: 'Coherence', node: 'Reasoner', value: 0.71, threshold: 0.72, breached: true },
-        { name: 'Helpfulness', node: 'Reasoner', value: 0.88, threshold: 0.80, breached: false },
+        { bindingId: 'lsb_co_coherence', name: 'Coherence', node: 'Reasoner', scope: 'node', value: 0.71, threshold: 0.72, breached: true, sampleRatePct: 25, dailyTokenBudgetUsd: 10, enabled: true },
+        { bindingId: 'lsb_co_helpful', name: 'Helpfulness', node: 'Reasoner', scope: 'node', value: 0.88, threshold: 0.80, breached: false, sampleRatePct: 25, dailyTokenBudgetUsd: 10, enabled: true },
       ],
       nodes: [
         { name: 'Reasoner', type: 'LLM call', desc: 'Reasoning node for checkout', scorers: ['coherence', 'helpfulness'], alertCount: 1 },
@@ -1865,9 +1881,25 @@ const MOCK_DATA = {
     },
     {
       id: 'wf_support', name: 'Support chat', activeBuild: 'v1.4.2',
-      telemetry: { throughput: 412, p95: 1.7, cost: 48, errorRate: 0.18 },
+      telemetry: {
+        throughput: 412, p95: 1.7, cost: 48, errorRate: 0.18,
+        instanceCount: 412, meanPathLength: 2.6, retryPressurePct: 3.1, fallbackModelPct: 0.7,
+        terminalOutcomes: [
+          { label: 'resolved',  pct: 78, color: 'var(--green-500)' },
+          { label: 'escalated', pct: 14, color: 'var(--orange-500)' },
+          { label: 'abandoned', pct:  6, color: 'var(--text-dim)' },
+          { label: 'errored',   pct:  2, color: 'var(--red-500)' },
+        ],
+        topPaths: [
+          { name: 'intent → retriever → responder → done',  pct: 71 },
+          { name: 'intent → responder → done',              pct: 14 },
+          { name: 'intent → retriever → responder → retry → done', pct: 8 },
+          { name: 'intent → escalate',                      pct: 5 },
+          { name: 'intent → responder → error',             pct: 2 },
+        ],
+      },
       scorers: [
-        { name: 'Toxicity', node: 'Responder', value: 0.04, threshold: 0.03, breached: true },
+        { bindingId: 'lsb_sc_toxicity', name: 'Toxicity', node: 'Responder', scope: 'node', value: 0.04, threshold: 0.03, breached: true, sampleRatePct: 100, dailyTokenBudgetUsd: 5, enabled: true },
       ],
       nodes: [
         { name: 'Responder', type: 'LLM call', desc: 'Generates support replies', scorers: ['toxicity'], alertCount: 1 },
@@ -1877,7 +1909,20 @@ const MOCK_DATA = {
     },
     {
       id: 'wf_classify', name: 'Document classifier', activeBuild: 'v1.4.1',
-      telemetry: { throughput: 145, p95: 4.2, cost: 22, errorRate: 0.04 },
+      telemetry: {
+        throughput: 145, p95: 4.2, cost: 22, errorRate: 0.04,
+        instanceCount: 145, meanPathLength: 3.0, retryPressurePct: 1.2, fallbackModelPct: 0.0,
+        terminalOutcomes: [
+          { label: 'completed',    pct: 92, color: 'var(--green-500)' },
+          { label: 'needs review', pct:  6, color: 'var(--orange-500)' },
+          { label: 'errored',      pct:  2, color: 'var(--red-500)' },
+        ],
+        topPaths: [
+          { name: 'ocr → classifier → verifier → done',  pct: 92 },
+          { name: 'ocr → classifier → verifier → review', pct: 6 },
+          { name: 'ocr → classifier → error',            pct: 2 },
+        ],
+      },
       scorers: [],
       nodes: [
         { name: 'Vision OCR', type: 'vision', desc: 'OCR documents', scorers: [], alertCount: 0 },
@@ -1885,6 +1930,148 @@ const MOCK_DATA = {
         { name: 'Verifier', type: 'LLM call', desc: 'Verify classification', scorers: [], alertCount: 0 },
       ],
     },
+  ],
+  workflowRuns: [
+    // wf_checkout — mixed outcomes, multiple builds
+    { id: 'wfr_001', workflowId: 'wf_checkout', workflowName: 'Checkout flow', status: 'failed',
+      startedAt: '2m ago', startedAtSec: 120, durationMs: 2840, costUsd: 0.014, model: 'claude-opus-4-7',
+      buildTag: 'v1.4.2', spawnedBy: { kind: 'instance', id: 'inst_19f3d4', name: 'KYC review', type: 'process', trigger: 'PROCESS_ENGINE' },
+      input: '{ "applicant": "u_4419", "doc_type": "passport" }',
+      output: 'ERROR: Reasoner returned low-coherence response; downstream Validator could not parse.',
+      invocations: [
+        { nodeId: 'reasoner', nodeName: 'Reasoner', type: 'LLM call', model: 'claude-opus-4-7', latencyMs: 1820, costUsd: 0.011,
+          input: 'Score the consent flow for {applicant}…', output: '{ "decision": "maybe", "reason": "ambiguous wording" }',
+          scores: [{ name: 'Coherence', value: 0.68, threshold: 0.72, breached: true }, { name: 'Helpfulness', value: 0.81, threshold: 0.80, breached: false }] },
+        { nodeId: 'validator', nodeName: 'Validator', type: 'classifier', model: '—', latencyMs: 240, costUsd: 0.0,
+          input: '{ "decision": "maybe" }', output: 'PARSE_ERROR: expected enum[approve|reject]',
+          scores: [] },
+      ],
+      scores: [{ name: 'Coherence', value: 0.68, threshold: 0.72, breached: true }] },
+
+    { id: 'wfr_002', workflowId: 'wf_checkout', workflowName: 'Checkout flow', status: 'completed',
+      startedAt: '4m ago', startedAtSec: 240, durationMs: 2120, costUsd: 0.012, model: 'claude-opus-4-7',
+      buildTag: 'v1.4.2', spawnedBy: { kind: 'instance', id: 'inst_91ab23', name: 'Email verification', type: 'process', trigger: 'PROCESS_ENGINE' },
+      input: '{ "email": "jane@example.com" }', output: '{ "decision": "approve", "confidence": 0.94 }',
+      invocations: [
+        { nodeId: 'reasoner', nodeName: 'Reasoner', type: 'LLM call', model: 'claude-opus-4-7', latencyMs: 1640, costUsd: 0.010,
+          input: 'Score the consent flow for jane…', output: '{ "decision": "approve" }',
+          scores: [{ name: 'Coherence', value: 0.91, threshold: 0.72, breached: false }, { name: 'Helpfulness', value: 0.88, threshold: 0.80, breached: false }] },
+        { nodeId: 'validator', nodeName: 'Validator', type: 'classifier', model: '—', latencyMs: 220, costUsd: 0.0,
+          input: '{ "decision": "approve" }', output: 'OK',
+          scores: [] },
+        { nodeId: 'embedder', nodeName: 'Embedder', type: 'embedding', model: 'voyage-3', latencyMs: 260, costUsd: 0.002,
+          input: 'jane@example.com profile…', output: '[0.014, -0.221, 0.182, …]',
+          scores: [] },
+      ],
+      scores: [{ name: 'Coherence', value: 0.91, threshold: 0.72, breached: false }, { name: 'Helpfulness', value: 0.88, threshold: 0.80, breached: false }] },
+
+    { id: 'wfr_003', workflowId: 'wf_checkout', workflowName: 'Checkout flow', status: 'completed',
+      startedAt: '8m ago', startedAtSec: 480, durationMs: 1920, costUsd: 0.011, model: 'claude-opus-4-7',
+      buildTag: 'v1.4.2', spawnedBy: { kind: 'instance', id: 'sess_a82c91', name: 'Onboarding chat', type: 'uiflow', trigger: 'CHAT' },
+      input: '{ "user": "u_4419", "intent": "checkout_help" }', output: '{ "next_step": "verify_email" }',
+      invocations: [
+        { nodeId: 'reasoner', nodeName: 'Reasoner', type: 'LLM call', model: 'claude-opus-4-7', latencyMs: 1480, costUsd: 0.009,
+          input: 'User asks for checkout help…', output: '{ "next_step": "verify_email" }',
+          scores: [{ name: 'Coherence', value: 0.85, threshold: 0.72, breached: false }] },
+        { nodeId: 'validator', nodeName: 'Validator', type: 'classifier', model: '—', latencyMs: 200, costUsd: 0.0,
+          input: '{ "next_step": "verify_email" }', output: 'OK', scores: [] },
+        { nodeId: 'embedder', nodeName: 'Embedder', type: 'embedding', model: 'voyage-3', latencyMs: 240, costUsd: 0.002,
+          input: 'session context…', output: '[…]', scores: [] },
+      ],
+      scores: [{ name: 'Coherence', value: 0.85, threshold: 0.72, breached: false }] },
+
+    { id: 'wfr_004', workflowId: 'wf_checkout', workflowName: 'Checkout flow', status: 'running',
+      startedAt: '0m ago', startedAtSec: 20, durationMs: null, costUsd: 0.004, model: 'claude-opus-4-7',
+      buildTag: 'v1.4.2', spawnedBy: { kind: 'instance', id: 'sess_c12d40', name: 'Application form', type: 'uiflow', trigger: 'UI_FLOW' },
+      input: '{ "applicant": "u_8830", "form_id": "f_loan" }', output: null,
+      invocations: [
+        { nodeId: 'reasoner', nodeName: 'Reasoner', type: 'LLM call', model: 'claude-opus-4-7', latencyMs: 1240, costUsd: 0.004,
+          input: 'Score loan form for u_8830…', output: '(in progress)', scores: [] },
+      ],
+      scores: [] },
+
+    // wf_support — toxicity breach + success
+    { id: 'wfr_005', workflowId: 'wf_support', workflowName: 'Support chat', status: 'completed',
+      startedAt: '18m ago', startedAtSec: 1080, durationMs: 1640, costUsd: 0.007, model: 'claude-opus-4-7',
+      buildTag: 'v1.4.2', spawnedBy: { kind: 'instance', id: 'sess_b34f0e', name: 'Support chat', type: 'uiflow', trigger: 'CHAT' },
+      input: '{ "intent": "billing", "turns": 12 }', output: '{ "reply": "I can help with billing…" }',
+      invocations: [
+        { nodeId: 'intent', nodeName: 'Intent classifier', type: 'classifier', model: '—', latencyMs: 180, costUsd: 0.0,
+          input: 'I want to dispute a charge', output: '{ "intent": "billing_dispute" }', scores: [] },
+        { nodeId: 'retriever', nodeName: 'KB retriever', type: 'retriever', model: 'voyage-3', latencyMs: 320, costUsd: 0.001,
+          input: 'billing dispute policy', output: '[3 articles]', scores: [] },
+        { nodeId: 'responder', nodeName: 'Responder', type: 'LLM call', model: 'claude-opus-4-7', latencyMs: 1140, costUsd: 0.006,
+          input: 'Reply about billing dispute…', output: 'I can help with billing — let me look into…',
+          scores: [{ name: 'Toxicity', value: 0.04, threshold: 0.03, breached: true }] },
+      ],
+      scores: [{ name: 'Toxicity', value: 0.04, threshold: 0.03, breached: true }] },
+
+    { id: 'wfr_006', workflowId: 'wf_support', workflowName: 'Support chat', status: 'completed',
+      startedAt: '32m ago', startedAtSec: 1920, durationMs: 1480, costUsd: 0.006, model: 'claude-opus-4-7',
+      buildTag: 'v1.4.2', spawnedBy: { kind: 'instance', id: 'sess_f8e9d0', name: 'Quick chat', type: 'uiflow', trigger: 'CHAT' },
+      input: '{ "intent": "cancel" }', output: '{ "reply": "Sorry to see you go…" }',
+      invocations: [
+        { nodeId: 'intent', nodeName: 'Intent classifier', type: 'classifier', model: '—', latencyMs: 160, costUsd: 0.0,
+          input: 'Cancel my subscription', output: '{ "intent": "cancel" }', scores: [] },
+        { nodeId: 'responder', nodeName: 'Responder', type: 'LLM call', model: 'claude-opus-4-7', latencyMs: 1180, costUsd: 0.006,
+          input: 'Reply about cancellation…', output: 'Sorry to see you go — confirming…',
+          scores: [{ name: 'Toxicity', value: 0.01, threshold: 0.03, breached: false }] },
+      ],
+      scores: [{ name: 'Toxicity', value: 0.01, threshold: 0.03, breached: false }] },
+
+    // wf_classify — older build
+    { id: 'wfr_007', workflowId: 'wf_classify', workflowName: 'Document classifier', status: 'completed',
+      startedAt: '46m ago', startedAtSec: 2760, durationMs: 4040, costUsd: 0.018, model: 'claude-opus-4-7',
+      buildTag: 'v1.4.1', spawnedBy: { kind: 'instance', id: 'inst_7c20fa', name: 'Document classifier', type: 'process', trigger: 'PROCESS_ENGINE' },
+      input: '{ "doc_count": 14, "batch_id": "b_9921" }', output: '{ "classified": 14, "needs_review": 2 }',
+      invocations: [
+        { nodeId: 'ocr', nodeName: 'Vision OCR', type: 'vision', model: 'claude-opus-4-7', latencyMs: 2200, costUsd: 0.010,
+          input: '[14 docs]', output: '[14 text blobs]', scores: [] },
+        { nodeId: 'classifier', nodeName: 'Classifier', type: 'classifier', model: '—', latencyMs: 480, costUsd: 0.0,
+          input: '[14 text blobs]', output: '[passport×9, utility×3, contract×2]', scores: [] },
+        { nodeId: 'verifier', nodeName: 'Verifier', type: 'LLM call', model: 'claude-opus-4-7', latencyMs: 1360, costUsd: 0.008,
+          input: 'Verify classification accuracy', output: '{ "verified": 12, "needs_review": 2 }', scores: [] },
+      ],
+      scores: [] },
+
+    { id: 'wfr_008', workflowId: 'wf_classify', workflowName: 'Document classifier', status: 'completed',
+      startedAt: '2h ago', startedAtSec: 7200, durationMs: 3820, costUsd: 0.017, model: 'claude-opus-4-7',
+      buildTag: 'v1.4.1', spawnedBy: { kind: 'instance', id: 'inst_c2d3e4', name: 'Account creation', type: 'process', trigger: 'PROCESS_ENGINE' },
+      input: '{ "doc_count": 8 }', output: '{ "classified": 8 }',
+      invocations: [
+        { nodeId: 'ocr', nodeName: 'Vision OCR', type: 'vision', model: 'claude-opus-4-7', latencyMs: 2080, costUsd: 0.009,
+          input: '[8 docs]', output: '[8 text blobs]', scores: [] },
+        { nodeId: 'classifier', nodeName: 'Classifier', type: 'classifier', model: '—', latencyMs: 420, costUsd: 0.0,
+          input: '[8 text blobs]', output: '[id_card×6, other×2]', scores: [] },
+        { nodeId: 'verifier', nodeName: 'Verifier', type: 'LLM call', model: 'claude-opus-4-7', latencyMs: 1320, costUsd: 0.008,
+          input: 'Verify', output: '{ "verified": 8 }', scores: [] },
+      ],
+      scores: [] },
+
+    // Older / archived build for build-comparison context
+    { id: 'wfr_009', workflowId: 'wf_checkout', workflowName: 'Checkout flow', status: 'completed',
+      startedAt: '6h ago', startedAtSec: 21600, durationMs: 1820, costUsd: 0.010, model: 'claude-opus-4-7',
+      buildTag: 'v1.4.0-beta', spawnedBy: { kind: 'instance', id: 'inst_a5b6c7', name: 'Risk assessment', type: 'process', trigger: 'PROCESS_ENGINE' },
+      input: '{ "case_id": "r_3344" }', output: '{ "risk_score": 0.42 }',
+      invocations: [
+        { nodeId: 'reasoner', nodeName: 'Reasoner', type: 'LLM call', model: 'claude-opus-4-7', latencyMs: 1420, costUsd: 0.008,
+          input: 'Score risk for r_3344', output: '{ "risk_score": 0.42 }',
+          scores: [{ name: 'Coherence', value: 0.83, threshold: 0.72, breached: false }] },
+        { nodeId: 'validator', nodeName: 'Validator', type: 'classifier', model: '—', latencyMs: 200, costUsd: 0.0,
+          input: '{ "risk_score": 0.42 }', output: 'OK', scores: [] },
+      ],
+      scores: [{ name: 'Coherence', value: 0.83, threshold: 0.72, breached: false }] },
+  ],
+  observationPoints: [
+    // Checkout flow
+    { id: 'obs_co_decision', workflowId: 'wf_checkout', nodeId: 'reasoner', nodeName: 'Reasoner', dimensionLabel: 'decision_outcome', category: 'categorical', uniqueValuesSeen: ['approve', 'reject', 'escalate'], enabled: true },
+    { id: 'obs_co_doctype', workflowId: 'wf_checkout', nodeId: 'validator', nodeName: 'Validator', dimensionLabel: 'doc_type', category: 'categorical', uniqueValuesSeen: ['passport', 'id_card', 'utility'], enabled: true },
+    // Support chat
+    { id: 'obs_sc_intent', workflowId: 'wf_support', nodeId: 'intent', nodeName: 'Intent classifier', dimensionLabel: 'intent_class', category: 'categorical', uniqueValuesSeen: ['billing', 'cancel', 'support', 'feature_request'], enabled: true },
+    { id: 'obs_sc_sentiment', workflowId: 'wf_support', nodeId: 'responder', nodeName: 'Responder', dimensionLabel: 'sentiment', category: 'categorical', uniqueValuesSeen: ['positive', 'neutral', 'negative'], enabled: true },
+    // Document classifier
+    { id: 'obs_dc_class', workflowId: 'wf_classify', nodeId: 'classifier', nodeName: 'Classifier', dimensionLabel: 'doc_class', category: 'categorical', uniqueValuesSeen: ['passport', 'id_card', 'utility', 'contract'], enabled: true },
+    { id: 'obs_dc_needsrev', workflowId: 'wf_classify', nodeId: 'verifier', nodeName: 'Verifier', dimensionLabel: 'needs_review', category: 'boolean', uniqueValuesSeen: ['true', 'false'], enabled: false },
   ],
   // Seeded activity feed — newest first
   activityEvents: [
@@ -1941,8 +2128,9 @@ const STATE = {
     builds: { branch: 'all' },
     triggers: { tab: 'scheduled' },
     tasks: { assignee: 'anyone', status: 'pending' },
+    workflowRuns: { workflow: 'all', status: 'any', build: 'any', search: '' },
   },
-  liveEvals: { workflowId: 'wf_checkout' },
+  liveEvals: { workflowId: 'wf_checkout', timeWindow: '24h', tab: 'overview', decisions: {} },
   dismissedBanners: new Set(JSON.parse(sessionStorage.getItem('dismissedBanners') || '[]')),
   configResolver: { username: 'u_4419', roles: ['admins', 'beta-testers'], result: null },
   recentEventId: null,
@@ -1998,11 +2186,12 @@ function renderBadge(item) {
 function renderSidebar() {
   const sb = document.getElementById('sidebar');
   const route = STATE.currentRoute;
+  const baseRoute = STATE.currentRouteBase || route;
   const cnt = liveCounters();
   let html = '';
   NAV.forEach(entry => {
     const isParentWithChildren = entry.children && entry.children.length > 0;
-    const parentActive = !isParentWithChildren && route === entry.id;
+    const parentActive = !isParentWithChildren && baseRoute === entry.id;
     const parentClickable = !!entry.route;
     const parentClick = parentClickable ? `onclick="location.hash='${entry.route}'"` : '';
     html += `<button class="nav-parent ${parentClickable ? '' : 'no-route'} ${parentActive ? 'parent-active' : ''}" ${parentClick}>
@@ -2015,7 +2204,7 @@ function renderSidebar() {
     if (isParentWithChildren) {
       html += `<div class="nav-children">`;
       entry.children.forEach(child => {
-        const active = route === child.id;
+        const active = baseRoute === child.id;
         html += `<button class="nav-child ${active ? 'active' : ''}" onclick="location.hash='${child.route}'">
           <span class="label">${child.label}</span>
           ${renderBadge(child)}
@@ -2048,15 +2237,53 @@ const ROUTES = {
   incidents: renderIncidents,
   builds: renderBuilds,
   configuration: renderConfiguration,
-  'live-evals': renderLiveEvals,
+  'live-evals': renderLiveEvalsLanding,
+  'live-evals/runs': renderWorkflowRunsList,
   triggers: renderTriggers,
   tasks: renderTasks,
 };
 
 function router() {
   let hash = location.hash.replace(/^#\//, '');
-  if (!hash || !ROUTES[hash]) hash = 'overview';
+  if (!hash) hash = 'overview';
+  // Pattern: live-evals/<wfId>/builds/<leftId>/compare/<rightId> — comparison page
+  const cmpMatch = hash.match(/^live-evals\/(wf_[a-z0-9_-]+)\/builds\/(b_[a-z0-9_-]+)\/compare\/(b_[a-z0-9_-]+)$/);
+  if (cmpMatch) {
+    const [, wfId, leftId, rightId] = cmpMatch;
+    if (MOCK_DATA.workflows.some(w => w.id === wfId) && MOCK_DATA.builds.some(b => b.id === leftId) && MOCK_DATA.builds.some(b => b.id === rightId)) {
+      STATE.liveEvals.workflowId = wfId;
+      STATE.currentRoute = hash;
+      STATE.currentRouteBase = 'live-evals';
+      closeDetail();
+      renderSidebar();
+      document.getElementById('page').innerHTML = '';
+      renderBuildComparison(document.getElementById('page'), wfId, leftId, rightId);
+      window.scrollTo(0, 0);
+      return;
+    }
+    hash = `live-evals/${wfId}`;
+  }
+  // Pattern: live-evals/<workflowId> — workflow detail drill-in
+  const wfMatch = hash.match(/^live-evals\/(wf_[a-z0-9_-]+)$/);
+  if (wfMatch) {
+    const wfId = wfMatch[1];
+    if (MOCK_DATA.workflows.some(w => w.id === wfId)) {
+      STATE.liveEvals.workflowId = wfId;
+      STATE.currentRoute = hash;
+      STATE.currentRouteBase = 'live-evals';
+      closeDetail();
+      renderSidebar();
+      document.getElementById('page').innerHTML = '';
+      renderLiveEvalsWorkflow(document.getElementById('page'));
+      window.scrollTo(0, 0);
+      return;
+    }
+    // Unknown workflow id — fall through to landing
+    hash = 'live-evals';
+  }
+  if (!ROUTES[hash]) hash = 'overview';
   STATE.currentRoute = hash;
+  STATE.currentRouteBase = hash.split('/')[0];
   // Close detail panel on route change
   closeDetail();
   renderSidebar();
@@ -2759,62 +2986,822 @@ function resolveConfig() {
   STATE.configResolver.result = { build: buildResult, params: resolvedParams };
   renderConfiguration(document.getElementById('page'));
 }
-function renderLiveEvals(root) {
-  const wfId = STATE.liveEvals.workflowId;
-  const wf = MOCK_DATA.workflows.find(w => w.id === wfId) || MOCK_DATA.workflows[0];
+
+// Re-render whichever Live Evals view is currently active (landing, workflow detail, comparison, or runs list)
+function rerenderLiveEvals() {
+  const page = document.getElementById('page');
+  if (!page) return;
+  const route = STATE.currentRoute;
+  if (route === 'live-evals') renderLiveEvalsLanding(page);
+  else if (route === 'live-evals/runs') renderWorkflowRunsList(page);
+  else {
+    const cmp = route.match(/^live-evals\/(wf_[a-z0-9_-]+)\/builds\/(b_[a-z0-9_-]+)\/compare\/(b_[a-z0-9_-]+)$/);
+    if (cmp) { renderBuildComparison(page, cmp[1], cmp[2], cmp[3]); return; }
+    if (/^live-evals\/wf_/.test(route)) renderLiveEvalsWorkflow(page);
+  }
+}
+
+// Build comparison — navigation helpers
+function jumpToBuildComparison(wfId) {
+  const wf = MOCK_DATA.workflows.find(w => w.id === wfId);
+  if (!wf) return;
+  const active = MOCK_DATA.builds.find(b => b.tag === wf.activeBuild) || MOCK_DATA.builds[0];
+  const prev = MOCK_DATA.builds.find(b => b.id !== active.id && b.branch === active.branch && !b.isArchived)
+    || MOCK_DATA.builds.find(b => b.id !== active.id && !b.isArchived)
+    || MOCK_DATA.builds.find(b => b.id !== active.id);
+  if (!prev) { alert('Only one build available — need at least two to compare.'); return; }
+  location.hash = `#/live-evals/${wfId}/builds/${active.id}/compare/${prev.id}`;
+}
+
+// Jump to comparison from a Build detail panel — picks the most-relevant workflow (one with runs on this build)
+function jumpToBuildComparisonFromBuild(buildId) {
+  const b = MOCK_DATA.builds.find(x => x.id === buildId);
+  if (!b) return;
+  const wfWithRuns = MOCK_DATA.workflows.find(wf => MOCK_DATA.workflowRuns.some(r => r.workflowId === wf.id && r.buildTag === b.tag))
+    || MOCK_DATA.workflows[0];
+  const other = MOCK_DATA.builds.find(x => x.id !== buildId && x.branch === b.branch && !x.isArchived)
+    || MOCK_DATA.builds.find(x => x.id !== buildId && !x.isArchived)
+    || MOCK_DATA.builds.find(x => x.id !== buildId);
+  if (!other) { alert('Only one build available — need at least two to compare.'); return; }
+  closeDetail();
+  location.hash = `#/live-evals/${wfWithRuns.id}/builds/${buildId}/compare/${other.id}`;
+}
+
+function setComparisonBuild(side, buildId) {
+  const m = STATE.currentRoute.match(/^live-evals\/(wf_[a-z0-9_-]+)\/builds\/(b_[a-z0-9_-]+)\/compare\/(b_[a-z0-9_-]+)$/);
+  if (!m) return;
+  const [, wfId, leftId, rightId] = m;
+  const newLeft = side === 'left' ? buildId : leftId;
+  const newRight = side === 'right' ? buildId : rightId;
+  if (newLeft === newRight) { alert('Pick two different builds to compare.'); return; }
+  location.hash = `#/live-evals/${wfId}/builds/${newLeft}/compare/${newRight}`;
+}
+
+function swapComparisonBuilds() {
+  const m = STATE.currentRoute.match(/^live-evals\/(wf_[a-z0-9_-]+)\/builds\/(b_[a-z0-9_-]+)\/compare\/(b_[a-z0-9_-]+)$/);
+  if (!m) return;
+  const [, wfId, leftId, rightId] = m;
+  location.hash = `#/live-evals/${wfId}/builds/${rightId}/compare/${leftId}`;
+}
+
+// Live Evals — time window
+function setLiveEvalsTimeWindow(tw) {
+  if (tw === 'custom') {
+    alert('Custom range picker — coming soon. Falling back to 24h.');
+    STATE.liveEvals.timeWindow = '24h';
+  } else {
+    STATE.liveEvals.timeWindow = tw;
+  }
+  rerenderLiveEvals();
+}
+
+// Live Evals — Decisions facet (observation points)
+// Each chip cycles: all → value1 → value2 … → all
+function cycleDecisionFilter(opId) {
+  const op = MOCK_DATA.observationPoints.find(o => o.id === opId);
+  if (!op) return;
+  const current = STATE.liveEvals.decisions[opId] || '';
+  const values = [''].concat(op.uniqueValuesSeen);
+  const next = values[(values.indexOf(current) + 1) % values.length];
+  if (!next) delete STATE.liveEvals.decisions[opId];
+  else STATE.liveEvals.decisions[opId] = next;
+  rerenderLiveEvals();
+}
+
+function clearDecisionFilters() {
+  STATE.liveEvals.decisions = {};
+  rerenderLiveEvals();
+}
+
+// Live Evals — settings toggles
+function toggleScorerBinding(bindingId) {
+  for (const wf of MOCK_DATA.workflows) {
+    const s = wf.scorers.find(x => x.bindingId === bindingId);
+    if (s) { s.enabled = !s.enabled; break; }
+  }
+  rerenderLiveEvals();
+}
+
+function toggleObservationPoint(opId) {
+  const op = MOCK_DATA.observationPoints.find(o => o.id === opId);
+  if (op) op.enabled = !op.enabled;
+  if (op && !op.enabled && STATE.liveEvals.decisions[opId]) delete STATE.liveEvals.decisions[opId];
+  rerenderLiveEvals();
+}
+
+// Live Evals — scorer time-series chart
+function timeWindowHours(tw) {
+  return { '1h': 1, '24h': 24, '7d': 168 }[tw] || 24;
+}
+
+function generateScorerSeries(scorer, hoursWindow) {
+  // 30 evenly-spaced samples; oscillates around a baseline; if breached, regresses in the most-recent ~15% of the window
+  const points = 30;
+  const baseline = scorer.breached ? scorer.threshold + 0.10 : scorer.value;
+  const amplitude = scorer.threshold < 0.5 ? 0.005 : 0.025;
+  const series = [];
+  for (let i = 0; i < points; i++) {
+    const t = hoursWindow * (1 - i / (points - 1));
+    let v = baseline + Math.sin(i * 0.45 + (scorer.name.length || 0)) * amplitude;
+    if (scorer.breached && t < hoursWindow * 0.15) {
+      const dropFactor = 1 - t / (hoursWindow * 0.15);
+      const targetDrop = scorer.threshold < 0.5
+        ? (scorer.value - baseline)
+        : -(baseline - scorer.value);
+      v = baseline + dropFactor * targetDrop * 1.05;
+    }
+    series.push({ t, v });
+  }
+  return series;
+}
+
+function renderScorerChart(scorer, hoursWindow, builds) {
+  const W = 540, H = 96, padL = 36, padR = 60, padT = 12, padB = 18;
+  const innerW = W - padL - padR;
+  const innerH = H - padT - padB;
+  const series = generateScorerSeries(scorer, hoursWindow);
+  const values = series.map(s => s.v).concat([scorer.threshold]);
+  const minV = Math.min(...values);
+  const maxV = Math.max(...values);
+  const pad = (maxV - minV) * 0.15 || 0.05;
+  const yMin = Math.max(0, minV - pad);
+  const yMax = Math.min(scorer.threshold < 0.5 ? 0.3 : 1, maxV + pad);
+  const x = (t) => padL + (1 - t / hoursWindow) * innerW;
+  const y = (v) => padT + (1 - (v - yMin) / (yMax - yMin || 1)) * innerH;
+  const pathD = series.map((s, i) => `${i === 0 ? 'M' : 'L'} ${x(s.t).toFixed(1)},${y(s.v).toFixed(1)}`).join(' ');
+  const areaD = `${pathD} L ${x(series[series.length - 1].t).toFixed(1)},${(padT + innerH).toFixed(1)} L ${x(series[0].t).toFixed(1)},${(padT + innerH).toFixed(1)} Z`;
+  const thresholdY = y(scorer.threshold);
+  const markers = builds.filter(b => b.cutAtHours <= hoursWindow).map(b => ({
+    x: x(b.cutAtHours),
+    color: b.isActive ? 'var(--blue-500)' : 'var(--text-dim)',
+    label: b.tag,
+  }));
+  const lineColor = scorer.breached ? 'var(--red-500)' : 'var(--green-500)';
+  const fillColor = scorer.breached ? 'var(--red-50)' : 'var(--green-50)';
+  const windowLabel = { 1: '1h', 24: '24h', 168: '7d' }[hoursWindow] || `${hoursWindow}h`;
+
+  return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" style="display:block;width:100%;height:96px;">
+    <rect x="${padL}" y="${padT}" width="${innerW}" height="${innerH}" fill="var(--bg-alt)" rx="3" />
+    <text x="${padL - 4}" y="${y(yMax) + 3}" text-anchor="end" font-size="9" fill="var(--text-dim)">${yMax.toFixed(2)}</text>
+    <text x="${padL - 4}" y="${y(yMin) + 3}" text-anchor="end" font-size="9" fill="var(--text-dim)">${yMin.toFixed(2)}</text>
+    ${markers.map(m => `
+      <line x1="${m.x.toFixed(1)}" y1="${padT}" x2="${m.x.toFixed(1)}" y2="${padT + innerH}" stroke="${m.color}" stroke-width="1" stroke-dasharray="2 2" opacity="0.55" />
+      <text x="${m.x + 3}" y="${padT + 9}" font-size="8" fill="${m.color}" font-weight="700">${escapeHtml(m.label)}</text>
+    `).join('')}
+    <line x1="${padL}" y1="${thresholdY.toFixed(1)}" x2="${padL + innerW}" y2="${thresholdY.toFixed(1)}" stroke="var(--orange-500)" stroke-width="1" stroke-dasharray="3 3" />
+    <text x="${padL + innerW + 4}" y="${thresholdY + 3}" font-size="9" fill="var(--orange-700)" font-weight="600">thr ${scorer.threshold.toFixed(2)}</text>
+    <path d="${areaD}" fill="${fillColor}" opacity="0.6" />
+    <path d="${pathD}" fill="none" stroke="${lineColor}" stroke-width="1.5" />
+    <circle cx="${x(series[series.length-1].t).toFixed(1)}" cy="${y(series[series.length-1].v).toFixed(1)}" r="2.5" fill="${lineColor}" />
+    <text x="${padL}" y="${H - 4}" font-size="9" fill="var(--text-dim)">${windowLabel} ago</text>
+    <text x="${padL + innerW}" y="${H - 4}" text-anchor="end" font-size="9" fill="var(--text-dim)">now</text>
+    <text x="${padL + innerW + 4}" y="${y(series[series.length-1].v).toFixed(1)}" font-size="11" fill="${lineColor}" font-weight="700">${series[series.length-1].v.toFixed(2)}</text>
+  </svg>`;
+}
+
+function renderLiveEvalsLanding(root) {
+  const tw = STATE.liveEvals.timeWindow || '24h';
+  const totalBreached = MOCK_DATA.workflows.reduce((sum, wf) => sum + wf.scorers.filter(s => s.breached).length, 0);
+  const totalScorers = MOCK_DATA.workflows.reduce((sum, wf) => sum + wf.scorers.length, 0);
+  const totalRuns = MOCK_DATA.workflowRuns.length;
+  const totalOps = MOCK_DATA.observationPoints.filter(op => op.enabled).length;
+
+  const cardsHtml = MOCK_DATA.workflows.map(wf => {
+    const breached = wf.scorers.filter(s => s.breached).length;
+    const wfRuns = MOCK_DATA.workflowRuns.filter(r => r.workflowId === wf.id);
+    const wfRunsBreached = wfRuns.filter(r => r.scores.some(s => s.breached)).length;
+    const wfOps = MOCK_DATA.observationPoints.filter(op => op.workflowId === wf.id && op.enabled).length;
+
+    return `<div onclick="location.hash='#/live-evals/${wf.id}'" style="background:var(--bg);border:1px solid ${breached > 0 ? 'var(--red-100)' : 'var(--border)'};border-left:3px solid ${breached > 0 ? 'var(--red-500)' : 'var(--green-500)'};border-radius:8px;padding:16px;cursor:pointer;transition:background 100ms ease, box-shadow 100ms ease;" onmouseover="this.style.boxShadow='var(--shadow-m)'" onmouseout="this.style.boxShadow='none'">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:6px;">
+        <div style="flex:1;min-width:0;">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            <h3 style="margin:0;font-size:16px;font-weight:700;">${escapeHtml(wf.name)}</h3>
+            ${breached > 0
+              ? `<span style="display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:9999px;background:var(--red-50);color:var(--red-700);font-size:10px;font-weight:700;border:1px solid var(--red-100);"><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--red-500);"></span>${breached} breached</span>`
+              : '<span style="display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:9999px;background:var(--green-50);color:var(--green-700);font-size:10px;font-weight:700;border:1px solid var(--green-100);"><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--green-500);"></span>Healthy</span>'}
+            ${buildChip(wf.activeBuild)}
+          </div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">${wf.nodes.length} AI node${wf.nodes.length === 1 ? '' : 's'} · ${wf.scorers.length} scorer${wf.scorers.length === 1 ? '' : 's'} · ${wfOps} observation point${wfOps === 1 ? '' : 's'}</div>
+        </div>
+        <div style="font-size:18px;color:var(--text-dim);flex-shrink:0;">→</div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px;">
+        <div style="background:var(--bg-alt);border:1px solid var(--border);border-radius:6px;padding:8px 10px;">
+          <div style="font-size:9px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.04em;font-weight:700;">Throughput</div>
+          <div style="font-size:14px;font-weight:700;margin-top:2px;font-variant-numeric:tabular-nums;">${wf.telemetry.throughput.toLocaleString()}/h</div>
+        </div>
+        <div style="background:var(--bg-alt);border:1px solid var(--border);border-radius:6px;padding:8px 10px;">
+          <div style="font-size:9px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.04em;font-weight:700;">p95</div>
+          <div style="font-size:14px;font-weight:700;margin-top:2px;font-variant-numeric:tabular-nums;">${wf.telemetry.p95}s</div>
+        </div>
+        <div style="background:var(--bg-alt);border:1px solid var(--border);border-radius:6px;padding:8px 10px;">
+          <div style="font-size:9px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.04em;font-weight:700;">Cost / hr</div>
+          <div style="font-size:14px;font-weight:700;margin-top:2px;font-variant-numeric:tabular-nums;">$${wf.telemetry.cost}</div>
+        </div>
+        <div style="background:var(--bg-alt);border:1px solid var(--border);border-radius:6px;padding:8px 10px;">
+          <div style="font-size:9px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.04em;font-weight:700;">Error rate</div>
+          <div style="font-size:14px;font-weight:700;margin-top:2px;font-variant-numeric:tabular-nums;">${wf.telemetry.errorRate}%</div>
+        </div>
+      </div>
+      ${wf.scorers.length > 0 ? `
+        <div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:6px;">
+          ${wf.scorers.map(s => `<span style="font-size:10px;padding:2px 8px;border-radius:9999px;background:${s.breached ? 'var(--red-50)' : 'var(--bg-alt)'};color:${s.breached ? 'var(--red-700)' : 'var(--text-muted)'};border:1px solid ${s.breached ? 'var(--red-100)' : 'var(--border)'};font-weight:600;"><span style="color:var(--text-dim);font-weight:400;margin-right:3px;">${escapeHtml(s.name)} on ${escapeHtml(s.node)}:</span>${s.breached ? '▼ ' : ''}${s.value.toFixed(2)} / ${s.threshold.toFixed(2)}</span>`).join('')}
+        </div>
+      ` : ''}
+      <div style="margin-top:10px;font-size:11px;color:var(--text-dim);display:flex;justify-content:space-between;align-items:center;">
+        <span>${wfRuns.length} run${wfRuns.length === 1 ? '' : 's'} in window${wfRunsBreached > 0 ? ` · <span style="color:var(--red-700);font-weight:600;">${wfRunsBreached} breached</span>` : ''}</span>
+        <span style="color:var(--blue-500);font-weight:600;">Open workflow →</span>
+      </div>
+    </div>`;
+  }).join('');
 
   root.innerHTML = `
     <div class="page-head">
       <h2>Live Evals</h2>
       ${helpIcon('Live Evals')}
-      <span class="sub">Runtime observability for AI workflow quality, telemetry, and cost.</span>
-      <span class="meta">active build: <strong>${escapeHtml(wf.activeBuild)}</strong></span>
+      <span class="sub">Runtime observability for AI workflow quality. Drill into a workflow to configure scorers and observation points.</span>
+      <span class="meta">${MOCK_DATA.workflows.length} workflow${MOCK_DATA.workflows.length === 1 ? '' : 's'} · ${totalScorers} scorer${totalScorers === 1 ? '' : 's'}${totalBreached > 0 ? ` · <strong style="color:var(--red-700);">${totalBreached} breached</strong>` : ''} · ${totalOps} observation point${totalOps === 1 ? '' : 's'} · <a style="color:var(--blue-500);cursor:pointer;font-weight:600;" onclick="location.hash='#/live-evals/runs'">View all ${totalRuns} runs →</a></span>
     </div>
     <div class="page-section">
       <div class="filter-bar">
-        <span style="font-size:12px;line-height:16px;color:var(--flowx-text-secondary);margin-right:4px;">Workflow:</span>
-        ${MOCK_DATA.workflows.map(w => `<button class="chip ${w.id === wfId ? 'active' : ''}" onclick="STATE.liveEvals.workflowId='${w.id}'; renderLiveEvals(document.getElementById('page'))">${escapeHtml(w.name)}</button>`).join('')}
+        <span style="font-size:12px;line-height:16px;color:var(--flowx-text-secondary);margin-right:4px;">Time:</span>
+        ${['1h','24h','7d','custom'].map(t => `<button class="chip ${tw === t ? 'active' : ''}" onclick="setLiveEvalsTimeWindow('${t}')">${t === 'custom' ? 'Custom' : t}</button>`).join('')}
+      </div>
+      ${docBanner("What's on Live Evals?", "Each card is one AI workflow in this app. Telemetry stats are shown for the active time window. Drill into a workflow to see its three observability tiers, configure scorers, and define observation points.", 'le-landing-howto')}
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px;">
+        ${cardsHtml}
       </div>
     </div>
-    <div class="page-body">
+  `;
+}
 
+function renderLiveEvalsWorkflow(root) {
+  const wfId = STATE.liveEvals.workflowId;
+  const wf = MOCK_DATA.workflows.find(w => w.id === wfId) || MOCK_DATA.workflows[0];
+  const recentRuns = MOCK_DATA.workflowRuns.filter(r => r.workflowId === wfId).slice(0, 6);
+  const tab = STATE.liveEvals.tab || 'overview';
+  const opsForWf = MOCK_DATA.observationPoints.filter(op => op.workflowId === wfId && op.enabled);
+  const activeDecisionCount = Object.keys(STATE.liveEvals.decisions).length;
+  const breachedCount = wf.scorers.filter(s => s.breached).length;
+
+  const overviewBody = `
       <div class="le-tier">
         <h4>Tier 1 — Telemetry <span class="pill-mini free">FREE</span></h4>
-        <div class="descr">Always on. Throughput, latency, cost, error rate.</div>
-        <div class="le-stats">
+        <div class="descr">Always on. Throughput · latency · cost · path shape · retry &amp; fallback pressure · terminal outcomes.</div>
+        <div class="le-stats" style="margin-bottom:8px;">
           <div class="le-stat"><div class="k">Throughput</div><div class="v">${wf.telemetry.throughput.toLocaleString()}/h</div></div>
           <div class="le-stat"><div class="k">p95 latency</div><div class="v">${wf.telemetry.p95}s</div></div>
           <div class="le-stat"><div class="k">Cost / hr</div><div class="v">$${wf.telemetry.cost}</div></div>
+          <div class="le-stat"><div class="k">Instances</div><div class="v">${wf.telemetry.instanceCount.toLocaleString()}</div></div>
+        </div>
+        <div class="le-stats">
+          <div class="le-stat"><div class="k">Mean path length</div><div class="v">${wf.telemetry.meanPathLength} <small style="font-size:10px;color:var(--text-dim);font-weight:400;">nodes</small></div></div>
+          <div class="le-stat"><div class="k">Retry pressure</div><div class="v">${wf.telemetry.retryPressurePct}%</div></div>
+          <div class="le-stat"><div class="k">Fallback model</div><div class="v">${wf.telemetry.fallbackModelPct}%</div></div>
           <div class="le-stat"><div class="k">Error rate</div><div class="v">${wf.telemetry.errorRate}%</div></div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px;">
+          <div style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px 12px;">
+            <div style="font-size:9px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.04em;font-weight:700;margin-bottom:8px;">Terminal outcomes</div>
+            <div style="display:flex;height:10px;border-radius:9999px;overflow:hidden;background:var(--bg-alt);">
+              ${wf.telemetry.terminalOutcomes.map(o => `<div style="background:${o.color};width:${o.pct}%;" title="${escapeHtml(o.label)}: ${o.pct}%"></div>`).join('')}
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:8px 14px;margin-top:8px;font-size:11px;color:var(--text-muted);">
+              ${wf.telemetry.terminalOutcomes.map(o => `<span style="display:inline-flex;align-items:center;gap:5px;"><span style="display:inline-block;width:7px;height:7px;border-radius:2px;background:${o.color};"></span>${escapeHtml(o.label)} <strong style="color:var(--text);font-variant-numeric:tabular-nums;">${o.pct}%</strong></span>`).join('')}
+            </div>
+          </div>
+          <div style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px 12px;">
+            <div style="font-size:9px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.04em;font-weight:700;margin-bottom:8px;">Top paths</div>
+            ${wf.telemetry.topPaths.map(p => `
+              <div style="display:flex;align-items:center;gap:8px;font-size:11px;margin-bottom:3px;">
+                <div style="flex:1;min-width:0;">
+                  <div style="color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:'JetBrains Mono',monospace;font-size:10px;">${escapeHtml(p.name)}</div>
+                </div>
+                <div style="width:50px;height:6px;background:var(--bg-alt);border-radius:3px;overflow:hidden;flex-shrink:0;"><div style="width:${p.pct}%;height:100%;background:var(--blue-500);"></div></div>
+                <div style="font-variant-numeric:tabular-nums;color:var(--text-muted);font-weight:600;width:34px;text-align:right;">${p.pct}%</div>
+              </div>`).join('')}
+          </div>
         </div>
       </div>
 
       <div class="le-tier">
         <h4>Tier 2 — Workflow scorers <span class="pill-mini optin">OPT-IN</span></h4>
-        <div class="descr">Configured scorers attached to nodes. Crossing a threshold creates an AI quality incident.</div>
+        <div class="descr">Configured scorers attached to nodes. Dashed orange line is the threshold; dashed blue/grey lines mark build deploys.</div>
         ${wf.scorers.length === 0 ? '<div style="font-size:11px;color:var(--text-dim);">No scorers bound to this workflow yet.</div>' :
-          wf.scorers.map(s => `<div class="le-scorer-row">
-            <span><strong>${escapeHtml(s.name)}</strong> · ${escapeHtml(s.node)}${s.breached ? ' <span style="color:var(--red-700);font-weight:600;font-size:10px;">BREACHED</span>' : ''}</span>
-            <span class="value ${s.breached ? 'bad' : ''}">${s.value.toFixed(2)}</span>
-            <span style="font-size:10px;color:var(--text-dim);">threshold ${s.threshold.toFixed(2)}</span>
-          </div>`).join('')}
+          wf.scorers.map(s => `
+            <div style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px 12px;margin-bottom:8px;">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+                <div>
+                  <strong style="font-size:13px;">${escapeHtml(s.name)}</strong>
+                  <span style="font-size:11px;color:var(--text-muted);margin-left:6px;">on ${escapeHtml(s.node)}</span>
+                  ${s.breached ? '<span style="color:var(--red-700);font-weight:700;font-size:10px;margin-left:8px;padding:1px 6px;background:var(--red-50);border-radius:4px;">BREACHED</span>' : ''}
+                </div>
+                <div style="font-size:11px;color:var(--text-dim);">${MOCK_DATA.builds.filter(b => b.cutAtHours <= timeWindowHours(STATE.liveEvals.timeWindow)).length} deploy marker${MOCK_DATA.builds.filter(b => b.cutAtHours <= timeWindowHours(STATE.liveEvals.timeWindow)).length === 1 ? '' : 's'} in view</div>
+              </div>
+              ${renderScorerChart(s, timeWindowHours(STATE.liveEvals.timeWindow), MOCK_DATA.builds)}
+            </div>`).join('')}
       </div>
 
       <div class="le-tier">
         <h4>Tier 3 — AI nodes <span class="pill-mini scope">PER NODE</span></h4>
-        <div class="descr">Each AI node in the workflow with its scorers and any open alerts.</div>
+        <div class="descr">Each AI node in the workflow with its scorers and any open alerts. Click a card to drill in.</div>
         <div class="le-cards">
-          ${wf.nodes.map(n => `<div class="le-node">
-            <div class="nm">${escapeHtml(n.name)}</div>
+          ${wf.nodes.map(n => `<div class="le-node" onclick="openDetail('aiNode','${wfId}:${escapeHtml(n.name)}')" style="cursor:pointer;${n.alertCount ? 'border-color:var(--red-500);' : ''}">
+            <div class="nm">${escapeHtml(n.name)}${n.alertCount ? ` <span style="color:var(--red-700);font-size:10px;font-weight:700;margin-left:4px;">▼ ${n.alertCount}</span>` : ''}</div>
             <div class="ty">${escapeHtml(n.type)} · ${escapeHtml(n.desc)}</div>
             <div class="scrs">${n.scorers.length ? n.scorers.join(' · ') : '—'}${n.alertCount ? ` · <span class="alert">${n.alertCount} alert</span>` : ''}</div>
           </div>`).join('')}
         </div>
       </div>
 
+      <div class="le-tier">
+        <h4>Recent runs <span class="pill-mini scope">${recentRuns.length} OF ${MOCK_DATA.workflowRuns.filter(r => r.workflowId === wfId).length}</span></h4>
+        <div class="descr">Individual workflow runs for this workflow. Each opens the trace, variables, and scores.</div>
+        ${recentRuns.length === 0 ? '<div style="font-size:11px;color:var(--text-dim);padding:8px 0;">No runs recorded for this workflow yet.</div>' : `
+          <div style="border:1px solid var(--border);border-radius:6px;overflow:hidden;background:var(--bg);">
+            ${recentRuns.map((r, idx) => {
+              const breached = r.scores.some(s => s.breached);
+              return `<div onclick="openDetail('workflowRun','${r.id}')" style="display:grid;grid-template-columns:90px 1fr 130px 90px 70px 60px;gap:12px;align-items:center;padding:9px 12px;cursor:pointer;${idx < recentRuns.length - 1 ? 'border-bottom:1px solid var(--border-soft);' : ''}font-size:12px;" onmouseover="this.style.background='var(--bg-alt)'" onmouseout="this.style.background='transparent'">
+                <div>${statePill(r.status === 'running' ? 'running' : r.status, null, null)}</div>
+                <div>
+                  <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text);font-weight:600;">${escapeHtml(r.id)}</div>
+                  <div style="font-size:10px;color:var(--text-dim);margin-top:2px;">↳ <a style="color:var(--blue-500);font-weight:600;cursor:pointer;font-family:'JetBrains Mono',monospace;" onclick="event.stopPropagation(); openDetail('instance','${r.spawnedBy.id}')">${escapeHtml(r.spawnedBy.id)}</a> · ${escapeHtml(r.spawnedBy.trigger)}</div>
+                </div>
+                <div style="font-size:11px;color:var(--text-muted);">${escapeHtml(r.startedAt)}</div>
+                <div style="font-variant-numeric:tabular-nums;color:var(--text-muted);">${r.durationMs ? (r.durationMs / 1000).toFixed(2) + 's' : '—'}</div>
+                <div style="font-variant-numeric:tabular-nums;color:var(--text-muted);">$${r.costUsd.toFixed(3)}</div>
+                <div>${breached ? '<span style="font-size:10px;padding:1px 6px;border-radius:4px;background:var(--red-50);color:var(--red-700);font-weight:600;">▼</span>' : '<span style="color:var(--text-dim);font-size:10px;">—</span>'}</div>
+              </div>`;
+            }).join('')}
+          </div>`}
+      </div>
+  `;
+
+  const opsAll = MOCK_DATA.observationPoints.filter(op => op.workflowId === wfId);
+  const bindingsHtml = wf.scorers.length === 0
+    ? '<div style="font-size:11px;color:var(--text-dim);padding:14px;text-align:center;">No scorer bindings configured for this workflow yet. <a style="color:var(--blue-500);font-weight:600;cursor:pointer;" onclick="alert(\'Add binding flow — coming soon\')">+ Add binding</a></div>'
+    : `<table class="list-table" style="border:1px solid var(--border);border-radius:6px;overflow:hidden;background:var(--bg);">
+        <thead><tr>
+          <th>Scorer</th><th>Scope</th><th style="text-align:right;">Sample rate</th><th style="text-align:right;">Daily budget</th><th style="text-align:right;">Threshold</th><th>Current</th><th>Enabled</th><th></th>
+        </tr></thead>
+        <tbody>
+          ${wf.scorers.map(s => `<tr>
+            <td><strong>${escapeHtml(s.name)}</strong><div style="font-size:10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;">${escapeHtml(s.bindingId)}</div></td>
+            <td><span class="target-badge ${s.scope === 'node' ? 'user' : 'role'}">${s.scope === 'node' ? 'NODE' : 'WORKFLOW'}</span> <code style="font-family:'JetBrains Mono',monospace;font-size:11px;margin-left:4px;">${escapeHtml(s.node)}</code></td>
+            <td style="text-align:right;font-variant-numeric:tabular-nums;">${s.sampleRatePct}%</td>
+            <td style="text-align:right;font-variant-numeric:tabular-nums;">$${s.dailyTokenBudgetUsd}/day</td>
+            <td style="text-align:right;font-variant-numeric:tabular-nums;">${s.threshold.toFixed(2)}</td>
+            <td><span style="font-variant-numeric:tabular-nums;font-weight:700;color:${s.breached ? 'var(--red-700)' : 'var(--green-700)'};">${s.value.toFixed(2)}</span>${s.breached ? ' <span style="color:var(--red-700);font-weight:600;font-size:10px;">▼</span>' : ''}</td>
+            <td><button class="toggle ${s.enabled ? '' : 'off'}" onclick="toggleScorerBinding('${s.bindingId}')"><span class="switch"></span>${s.enabled ? 'On' : 'Off'}</button></td>
+            <td style="text-align:right;"><a style="color:var(--blue-500);cursor:pointer;font-size:11px;font-weight:600;margin-right:8px">Edit</a><a style="color:var(--red-700);cursor:pointer;font-size:11px;font-weight:600;">Delete</a></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>`;
+
+  const obsHtml = opsAll.length === 0
+    ? '<div style="font-size:11px;color:var(--text-dim);padding:14px;text-align:center;">No observation points configured for this workflow. <a style="color:var(--blue-500);font-weight:600;cursor:pointer;" onclick="alert(\'Add observation point flow — coming soon\')">+ Add observation point</a></div>'
+    : `<table class="list-table" style="border:1px solid var(--border);border-radius:6px;overflow:hidden;background:var(--bg);">
+        <thead><tr>
+          <th>Dimension</th><th>Category</th><th>Bound to</th><th>Unique values seen</th><th>Enabled</th><th></th>
+        </tr></thead>
+        <tbody>
+          ${opsAll.map(op => `<tr>
+            <td><strong style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text);">${escapeHtml(op.dimensionLabel)}</strong></td>
+            <td><span style="font-size:10px;color:var(--text-muted);padding:1px 6px;background:var(--bg-alt);border:1px solid var(--border);border-radius:4px;">${escapeHtml(op.category)}</span></td>
+            <td><code style="font-family:'JetBrains Mono',monospace;font-size:11px;">${escapeHtml(op.nodeName)}</code></td>
+            <td><span style="font-variant-numeric:tabular-nums;font-weight:600;">${op.uniqueValuesSeen.length}</span> <span style="font-size:10px;color:var(--text-dim);">(${op.uniqueValuesSeen.map(v => escapeHtml(v)).join(', ')})</span></td>
+            <td><button class="toggle ${op.enabled ? '' : 'off'}" onclick="toggleObservationPoint('${op.id}')"><span class="switch"></span>${op.enabled ? 'On' : 'Off'}</button></td>
+            <td style="text-align:right;"><a style="color:var(--blue-500);cursor:pointer;font-size:11px;font-weight:600;margin-right:8px">Edit</a><a style="color:var(--red-700);cursor:pointer;font-size:11px;font-weight:600;">Delete</a></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>`;
+
+  const settingsBody = `
+      ${docBanner("What's on Settings?", "Scorer bindings attach quality scorers to nodes or workflows; observation points mark categorical decision dimensions that become filters on the Overview tab.", 'le-settings-howto')}
+      <div class="le-tier">
+        <h4>Scorer bindings <span class="pill-mini optin">${wf.scorers.length}</span></h4>
+        <div class="descr">Scorers attached to this workflow or to its AI nodes. Each binding has its own sample rate, daily token budget, and threshold.</div>
+        <div style="display:flex;justify-content:flex-end;margin-bottom:8px;"><button class="btn ghost" style="padding:4px 10px;font-size:11px;" onclick="alert('Add binding flow — coming soon')">+ New binding</button></div>
+        ${bindingsHtml}
+      </div>
+
+      <div class="le-tier">
+        <h4>Observation points <span class="pill-mini scope">${opsAll.length}</span></h4>
+        <div class="descr">Designer-marked decision dimensions. Enabled observation points become filter chips at the top of the Overview tab.</div>
+        <div style="display:flex;justify-content:flex-end;margin-bottom:8px;"><button class="btn ghost" style="padding:4px 10px;font-size:11px;" onclick="alert('Add observation point flow — coming soon')">+ New observation point</button></div>
+        ${obsHtml}
+      </div>
+  `;
+
+  root.innerHTML = `
+    <div class="page-head">
+      <div style="display:flex;flex-direction:column;gap:2px;">
+        <span style="font-size:11px;color:var(--text-muted);">
+          <a style="color:var(--text-muted);cursor:pointer;text-decoration:none;" onclick="location.hash='#/live-evals'">← Live Evals</a>
+        </span>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <h2 style="margin:0;">${escapeHtml(wf.name)}</h2>
+          ${helpIcon('Live Evals')}
+          ${breachedCount > 0 ? `<span style="display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:9999px;background:var(--red-50);color:var(--red-700);font-size:11px;font-weight:700;border:1px solid var(--red-100);"><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--red-500);"></span>${breachedCount} scorer${breachedCount === 1 ? '' : 's'} breached</span>` : ''}
+        </div>
+      </div>
+      <span class="sub">${escapeHtml(wf.nodes.length)} AI node${wf.nodes.length === 1 ? '' : 's'} · ${wf.scorers.length} scorer${wf.scorers.length === 1 ? '' : 's'} bound · ${opsForWf.length} observation point${opsForWf.length === 1 ? '' : 's'}</span>
+      <span class="meta">active build: <strong>${escapeHtml(wf.activeBuild)}</strong> · <a style="color:var(--blue-500);cursor:pointer;font-weight:600;" onclick="jumpToBuildComparison('${wfId}')">Compare builds →</a> · <a style="color:var(--blue-500);cursor:pointer;font-weight:600;" onclick="location.hash='#/live-evals/runs'">View all runs →</a></span>
+    </div>
+    <div class="page-section">
+      <div class="stage-tabs">
+        <button class="stage-tab ${tab === 'overview' ? 'active' : ''}" onclick="STATE.liveEvals.tab='overview'; renderLiveEvalsWorkflow(document.getElementById('page'))">Overview</button>
+        <button class="stage-tab ${tab === 'settings' ? 'active' : ''}" onclick="STATE.liveEvals.tab='settings'; renderLiveEvalsWorkflow(document.getElementById('page'))">Settings <span class="count">${wf.scorers.length + opsForWf.length}</span></button>
+      </div>
+      <div class="filter-bar">
+        <span style="font-size:12px;line-height:16px;color:var(--flowx-text-secondary);margin-right:4px;">Time:</span>
+        ${['1h','24h','7d','custom'].map(tw => `<button class="chip ${STATE.liveEvals.timeWindow === tw ? 'active' : ''}" onclick="setLiveEvalsTimeWindow('${tw}')">${tw === 'custom' ? 'Custom' : tw}</button>`).join('')}
+        ${tab === 'overview' && opsForWf.length > 0 ? `
+          <span style="margin-left:16px;font-size:12px;line-height:16px;color:var(--flowx-text-secondary);margin-right:4px;">Decisions:</span>
+          ${opsForWf.map(op => {
+            const sel = STATE.liveEvals.decisions[op.id] || '';
+            const isActive = !!sel;
+            return `<button class="chip ${isActive ? 'active' : ''}" onclick="cycleDecisionFilter('${op.id}')" title="Click to cycle · values: all, ${escapeHtml(op.uniqueValuesSeen.join(', '))}">
+              <span style="color:var(--text-dim);font-weight:400;margin-right:2px;">${escapeHtml(op.dimensionLabel)}:</span>${escapeHtml(sel || 'all')}
+            </button>`;
+          }).join('')}
+          ${activeDecisionCount > 0 ? `<button class="chip" style="margin-left:8px;color:var(--text-muted);" onclick="clearDecisionFilters()" title="Clear all decision filters">Clear ${activeDecisionCount}</button>` : ''}
+          <span style="margin-left:auto;font-size:11px;line-height:16px;color:var(--text-dim);">${activeDecisionCount > 0 ? `<span style="color:var(--blue-700);font-weight:600;">${activeDecisionCount} filter${activeDecisionCount === 1 ? '' : 's'} active</span> · data below reflects the slice` : 'No decision filters'}</span>
+        ` : ''}
+      </div>
+    </div>
+    <div class="page-body">
+      ${tab === 'overview' ? overviewBody : settingsBody}
     </div>
   `;
 }
+
+function renderBuildComparison(root, wfId, leftId, rightId) {
+  const wf = MOCK_DATA.workflows.find(w => w.id === wfId);
+  const left = MOCK_DATA.builds.find(b => b.id === leftId);
+  const right = MOCK_DATA.builds.find(b => b.id === rightId);
+  const incompatible = left.isArchived || right.isArchived;
+
+  // Synthetic scorer/metric values for non-active builds (deterministic seed by build cutAtHours + name)
+  const seed = (name, hours) => {
+    let h = 0;
+    for (const ch of name) h = (h * 31 + ch.charCodeAt(0)) % 997;
+    return ((h + Math.round(hours)) % 100) / 100; // 0..1
+  };
+  function scorerValueOn(scorer, build) {
+    if (build.isArchived) return null;
+    if (build.isActive) return scorer.value;
+    const drift = (seed(scorer.name, build.cutAtHours) - 0.5) * 0.18; // ±0.09
+    return Math.max(0, Math.min(1, scorer.value - drift));
+  }
+  function aggregateOn(build) {
+    if (build.isActive) return { ...wf.telemetry };
+    const driftPct = (seed('agg', build.cutAtHours) - 0.5) * 0.3; // ±15%
+    return {
+      throughput: Math.round(wf.telemetry.throughput * (1 - driftPct)),
+      p95: +(wf.telemetry.p95 * (1 - driftPct * 0.6)).toFixed(2),
+      cost: Math.round(wf.telemetry.cost * (1 - driftPct)),
+      errorRate: +(Math.max(0, wf.telemetry.errorRate - driftPct * 0.4)).toFixed(2),
+      instanceCount: Math.round(wf.telemetry.instanceCount * (1 - driftPct)),
+      meanPathLength: +(wf.telemetry.meanPathLength + (seed('mpl', build.cutAtHours) - 0.5) * 0.4).toFixed(1),
+      retryPressurePct: +(Math.max(0, wf.telemetry.retryPressurePct + (seed('rp', build.cutAtHours) - 0.5) * 4)).toFixed(1),
+      fallbackModelPct: +(Math.max(0, wf.telemetry.fallbackModelPct + (seed('fb', build.cutAtHours) - 0.5) * 2)).toFixed(1),
+    };
+  }
+  function nodeLatencyOn(nodeName, build) {
+    // Approximate base latency per node from invocations
+    const invs = MOCK_DATA.workflowRuns
+      .filter(r => r.workflowId === wf.id)
+      .flatMap(r => r.invocations.filter(i => i.nodeName === nodeName));
+    const baseLat = invs.length ? invs.reduce((s, i) => s + i.latencyMs, 0) / invs.length : 800;
+    const baseCost = invs.length ? invs.reduce((s, i) => s + i.costUsd, 0) / invs.length : 0.005;
+    if (build.isActive) return { latencyMs: Math.round(baseLat), costUsd: +baseCost.toFixed(3) };
+    const drift = (seed(nodeName, build.cutAtHours) - 0.5) * 0.25;
+    return { latencyMs: Math.round(baseLat * (1 - drift)), costUsd: +(baseCost * (1 - drift)).toFixed(3) };
+  }
+  function decisionDistOn(op, build) {
+    return op.uniqueValuesSeen.map((v, i, all) => {
+      const baseShare = 100 / all.length;
+      const skew = (seed(v + (build.isActive ? 'active' : 'past'), build.cutAtHours) - 0.5) * 30;
+      return { value: v, pct: Math.max(2, baseShare + skew) };
+    }).reduce((acc, row, _, arr) => {
+      // Normalize to 100
+      const sum = arr.reduce((s, r) => s + r.pct, 0);
+      acc.push({ value: row.value, pct: Math.round((row.pct / sum) * 100) });
+      return acc;
+    }, []);
+  }
+
+  const deltaPill = (delta, options = {}) => {
+    const { suffix = '', invertColor = false, fmt = (d) => (d > 0 ? '+' : '') + d.toFixed(2) } = options;
+    if (Math.abs(delta) < 0.001) return `<span class="delta flat">— flat</span>`;
+    const dir = delta > 0 ? 'up' : 'down';
+    const color = invertColor ? (dir === 'up' ? 'down' : 'up') : dir;
+    return `<span class="delta ${color}">${dir === 'up' ? '↑' : '↓'} ${fmt(delta)}${suffix}</span>`;
+  };
+
+  const head = `
+    <div class="page-head">
+      <div style="display:flex;flex-direction:column;gap:2px;">
+        <span style="font-size:11px;color:var(--text-muted);">
+          <a style="color:var(--text-muted);cursor:pointer;text-decoration:none;" onclick="location.hash='#/live-evals/${wfId}'">← ${escapeHtml(wf.name)}</a>
+        </span>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <h2 style="margin:0;">Build comparison</h2>
+          ${helpIcon('Build')}
+        </div>
+      </div>
+      <span class="sub">Per-scorer, per-AI-node, and decision-distribution deltas between two builds of <strong>${escapeHtml(wf.name)}</strong>.</span>
+    </div>
+    <div class="page-section">
+      <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:16px;align-items:stretch;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;">
+        <div>
+          <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.04em;font-weight:700;margin-bottom:6px;">Left build</div>
+          <select class="build-picker" onchange="setComparisonBuild('left', this.value)" style="width:100%;font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;padding:6px 8px;border:1px solid var(--border-strong);border-radius:6px;background:var(--bg);color:var(--text);">
+            ${MOCK_DATA.builds.map(b => `<option value="${b.id}" ${b.id === leftId ? 'selected' : ''}>${escapeHtml(b.tag)} · ${escapeHtml(b.branch)} · ${escapeHtml(b.cutAt)}${b.isActive ? ' · active' : ''}${b.isArchived ? ' · archived' : ''}</option>`).join('')}
+          </select>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:6px;">cut ${escapeHtml(left.cutAt)} by ${escapeHtml(left.cutBy)} · branch <code style="font-family:'JetBrains Mono',monospace;font-size:11px;">${escapeHtml(left.branch)}</code></div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:center;">
+          <button class="btn ghost" style="padding:6px 12px;font-size:11px;height:fit-content;align-self:center;" onclick="swapComparisonBuilds()" title="Swap left and right">⇄ Swap</button>
+        </div>
+        <div>
+          <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.04em;font-weight:700;margin-bottom:6px;">Right build</div>
+          <select class="build-picker" onchange="setComparisonBuild('right', this.value)" style="width:100%;font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;padding:6px 8px;border:1px solid var(--border-strong);border-radius:6px;background:var(--bg);color:var(--text);">
+            ${MOCK_DATA.builds.map(b => `<option value="${b.id}" ${b.id === rightId ? 'selected' : ''}>${escapeHtml(b.tag)} · ${escapeHtml(b.branch)} · ${escapeHtml(b.cutAt)}${b.isActive ? ' · active' : ''}${b.isArchived ? ' · archived' : ''}</option>`).join('')}
+          </select>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:6px;">cut ${escapeHtml(right.cutAt)} by ${escapeHtml(right.cutBy)} · branch <code style="font-family:'JetBrains Mono',monospace;font-size:11px;">${escapeHtml(right.branch)}</code></div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  if (incompatible) {
+    root.innerHTML = `${head}
+      <div class="page-body">
+        <div style="background:var(--bg);border:1px solid var(--orange-100);border-left:4px solid var(--orange-500);border-radius:8px;padding:20px 24px;display:flex;gap:16px;align-items:flex-start;">
+          <div style="font-size:24px;flex-shrink:0;">⚠</div>
+          <div>
+            <h3 style="margin:0 0 6px;font-size:16px;color:var(--orange-700);">Incompatible — no shared scorer history</h3>
+            <p style="margin:0 0 8px;font-size:13px;color:var(--text-muted);line-height:20px;">${escapeHtml(left.tag)} and ${escapeHtml(right.tag)} don't share scorer definitions, so quality deltas can't be computed. ${left.isArchived || right.isArchived ? 'Archived builds predate the current scorer set.' : ''}</p>
+            <p style="margin:0;font-size:12px;color:var(--text-dim);">Try comparing two non-archived builds on the same branch.</p>
+          </div>
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  // Compute snapshots
+  const aggL = aggregateOn(left);
+  const aggR = aggregateOn(right);
+
+  const aggRows = [
+    { k: 'Throughput', l: aggL.throughput, r: aggR.throughput, suffix: '/h', fmt: (n) => n.toLocaleString(), deltaFmt: (d) => (d > 0 ? '+' : '') + Math.round(d).toLocaleString(), invert: false },
+    { k: 'p95 latency', l: aggL.p95, r: aggR.p95, suffix: 's', fmt: (n) => n + 's', deltaFmt: (d) => (d > 0 ? '+' : '') + d.toFixed(2) + 's', invert: true },
+    { k: 'Cost / hr', l: aggL.cost, r: aggR.cost, suffix: '', fmt: (n) => '$' + n, deltaFmt: (d) => (d > 0 ? '+' : '') + '$' + Math.round(d), invert: true },
+    { k: 'Error rate', l: aggL.errorRate, r: aggR.errorRate, suffix: '%', fmt: (n) => n + '%', deltaFmt: (d) => (d > 0 ? '+' : '') + d.toFixed(2) + 'pp', invert: true },
+    { k: 'Instances', l: aggL.instanceCount, r: aggR.instanceCount, suffix: '', fmt: (n) => n.toLocaleString(), deltaFmt: (d) => (d > 0 ? '+' : '') + Math.round(d).toLocaleString(), invert: false },
+    { k: 'Mean path length', l: aggL.meanPathLength, r: aggR.meanPathLength, suffix: '', fmt: (n) => n.toFixed(1), deltaFmt: (d) => (d > 0 ? '+' : '') + d.toFixed(1), invert: false },
+    { k: 'Retry pressure', l: aggL.retryPressurePct, r: aggR.retryPressurePct, suffix: '%', fmt: (n) => n.toFixed(1) + '%', deltaFmt: (d) => (d > 0 ? '+' : '') + d.toFixed(1) + 'pp', invert: true },
+    { k: 'Fallback model', l: aggL.fallbackModelPct, r: aggR.fallbackModelPct, suffix: '%', fmt: (n) => n.toFixed(1) + '%', deltaFmt: (d) => (d > 0 ? '+' : '') + d.toFixed(1) + 'pp', invert: true },
+  ];
+
+  const aggHtml = `<div style="display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:0;border:1px solid var(--border);border-radius:6px;overflow:hidden;background:var(--bg);">
+    <div style="display:contents;font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.04em;font-weight:700;">
+      <div style="padding:8px 12px;background:var(--bg-alt);border-bottom:1px solid var(--border-strong);">Metric</div>
+      <div style="padding:8px 12px;background:var(--bg-alt);border-bottom:1px solid var(--border-strong);text-align:right;">${escapeHtml(left.tag)}</div>
+      <div style="padding:8px 12px;background:var(--bg-alt);border-bottom:1px solid var(--border-strong);text-align:right;">${escapeHtml(right.tag)}</div>
+      <div style="padding:8px 12px;background:var(--bg-alt);border-bottom:1px solid var(--border-strong);text-align:right;">Δ</div>
+    </div>
+    ${aggRows.map(row => {
+      const delta = row.l - row.r;
+      const flat = Math.abs(delta) < 0.001 || (typeof row.l === 'number' && typeof row.r === 'number' && Math.abs(row.l - row.r) < 0.01 && row.k !== 'Cost / hr');
+      const dir = delta > 0 ? 'up' : 'down';
+      const color = row.invert ? (dir === 'up' ? 'down' : 'up') : dir;
+      return `<div style="padding:10px 12px;border-top:1px solid var(--border-soft);font-size:13px;font-weight:600;">${row.k}</div>
+        <div style="padding:10px 12px;border-top:1px solid var(--border-soft);font-size:13px;text-align:right;font-variant-numeric:tabular-nums;">${row.fmt(row.l)}</div>
+        <div style="padding:10px 12px;border-top:1px solid var(--border-soft);font-size:13px;text-align:right;font-variant-numeric:tabular-nums;color:var(--text-muted);">${row.fmt(row.r)}</div>
+        <div style="padding:10px 12px;border-top:1px solid var(--border-soft);text-align:right;">${flat ? '<span class="delta flat">flat</span>' : `<span class="delta ${color}">${dir === 'up' ? '↑' : '↓'} ${row.deltaFmt(delta)}</span>`}</div>`;
+    }).join('')}
+  </div>`;
+
+  // Per-scorer
+  const scorerRows = wf.scorers.map(s => {
+    const lv = scorerValueOn(s, left);
+    const rv = scorerValueOn(s, right);
+    const delta = lv - rv;
+    // For toxicity-like (low is good, threshold low) — higher = bad
+    const lowIsGood = s.threshold < 0.5;
+    const dir = delta > 0 ? 'up' : 'down';
+    const color = lowIsGood ? (dir === 'up' ? 'down' : 'up') : dir;
+    const regression = lowIsGood ? (lv > rv && lv > s.threshold) : (lv < rv && lv < s.threshold);
+    const flat = Math.abs(delta) < 0.001;
+    return `<div style="display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:0;padding:0;border-bottom:1px solid var(--border-soft);">
+      <div style="padding:10px 12px;font-size:13px;">
+        <strong>${escapeHtml(s.name)}</strong>
+        <div style="font-size:10px;color:var(--text-dim);">on ${escapeHtml(s.node)} · threshold ${s.threshold.toFixed(2)}</div>
+      </div>
+      <div style="padding:10px 12px;text-align:right;font-variant-numeric:tabular-nums;font-weight:700;color:${lowIsGood ? (lv > s.threshold ? 'var(--red-700)' : 'var(--green-700)') : (lv < s.threshold ? 'var(--red-700)' : 'var(--green-700)')};">${lv.toFixed(2)}</div>
+      <div style="padding:10px 12px;text-align:right;font-variant-numeric:tabular-nums;color:var(--text-muted);">${rv.toFixed(2)}</div>
+      <div style="padding:10px 12px;text-align:right;">${flat ? '<span class="delta flat">flat</span>' : `<span class="delta ${color}">${dir === 'up' ? '↑' : '↓'} ${(delta > 0 ? '+' : '') + delta.toFixed(2)}</span>${regression ? ' <span style="font-size:10px;color:var(--red-700);font-weight:700;">⚠ regression</span>' : ''}`}</div>
+    </div>`;
+  }).join('');
+
+  const scorerHtml = wf.scorers.length === 0
+    ? `<div style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:14px;font-size:11px;color:var(--text-dim);text-align:center;">No scorers bound to this workflow.</div>`
+    : `<div style="background:var(--bg);border:1px solid var(--border);border-radius:6px;overflow:hidden;">
+        <div style="display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:0;background:var(--bg-alt);border-bottom:1px solid var(--border-strong);font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.04em;font-weight:700;">
+          <div style="padding:8px 12px;">Scorer</div>
+          <div style="padding:8px 12px;text-align:right;">${escapeHtml(left.tag)}</div>
+          <div style="padding:8px 12px;text-align:right;">${escapeHtml(right.tag)}</div>
+          <div style="padding:8px 12px;text-align:right;">Δ</div>
+        </div>
+        ${scorerRows}
+      </div>`;
+
+  // Per-node latency / cost
+  const nodeRows = wf.nodes.map(n => {
+    const l = nodeLatencyOn(n.name, left);
+    const r = nodeLatencyOn(n.name, right);
+    const latDelta = l.latencyMs - r.latencyMs;
+    const costDelta = l.costUsd - r.costUsd;
+    const latDir = latDelta > 0 ? 'up' : 'down';
+    const latColor = latDir === 'up' ? 'down' : 'up'; // higher latency = bad
+    const costDir = costDelta > 0 ? 'up' : 'down';
+    const costColor = costDir === 'up' ? 'down' : 'up';
+    return `<div style="display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:0;padding:0;border-bottom:1px solid var(--border-soft);">
+      <div style="padding:10px 12px;font-size:13px;">
+        <strong>${escapeHtml(n.name)}</strong>
+        <div style="font-size:10px;color:var(--text-dim);">${escapeHtml(n.type)}</div>
+      </div>
+      <div style="padding:10px 12px;text-align:right;font-variant-numeric:tabular-nums;font-size:12px;">${l.latencyMs}ms<div style="font-size:10px;color:var(--text-dim);">$${l.costUsd.toFixed(3)}</div></div>
+      <div style="padding:10px 12px;text-align:right;font-variant-numeric:tabular-nums;font-size:12px;color:var(--text-muted);">${r.latencyMs}ms<div style="font-size:10px;color:var(--text-dim);">$${r.costUsd.toFixed(3)}</div></div>
+      <div style="padding:10px 12px;text-align:right;font-size:11px;">
+        ${Math.abs(latDelta) < 5 ? '<span class="delta flat">flat lat</span>' : `<span class="delta ${latColor}">${latDir === 'up' ? '↑' : '↓'} ${latDelta > 0 ? '+' : ''}${latDelta}ms</span>`}
+        <div style="margin-top:2px;">${Math.abs(costDelta) < 0.001 ? '<span class="delta flat">flat $</span>' : `<span class="delta ${costColor}">${costDir === 'up' ? '↑' : '↓'} ${costDelta > 0 ? '+' : ''}$${costDelta.toFixed(3)}</span>`}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  const nodeHtml = `<div style="background:var(--bg);border:1px solid var(--border);border-radius:6px;overflow:hidden;">
+    <div style="display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:0;background:var(--bg-alt);border-bottom:1px solid var(--border-strong);font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.04em;font-weight:700;">
+      <div style="padding:8px 12px;">Node</div>
+      <div style="padding:8px 12px;text-align:right;">${escapeHtml(left.tag)}</div>
+      <div style="padding:8px 12px;text-align:right;">${escapeHtml(right.tag)}</div>
+      <div style="padding:8px 12px;text-align:right;">Δ</div>
+    </div>
+    ${nodeRows}
+  </div>`;
+
+  // Decision distributions per observation point
+  const opsForWf = MOCK_DATA.observationPoints.filter(op => op.workflowId === wf.id && op.enabled);
+  const decisionHtml = opsForWf.length === 0
+    ? `<div style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:14px;font-size:11px;color:var(--text-dim);text-align:center;">No observation points defined for this workflow. Add some in <a style="color:var(--blue-500);cursor:pointer;font-weight:600;" onclick="STATE.liveEvals.tab='settings'; location.hash='#/live-evals/${wfId}'">Settings</a> to see decision-distribution shifts here.</div>`
+    : opsForWf.map(op => {
+        const distL = decisionDistOn(op, left);
+        const distR = decisionDistOn(op, right);
+        return `<div style="background:var(--bg);border:1px solid var(--border);border-radius:6px;overflow:hidden;margin-bottom:8px;">
+          <div style="padding:10px 14px;background:var(--bg-alt);border-bottom:1px solid var(--border-strong);">
+            <strong style="font-family:'JetBrains Mono',monospace;font-size:12px;">${escapeHtml(op.dimensionLabel)}</strong>
+            <span style="font-size:10px;color:var(--text-dim);margin-left:8px;">${escapeHtml(op.category)} · on ${escapeHtml(op.nodeName)}</span>
+          </div>
+          <div style="padding:10px 14px;">
+            ${op.uniqueValuesSeen.map(v => {
+              const lp = (distL.find(d => d.value === v) || { pct: 0 }).pct;
+              const rp = (distR.find(d => d.value === v) || { pct: 0 }).pct;
+              const delta = lp - rp;
+              const flat = Math.abs(delta) < 1;
+              const dir = delta > 0 ? 'up' : 'down';
+              return `<div style="display:grid;grid-template-columns:140px 1fr 1fr 70px;align-items:center;gap:10px;font-size:12px;margin-bottom:6px;">
+                <div style="font-family:'JetBrains Mono',monospace;font-size:11px;">${escapeHtml(v)}</div>
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <div style="flex:1;height:8px;background:var(--bg-alt);border-radius:3px;overflow:hidden;"><div style="width:${lp}%;height:100%;background:var(--blue-500);"></div></div>
+                  <span style="width:36px;text-align:right;font-variant-numeric:tabular-nums;font-weight:600;">${lp}%</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <div style="flex:1;height:8px;background:var(--bg-alt);border-radius:3px;overflow:hidden;"><div style="width:${rp}%;height:100%;background:var(--text-dim);"></div></div>
+                  <span style="width:36px;text-align:right;font-variant-numeric:tabular-nums;font-weight:600;color:var(--text-muted);">${rp}%</span>
+                </div>
+                <div style="text-align:right;font-size:11px;">${flat ? '<span class="delta flat">flat</span>' : `<span class="delta ${dir}">${dir === 'up' ? '↑' : '↓'} ${delta > 0 ? '+' : ''}${delta}pp</span>`}</div>
+              </div>`;
+            }).join('')}
+          </div>
+        </div>`;
+      }).join('');
+
+  root.innerHTML = `${head}
+    <div class="page-body">
+      ${docBanner("What's a build comparison?", "Side-by-side metrics, scorer values, per-AI-node latency/cost, and decision-distribution shifts between two builds. Use after a deploy to spot regressions; left is conventionally the newer build.", 'build-comparison-howto')}
+
+      <div class="le-tier">
+        <h4>Aggregate</h4>
+        <div class="descr">Overall workflow telemetry, build-over-build.</div>
+        ${aggHtml}
+      </div>
+
+      <div class="le-tier">
+        <h4>Per-scorer <span class="pill-mini optin">${wf.scorers.length}</span></h4>
+        <div class="descr">Scorer values on each build. Regression flag fires when the active-build value crosses its threshold.</div>
+        ${scorerHtml}
+      </div>
+
+      <div class="le-tier">
+        <h4>Per-AI-node <span class="pill-mini scope">${wf.nodes.length}</span></h4>
+        <div class="descr">Latency and cost shifts per node. Higher latency / higher cost render red; lower renders green.</div>
+        ${nodeHtml}
+      </div>
+
+      <div class="le-tier">
+        <h4>Decision-distribution shifts <span class="pill-mini scope">${opsForWf.length}</span></h4>
+        <div class="descr">For each observation point, percentage of runs landing on each value, build-over-build.</div>
+        ${decisionHtml}
+      </div>
+    </div>
+  `;
+}
+
+function renderWorkflowRunsList(root) {
+  const f = STATE.filters.workflowRuns;
+  const all = MOCK_DATA.workflowRuns;
+  const workflows = MOCK_DATA.workflows;
+  const builds = [...new Set(all.map(r => r.buildTag))];
+
+  let rows = all.slice();
+  if (f.workflow !== 'all') rows = rows.filter(r => r.workflowId === f.workflow);
+  if (f.status !== 'any') rows = rows.filter(r => r.status === f.status);
+  if (f.build !== 'any') rows = rows.filter(r => r.buildTag === f.build);
+  if (f.search) {
+    const q = f.search.toLowerCase();
+    rows = rows.filter(r => (r.id + ' ' + r.workflowName + ' ' + r.spawnedBy.id).toLowerCase().includes(q));
+  }
+
+  const breachedCount = rows.filter(r => r.scores.some(s => s.breached)).length;
+  const failedCount = rows.filter(r => r.status === 'failed').length;
+  const selectedId = STATE.detail.open && STATE.detail.kind === 'workflowRun' ? STATE.detail.id : null;
+
+  const rowsHtml = rows.map(r => {
+    const breached = r.scores.some(s => s.breached);
+    return `<tr class="${selectedId === r.id ? 'anchor' : ''}" onclick="openDetail('workflowRun','${r.id}')">
+      <td>${statePill(r.status === 'running' ? 'running' : r.status, null, null)}</td>
+      <td>
+        <strong style="font-family:'JetBrains Mono',monospace;font-size:11px;">${escapeHtml(r.id)}</strong>
+        <div style="font-size:11px;color:var(--text-muted);">${escapeHtml(r.workflowName)}</div>
+      </td>
+      <td>
+        <a style="color:var(--blue-500);font-weight:600;cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:11px;" onclick="event.stopPropagation(); openDetail('instance','${r.spawnedBy.id}')">↳ ${escapeHtml(r.spawnedBy.id)}</a>
+        <div style="font-size:10px;color:var(--text-dim);">${escapeHtml(r.spawnedBy.trigger)}</div>
+      </td>
+      <td>${buildChip(r.buildTag)}</td>
+      <td style="color:var(--text-muted);font-size:11px;">${escapeHtml(r.startedAt)}</td>
+      <td style="font-variant-numeric:tabular-nums;color:var(--text-muted);font-size:11px;">${r.durationMs ? (r.durationMs / 1000).toFixed(2) + 's' : '—'}</td>
+      <td style="font-variant-numeric:tabular-nums;color:var(--text-muted);font-size:11px;">$${r.costUsd.toFixed(3)}</td>
+      <td>${breached ? `<span style="font-size:10px;padding:1px 6px;border-radius:4px;background:var(--red-50);color:var(--red-700);font-weight:600;">▼ ${r.scores.filter(s => s.breached).length}</span>` : '<span style="color:var(--text-dim);font-size:10px;">—</span>'}</td>
+    </tr>`;
+  }).join('');
+
+  root.innerHTML = `
+    <div class="page-head">
+      <div style="display:flex;flex-direction:column;gap:2px;">
+        <span style="font-size:11px;color:var(--text-muted);">
+          <a style="color:var(--text-muted);cursor:pointer;text-decoration:none;" onclick="location.hash='#/live-evals'">← Live Evals</a>
+        </span>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <h2 style="margin:0;">All workflow runs</h2>
+          ${helpIcon('Live Evals')}
+        </div>
+      </div>
+      <span class="sub">Every individual AI workflow run across all workflows.</span>
+      <span class="meta">${rows.length} run${rows.length === 1 ? '' : 's'} · ${breachedCount} with breached scorer${breachedCount === 1 ? '' : 's'} · ${failedCount} failed</span>
+    </div>
+    <div class="page-section">
+      <div class="filter-bar">
+        <span style="font-size:12px;line-height:16px;color:var(--flowx-text-secondary);margin-right:4px;">Workflow:</span>
+        <button class="chip ${f.workflow === 'all' ? 'active' : ''}" onclick="STATE.filters.workflowRuns.workflow='all'; renderWorkflowRunsList(document.getElementById('page'))">All</button>
+        ${workflows.map(w => `<button class="chip ${f.workflow === w.id ? 'active' : ''}" onclick="STATE.filters.workflowRuns.workflow='${w.id}'; renderWorkflowRunsList(document.getElementById('page'))">${escapeHtml(w.name)}</button>`).join('')}
+      </div>
+      <div class="filter-bar">
+        <span style="font-size:12px;line-height:16px;color:var(--flowx-text-secondary);margin-right:4px;">Status:</span>
+        ${['any','completed','failed','running'].map(s => `<button class="chip ${f.status === s ? 'active' : ''}" onclick="STATE.filters.workflowRuns.status='${s}'; renderWorkflowRunsList(document.getElementById('page'))">${s === 'any' ? 'Any' : s[0].toUpperCase() + s.slice(1)}</button>`).join('')}
+        <span style="font-size:12px;line-height:16px;color:var(--flowx-text-secondary);margin:0 4px 0 12px;">Build:</span>
+        <button class="chip ${f.build === 'any' ? 'active' : ''}" onclick="STATE.filters.workflowRuns.build='any'; renderWorkflowRunsList(document.getElementById('page'))">Any</button>
+        ${builds.map(b => `<button class="chip ${f.build === b ? 'active' : ''}" onclick="STATE.filters.workflowRuns.build='${b}'; renderWorkflowRunsList(document.getElementById('page'))">${escapeHtml(b)}</button>`).join('')}
+        <div class="search" style="margin-left:auto;"><input type="text" placeholder="Search id, workflow, parent…" value="${escapeHtml(f.search)}" oninput="STATE.filters.workflowRuns.search = this.value; renderWorkflowRunsList(document.getElementById('page'))"></div>
+      </div>
+      ${rows.length === 0
+        ? `<div class="empty"><h4>No runs match</h4><p>Try clearing filters or expanding the time window.</p></div>`
+        : `<table class="list-table">
+            <thead><tr>
+              <th>Status</th><th>Run / Workflow</th><th>Parent</th><th>Build</th><th>Started</th><th>Duration</th><th>Cost</th><th>Scores</th>
+            </tr></thead>
+            <tbody>${rowsHtml}</tbody>
+          </table>`}
+    </div>
+  `;
+}
+
 function renderTriggers(root) {
   const tab = STATE.filters.triggers.tab;
   const triggers = MOCK_DATA.triggers;
@@ -2995,6 +3982,14 @@ function renderDetail() {
   } else if (kind === 'task') {
     const it = MOCK_DATA.tasks.find(x => x.id === id);
     if (it) [head, tabs, body] = renderTaskDetail(it, tab);
+  } else if (kind === 'workflowRun') {
+    const it = MOCK_DATA.workflowRuns.find(x => x.id === id);
+    if (it) [head, tabs, body] = renderWorkflowRunDetail(it, tab);
+  } else if (kind === 'aiNode') {
+    const [wfId, nodeName] = id.split(':');
+    const wf = MOCK_DATA.workflows.find(w => w.id === wfId);
+    const node = wf ? wf.nodes.find(n => n.name === nodeName) : null;
+    if (node) [head, tabs, body] = renderAiNodeDetail({ ...node, workflowId: wfId, workflowName: wf.name }, tab);
   }
 
   if (!head) {
@@ -3038,7 +4033,10 @@ function renderInstanceDetail(it, tabIdx) {
       const cnt = it.type === 'uiflow' ? (MOCK_DATA.instances.filter(x => x.spawnedBy && x.spawnedBy.id === it.id).length) : 1;
       countHtml = `<span class="count">${cnt}</span>`;
     }
-    if (t === 'AI runs') countHtml = `<span class="count">3</span>`;
+    if (t === 'AI runs') {
+      const runCount = MOCK_DATA.workflowRuns.filter(r => r.spawnedBy.id === it.id).length;
+      countHtml = `<span class="count">${runCount}</span>`;
+    }
     return `<button class="tab ${i === tabIdx ? 'active' : ''}" onclick="STATE.detail.tab = ${i}; renderDetail();">${t}${countHtml}</button>`;
   }).join('');
 
@@ -3137,26 +4135,39 @@ function renderActivityTree(it) {
 }
 
 function renderAiRunsSlice(it) {
-  // Embedded Live Evals slice
-  const sampleRuns = [
-    { name: 'Document classifier', sub: 'passport_front.jpg · 2.1s', scorer: 'coherence 0.91', bad: false, when: '2m ago' },
-    { name: 'Reasoner', sub: 'consent flow · 1.4s', scorer: 'coherence ▼ 0.68', bad: true, when: '2m ago' },
-    { name: 'Embedding', sub: 'user profile · 0.3s', scorer: '—', bad: false, when: '1m ago' },
-  ];
+  // Filter workflow runs by parent instance id
+  const runs = MOCK_DATA.workflowRuns.filter(r => r.spawnedBy.id === it.id);
+  if (runs.length === 0) {
+    return `<div class="panel-block" style="padding:12px;">
+      ${panelHeading('AI runs', 'Live Evals')}
+      <div class="le-slice">
+        <div class="head">
+          <span>No AI workflow runs spawned by this ${it.type === 'process' ? 'process instance' : 'UI flow session'} yet.</span>
+          <a onclick="location.hash='#/live-evals/runs'">Browse all runs →</a>
+        </div>
+      </div>
+    </div>`;
+  }
   return `<div class="panel-block" style="padding:12px;">
     ${panelHeading('AI runs', 'Live Evals')}
     <div class="le-slice">
       <div class="head">
-        <span>Embedded from Live Evals — 3 runs scored</span>
-        <a onclick="location.hash='#/live-evals'">Open in Live Evals →</a>
+        <span>${runs.length} run${runs.length === 1 ? '' : 's'} spawned by this ${it.type === 'process' ? 'process instance' : 'UI flow session'}</span>
+        <a onclick="location.hash='#/live-evals/runs'">Open in Live Evals →</a>
       </div>
-      ${sampleRuns.map(r => `
-        <div class="le-row">
+      ${runs.map(r => {
+        const breached = r.scores.some(s => s.breached);
+        const primaryScore = r.scores[0];
+        const scorerLabel = primaryScore
+          ? `${primaryScore.name.toLowerCase()} ${breached ? '▼ ' : ''}${primaryScore.value.toFixed(2)}`
+          : '—';
+        return `<div class="le-row" onclick="openDetail('workflowRun','${r.id}')" style="cursor:pointer;">
           <div class="icon">🜔</div>
-          <div class="name">${escapeHtml(r.name)}<small>${escapeHtml(r.sub)}</small></div>
-          <div class="scorer ${r.bad ? 'bad' : ''}">${escapeHtml(r.scorer)}</div>
-          <div class="when">${escapeHtml(r.when)}</div>
-        </div>`).join('')}
+          <div class="name">${escapeHtml(r.workflowName)}<small>${escapeHtml(r.id)} · ${r.durationMs ? (r.durationMs / 1000).toFixed(1) + 's' : 'running'} · ${escapeHtml(r.spawnedBy.trigger)}</small></div>
+          <div class="scorer ${breached ? 'bad' : ''}">${escapeHtml(scorerLabel)}</div>
+          <div class="when">${escapeHtml(r.startedAt)}</div>
+        </div>`;
+      }).join('')}
     </div>
   </div>`;
 }
@@ -3283,8 +4294,9 @@ function mutateIncident(id, action) {
   if (STATE.currentRoute === 'overview') renderOverview(document.getElementById('page'));
 }
 function renderBuildDetail(it, tabIdx) {
-  const tabs = ['Deployment', 'Comparison', 'Live runs', 'Workflows', 'Changelog'];
+  const tabs = ['Deployment', 'Comparison', 'Live runs', 'Workflow runs', 'Workflows', 'Changelog'];
   const liveRuns = MOCK_DATA.instances.filter(i => i.buildTag === it.tag);
+  const workflowRuns = MOCK_DATA.workflowRuns.filter(r => r.buildTag === it.tag);
 
   const head = `
     <div class="topline">
@@ -3296,7 +4308,7 @@ function renderBuildDetail(it, tabIdx) {
     <h3>${escapeHtml(it.tag)} ${it.isActive ? '<span style="font-size:11px;color:var(--green-700);margin-left:6px;font-weight:600">● ACTIVE</span>' : ''}</h3>
     <div class="sub">cut from <code style="font-family:'JetBrains Mono',monospace;font-size:11px">${escapeHtml(it.branch)}</code> · ${escapeHtml(it.cutAt)} by ${escapeHtml(it.cutBy)} · ${it.isArchived ? 'archived' : 'live'}</div>
     <div class="actions">
-      <button class="btn primary" onclick="alert('Comparison flow — pick a build to compare')">Compare to…</button>
+      <button class="btn primary" onclick="jumpToBuildComparisonFromBuild('${it.id}')">Compare to…</button>
       <button class="btn ghost" onclick="location.hash='#/live-evals'">View in Live Evals</button>
       ${!it.isActive && !it.isArchived ? `<button class="btn ghost" onclick="alert('Rollback flow stub')">Rollback</button>` : ''}
     </div>`;
@@ -3304,6 +4316,10 @@ function renderBuildDetail(it, tabIdx) {
   const tabsHtml = tabs.map((t, i) => {
     let countHtml = '';
     if (t === 'Live runs') countHtml = `<span class="count">${liveRuns.length}</span>`;
+    if (t === 'Workflow runs') {
+      const breachedHere = workflowRuns.filter(r => r.scores.some(s => s.breached)).length;
+      countHtml = `<span class="count ${breachedHere > 0 ? 'alert' : ''}">${workflowRuns.length}</span>`;
+    }
     if (t === 'Workflows') countHtml = `<span class="count">${MOCK_DATA.workflows.length}</span>`;
     return `<button class="tab ${i === tabIdx ? 'active' : ''}" onclick="STATE.detail.tab = ${i}; renderDetail();">${t}${countHtml}</button>`;
   }).join('');
@@ -3344,20 +4360,26 @@ function renderBuildDetail(it, tabIdx) {
       </div>`;
   } else if (active === 'Comparison') {
     const prev = MOCK_DATA.builds.find(b => b.branch === it.branch && b.tag !== it.tag && !b.isArchived);
-    body = `<div class="panel-block">
-      ${panelHeading(`Comparison vs ${prev ? prev.tag : '(no previous)'}`, 'Scorer')}
-      <div class="cmp-grid">
-        <div class="cmp-cell"><div class="k">Throughput</div><div class="v">${it.liveStats.runsLastHour}/h</div><div class="d delta up">↑ +18%</div></div>
-        <div class="cmp-cell"><div class="k">p95 latency</div><div class="v">2.8s</div><div class="d delta down">↑ +0.4s</div></div>
-        <div class="cmp-cell"><div class="k">Error rate</div><div class="v">0.63%</div><div class="d delta down">↑ +0.21pp</div></div>
-      </div>
-      <div style="margin-top:10px;">
-        <div class="scorer-row"><span>Coherence · Reasoner</span><span class="delta down">▼ -0.06</span></div>
-        <div class="scorer-row"><span>Helpfulness · Chat</span><span class="delta up">▲ +0.02</span></div>
-        <div class="scorer-row"><span>Toxicity · all nodes</span><span class="delta flat">— flat</span></div>
-        <div class="scorer-row"><span>Cost / 1k runs</span><span class="delta down">▲ +$0.42</span></div>
-      </div>
-    </div>`;
+    const workflowsWithRuns = MOCK_DATA.workflows.filter(wf => MOCK_DATA.workflowRuns.some(r => r.workflowId === wf.id && r.buildTag === it.tag));
+    body = `${docBanner("How comparison works", "Build comparisons are workflow-scoped — each workflow has its own scorers, AI nodes, and observation points. Pick a workflow below to compare this build against another.", 'build-cmp-howto')}
+      <div class="panel-block">
+        ${panelHeading('Compare this build in a workflow', 'Build')}
+        ${prev
+          ? `<div style="font-size:12px;color:var(--text-muted);margin-bottom:10px;">Default counterpart on branch <code style="font-family:'JetBrains Mono',monospace;font-size:11px;">${escapeHtml(it.branch)}</code>: <strong>${escapeHtml(prev.tag)}</strong> (cut ${escapeHtml(prev.cutAt)}). Choose a different one from the comparison page.</div>`
+          : '<div style="font-size:12px;color:var(--text-muted);margin-bottom:10px;">No previous non-archived build on this branch — comparison will fall back to any available build.</div>'}
+        ${workflowsWithRuns.length === 0
+          ? '<div style="font-size:11px;color:var(--text-dim);padding:8px 0;">No workflow runs recorded on this build yet — comparison surfaces appear once runs are observed.</div>'
+          : workflowsWithRuns.map(wf => {
+              const wfBreached = wf.scorers.filter(s => s.breached).length;
+              const runsOnThisBuild = MOCK_DATA.workflowRuns.filter(r => r.workflowId === wf.id && r.buildTag === it.tag).length;
+              const target = prev || MOCK_DATA.builds.find(b => b.id !== it.id && !b.isArchived) || MOCK_DATA.builds.find(b => b.id !== it.id);
+              return `<div class="related-card" onclick="closeDetail(); location.hash='#/live-evals/${wf.id}/builds/${it.id}/compare/${target ? target.id : it.id}'">
+                <div class="ic" style="background:${wfBreached ? 'var(--red-500)' : 'var(--blue-500)'};color:white;">🜔</div>
+                <div class="name">${escapeHtml(wf.name)}<small>${runsOnThisBuild} run${runsOnThisBuild === 1 ? '' : 's'} on ${escapeHtml(it.tag)}${wfBreached ? ` · ${wfBreached} scorer${wfBreached === 1 ? '' : 's'} breached` : ''}</small></div>
+                <div class="arr">${target ? '→' : '<span style="color:var(--text-dim);font-size:10px;">N/A</span>'}</div>
+              </div>`;
+            }).join('')}
+      </div>`;
   } else if (active === 'Live runs') {
     body = `<div class="panel-block">
       ${panelHeading('Live runs on this build', null)}
@@ -3370,13 +4392,28 @@ function renderBuildDetail(it, tabIdx) {
           </div>`).join('')}
       ${liveRuns.length > 10 ? `<div style="text-align:center;margin-top:8px;"><a style="font-size:11px;color:var(--blue-500);font-weight:600;cursor:pointer" onclick="closeDetail(); location.hash='#/instances'">View all ${liveRuns.length} runs →</a></div>` : ''}
     </div>`;
+  } else if (active === 'Workflow runs') {
+    body = `${docBanner("What's a workflow run?", "One end-to-end execution of an AI workflow (one or more AI nodes invoked in sequence). Each row opens the trace and scores for that single run.", 'build-wfruns')}
+      <div class="panel-block">
+        ${panelHeading('Workflow runs on this build', 'Live Evals')}
+        ${workflowRuns.length === 0 ? '<div class="empty"><p>No workflow runs recorded on this build.</p></div>' :
+          workflowRuns.slice(0, 12).map(r => {
+            const breached = r.scores.some(s => s.breached);
+            return `<div class="related-card" onclick="openDetail('workflowRun','${r.id}')">
+              <div class="ic" style="background:${breached ? 'var(--red-500)' : 'var(--blue-500)'};color:white;">🜔</div>
+              <div class="name">${escapeHtml(r.workflowName)}<small>${escapeHtml(r.id)} · ${escapeHtml(r.status)} · ${r.durationMs ? (r.durationMs / 1000).toFixed(1) + 's' : 'running'} · spawned by <span style="font-family:'JetBrains Mono',monospace;">${escapeHtml(r.spawnedBy.id)}</span></small></div>
+              <div class="arr">${breached ? '<span style="color:var(--red-700);font-size:10px;font-weight:600;">▼</span>' : '→'}</div>
+            </div>`;
+          }).join('')}
+        ${workflowRuns.length > 12 ? `<div style="text-align:center;margin-top:8px;"><a style="font-size:11px;color:var(--blue-500);font-weight:600;cursor:pointer" onclick="closeDetail(); location.hash='#/live-evals/runs'">View all ${workflowRuns.length} runs →</a></div>` : ''}
+      </div>`;
   } else if (active === 'Workflows') {
     body = `<div class="panel-block">
       ${panelHeading('Workflows in this build', null)}
       ${MOCK_DATA.workflows.map(w => `
         <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border-soft);font-size:12px;">
           <div><strong>${escapeHtml(w.name)}</strong><div style="font-size:10px;color:var(--text-dim);">${w.nodes.length} AI node${w.nodes.length === 1 ? '' : 's'}</div></div>
-          <a style="font-size:11px;color:var(--blue-500);font-weight:600;cursor:pointer" onclick="STATE.liveEvals.workflowId='${w.id}'; closeDetail(); location.hash='#/live-evals'">Open →</a>
+          <a style="font-size:11px;color:var(--blue-500);font-weight:600;cursor:pointer" onclick="closeDetail(); location.hash='#/live-evals/${w.id}'">Open →</a>
         </div>`).join('')}
     </div>`;
   } else if (active === 'Changelog') {
@@ -3388,6 +4425,206 @@ function renderBuildDetail(it, tabIdx) {
         <li>Config: <code style="font-family:'JetBrains Mono',monospace">timeout_ms</code> default increased 20s → 30s</li>
         <li>Process refactor: Document upload retry policy now 3× with jitter</li>
       </ul>
+    </div>`;
+  }
+
+  return [head, tabsHtml, body];
+}
+function renderWorkflowRunDetail(it, tabIdx) {
+  const tabs = ['Trace', 'Variables', 'Scores'];
+  const parent = it.spawnedBy;
+  const breachedCount = it.scores.filter(s => s.breached).length;
+  const triggerLabel = { PROCESS_ENGINE: 'process engine', CHAT: 'chat node', UI_FLOW: 'UI flow action' };
+
+  const statusForPill = it.status === 'running' ? 'running' : it.status;
+  const statusRaw = { completed: 'COMPLETED · run finished successfully', failed: 'FAILED · run errored out', running: 'STARTED · run in progress' }[it.status];
+
+  const head = `
+    <div class="topline">
+      <span class="crumb">Workflow run</span>
+      <span style="color:var(--border-strong)">/</span>
+      <span style="font-family:'JetBrains Mono',monospace">${escapeHtml(it.id)}</span>
+      <button class="x" onclick="closeDetail()">×</button>
+    </div>
+    <h3>${escapeHtml(it.workflowName)}</h3>
+    <div class="sub">AI run · started ${escapeHtml(it.startedAt)} · triggered by ${escapeHtml(triggerLabel[parent.trigger] || parent.trigger)}</div>
+    <div class="meta-row">
+      ${statePill(statusForPill, it.status.toUpperCase(), statusRaw)}
+      ${buildChip(it.buildTag)}
+      <span class="parent-chip" onclick="openDetail('instance','${parent.id}')" title="Open parent ${escapeHtml(parent.type === 'process' ? 'process instance' : 'UI flow session')}" style="cursor:pointer;display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:9999px;background:var(--blue-50);color:var(--blue-700);font-size:11px;line-height:16px;font-weight:600;border:1px solid var(--blue-100);">↳ ${escapeHtml(parent.id)}</span>
+      <span style="color:var(--text-dim);font-size:11px">${it.durationMs ? (it.durationMs / 1000).toFixed(2) + 's' : 'in progress'} · $${it.costUsd.toFixed(3)}</span>
+    </div>`;
+
+  const tabsHtml = tabs.map((t, i) => {
+    let countHtml = '';
+    if (t === 'Trace') countHtml = `<span class="count">${it.invocations.length}</span>`;
+    if (t === 'Scores' && it.scores.length > 0) {
+      countHtml = `<span class="count ${breachedCount > 0 ? 'alert' : ''}">${it.scores.length}</span>`;
+    }
+    return `<button class="tab ${i === tabIdx ? 'active' : ''}" onclick="STATE.detail.tab = ${i}; renderDetail();">${t}${countHtml}</button>`;
+  }).join('');
+
+  const active = tabs[tabIdx];
+  let body = '';
+
+  if (active === 'Trace') {
+    body = `${docBanner("What's a Trace?", "Each AI node the workflow invoked, in order — with timing, model, cost, and per-invocation scores. Failed or breached invocations are flagged.", 'wfr-trace')}
+      <div class="panel-block">
+        ${panelHeading('Invocation trace', null)}
+        ${it.invocations.map((inv, idx) => {
+          const invBreached = inv.scores.some(s => s.breached);
+          return `<div style="padding:10px 0;border-bottom:1px solid var(--border-soft);${invBreached ? 'background:linear-gradient(90deg, var(--red-50) 0%, transparent 60%);margin:0 -10px;padding-left:10px;padding-right:10px;' : ''}">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
+              <div style="flex:1;min-width:0;">
+                <div style="font-size:13px;font-weight:600;color:var(--text);"><span style="color:var(--text-dim);font-variant-numeric:tabular-nums;margin-right:6px;">${idx+1}.</span>${escapeHtml(inv.nodeName)}<span style="font-size:11px;color:var(--text-muted);font-weight:400;margin-left:8px;">${escapeHtml(inv.type)}${inv.model && inv.model !== '—' ? ' · ' + escapeHtml(inv.model) : ''}</span></div>
+                <div style="font-size:11px;color:var(--text-muted);margin-top:4px;font-family:'JetBrains Mono',monospace;"><span style="color:var(--text-dim);">in:</span> ${escapeHtml((inv.input || '').slice(0,90))}${inv.input && inv.input.length > 90 ? '…' : ''}</div>
+                <div style="font-size:11px;color:var(--text-muted);margin-top:2px;font-family:'JetBrains Mono',monospace;"><span style="color:var(--text-dim);">out:</span> ${escapeHtml((inv.output || '—').slice(0,90))}${inv.output && inv.output.length > 90 ? '…' : ''}</div>
+                ${inv.scores.length ? `<div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap;">${inv.scores.map(s => `<span style="font-size:10px;padding:1px 6px;border-radius:4px;background:${s.breached?'var(--red-50)':'var(--green-50)'};color:${s.breached?'var(--red-700)':'var(--green-700)'};font-weight:600;">${escapeHtml(s.name)} ${s.value.toFixed(2)}${s.breached?' ▼ thr ' + s.threshold.toFixed(2):''}</span>`).join('')}</div>` : ''}
+              </div>
+              <div style="text-align:right;flex-shrink:0;font-size:11px;color:var(--text-muted);font-variant-numeric:tabular-nums;line-height:16px;">
+                <div>${(inv.latencyMs/1000).toFixed(2)}s</div>
+                <div style="color:var(--text-dim);">$${inv.costUsd.toFixed(3)}</div>
+              </div>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>`;
+  } else if (active === 'Variables') {
+    body = `<div class="panel-block">
+      ${panelHeading('Input', null)}
+      <pre style="font-family:'JetBrains Mono',monospace;font-size:11px;line-height:18px;color:var(--text);background:var(--bg-alt);border:1px solid var(--border);border-radius:6px;padding:10px;white-space:pre-wrap;word-break:break-word;margin:0;">${escapeHtml(it.input || '—')}</pre>
+    </div>
+    <div class="panel-block">
+      ${panelHeading('Output', null)}
+      <pre style="font-family:'JetBrains Mono',monospace;font-size:11px;line-height:18px;color:var(--text);background:var(--bg-alt);border:1px solid var(--border);border-radius:6px;padding:10px;white-space:pre-wrap;word-break:break-word;margin:0;">${escapeHtml(it.output || '— in progress —')}</pre>
+    </div>`;
+  } else if (active === 'Scores') {
+    if (it.scores.length === 0) {
+      body = `<div class="panel-block">
+        ${panelHeading('Scores', 'Scorer')}
+        <div style="font-size:11px;color:var(--text-dim);padding:8px 0;">No workflow-level scorers bound to this run. Per-invocation scores are visible in the <a style="color:var(--blue-500);cursor:pointer;font-weight:600;" onclick="STATE.detail.tab = 0; renderDetail();">Trace</a> tab.</div>
+      </div>`;
+    } else {
+      body = `<div class="panel-block">
+        ${panelHeading('Workflow-level scores', 'Scorer')}
+        ${it.scores.map(s => `<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border-soft);font-size:12px;">
+          <div>
+            <strong>${escapeHtml(s.name)}</strong>
+            ${s.breached ? '<span style="color:var(--red-700);font-weight:600;font-size:10px;margin-left:6px;">BREACHED</span>' : ''}
+            <div style="font-size:10px;color:var(--text-dim);">threshold ${s.threshold.toFixed(2)}</div>
+          </div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:${s.breached?'var(--red-700)':'var(--green-700)'};">${s.value.toFixed(2)}</div>
+        </div>`).join('')}
+      </div>`;
+    }
+  }
+
+  return [head, tabsHtml, body];
+}
+function renderAiNodeDetail(it, tabIdx) {
+  const wf = MOCK_DATA.workflows.find(w => w.id === it.workflowId);
+  const nodeScorers = wf.scorers.filter(s => s.node === it.name);
+  const invocations = MOCK_DATA.workflowRuns
+    .filter(r => r.workflowId === it.workflowId)
+    .flatMap(r => r.invocations
+      .filter(inv => inv.nodeName === it.name)
+      .map(inv => ({ ...inv, runId: r.id, runStartedAt: r.startedAt, runStatus: r.status })));
+  const breachedCount = nodeScorers.filter(s => s.breached).length;
+
+  const tabs = ['Overview', 'Invocations', 'Scorers'];
+
+  const head = `
+    <div class="topline">
+      <span class="crumb">AI node</span>
+      <span style="color:var(--border-strong)">/</span>
+      <span style="font-family:'JetBrains Mono',monospace">${escapeHtml(it.workflowId)}:${escapeHtml(it.name)}</span>
+      <button class="x" onclick="closeDetail()">×</button>
+    </div>
+    <h3>${escapeHtml(it.name)}${it.alertCount ? ` <span style="color:var(--red-700);font-size:13px;font-weight:700;margin-left:6px;">▼ ${it.alertCount} alert${it.alertCount === 1 ? '' : 's'}</span>` : ''}</h3>
+    <div class="sub">${escapeHtml(it.type)} · ${escapeHtml(it.workflowName)} · ${escapeHtml(it.desc)}</div>
+    <div class="meta-row">
+      ${it.alertCount ? '<span style="display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:9999px;background:var(--red-50);color:var(--red-700);font-size:11px;font-weight:600;border:1px solid var(--red-100);"><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--red-500);"></span>Alert open</span>' : '<span style="display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:9999px;background:var(--green-50);color:var(--green-700);font-size:11px;font-weight:600;border:1px solid var(--green-100);"><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--green-500);"></span>Healthy</span>'}
+      ${nodeScorers.map(s => `<span style="font-size:10px;padding:2px 7px;border-radius:9999px;background:${s.breached ? 'var(--red-50)' : 'var(--bg-alt)'};color:${s.breached ? 'var(--red-700)' : 'var(--text-muted)'};font-weight:600;border:1px solid ${s.breached ? 'var(--red-100)' : 'var(--border)'};">${escapeHtml(s.name.toLowerCase())} ${s.breached ? '▼ ' : ''}${s.value.toFixed(2)}</span>`).join('')}
+    </div>`;
+
+  const tabsHtml = tabs.map((t, i) => {
+    let countHtml = '';
+    if (t === 'Invocations') countHtml = `<span class="count">${invocations.length}</span>`;
+    if (t === 'Scorers') {
+      countHtml = `<span class="count ${breachedCount > 0 ? 'alert' : ''}">${nodeScorers.length}</span>`;
+    }
+    return `<button class="tab ${i === tabIdx ? 'active' : ''}" onclick="STATE.detail.tab = ${i}; renderDetail();">${t}${countHtml}</button>`;
+  }).join('');
+
+  const active = tabs[tabIdx];
+  let body = '';
+
+  if (active === 'Overview') {
+    const totalLatency = invocations.reduce((sum, inv) => sum + (inv.latencyMs || 0), 0);
+    const meanLatency = invocations.length ? (totalLatency / invocations.length / 1000).toFixed(2) : '—';
+    const totalCost = invocations.reduce((sum, inv) => sum + (inv.costUsd || 0), 0);
+    const successCount = invocations.filter(inv => !inv.scores.some(s => s.breached) && !(inv.output && inv.output.startsWith('PARSE_ERROR'))).length;
+    const successPct = invocations.length ? Math.round((successCount / invocations.length) * 100) : 0;
+
+    body = `${docBanner("What's an AI node?", "One invokable unit inside a workflow — an LLM call, classifier, retriever, or embedding. Its scorers and recent invocations live here.", 'aiNode-overview')}
+      <div class="panel-block">
+        ${panelHeading('Identity', null)}
+        <div class="kv">
+          <span>Node</span><span><strong>${escapeHtml(it.name)}</strong> · ${escapeHtml(it.type)}</span>
+          <span>Workflow</span><span><a style="color:var(--blue-500);cursor:pointer;font-weight:600;" onclick="closeDetail(); location.hash='#/live-evals/${it.workflowId}'">${escapeHtml(it.workflowName)}</a></span>
+          <span>Description</span><span style="color:var(--text-muted);">${escapeHtml(it.desc)}</span>
+          <span>Bound scorers</span><span>${nodeScorers.length ? nodeScorers.map(s => escapeHtml(s.name)).join(', ') : '<span style="color:var(--text-dim)">none</span>'}</span>
+        </div>
+      </div>
+      <div class="panel-block">
+        ${panelHeading('Stats (last ' + (STATE.liveEvals.timeWindow || '24h') + ')', null)}
+        <div class="kv">
+          <span>Invocations</span><span><strong>${invocations.length}</strong></span>
+          <span>Mean latency</span><span><strong>${meanLatency}s</strong></span>
+          <span>Total cost</span><span><strong>$${totalCost.toFixed(3)}</strong></span>
+          <span>Success rate</span><span><strong>${successPct}%</strong></span>
+        </div>
+      </div>
+      ${nodeScorers.length > 0 ? `
+      <div class="panel-block">
+        ${panelHeading('Scorer trends', 'Scorer')}
+        ${nodeScorers.map(s => `<div style="margin-bottom:6px;">${renderScorerChart(s, timeWindowHours(STATE.liveEvals.timeWindow), MOCK_DATA.builds)}</div>`).join('')}
+      </div>` : ''}`;
+  } else if (active === 'Invocations') {
+    body = `<div class="panel-block">
+      ${panelHeading('Recent invocations', null)}
+      ${invocations.length === 0 ? '<div style="font-size:11px;color:var(--text-dim);padding:8px 0;">No invocations recorded yet in the active time window.</div>' :
+        `<div style="border:1px solid var(--border);border-radius:6px;overflow:hidden;background:var(--bg);">
+          ${invocations.map((inv, idx) => {
+            const invBreached = inv.scores.some(s => s.breached);
+            return `<div onclick="openDetail('workflowRun','${inv.runId}')" style="display:grid;grid-template-columns:auto 1fr 60px 50px;gap:10px;align-items:center;padding:8px 12px;cursor:pointer;${idx < invocations.length - 1 ? 'border-bottom:1px solid var(--border-soft);' : ''}font-size:12px;${invBreached ? 'background:var(--red-50);' : ''}" onmouseover="this.style.background='var(--bg-alt)'" onmouseout="this.style.background='${invBreached ? 'var(--red-50)' : 'transparent'}'">
+              <div>${statePill(inv.runStatus === 'running' ? 'running' : inv.runStatus, null, null)}</div>
+              <div>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text);">${escapeHtml(inv.runId)} · ${escapeHtml(inv.runStartedAt)}</div>
+                <div style="font-size:10px;color:var(--text-muted);margin-top:2px;font-family:'JetBrains Mono',monospace;"><span style="color:var(--text-dim);">in:</span> ${escapeHtml((inv.input || '').slice(0, 60))}${inv.input && inv.input.length > 60 ? '…' : ''}</div>
+                ${inv.scores.length ? `<div style="margin-top:3px;display:flex;gap:4px;flex-wrap:wrap;">${inv.scores.map(s => `<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:${s.breached?'var(--red-50)':'var(--green-50)'};color:${s.breached?'var(--red-700)':'var(--green-700)'};font-weight:600;">${escapeHtml(s.name)} ${s.value.toFixed(2)}${s.breached ? ' ▼' : ''}</span>`).join('')}</div>` : ''}
+              </div>
+              <div style="font-variant-numeric:tabular-nums;color:var(--text-muted);text-align:right;">${(inv.latencyMs/1000).toFixed(2)}s</div>
+              <div style="font-variant-numeric:tabular-nums;color:var(--text-muted);text-align:right;">$${inv.costUsd.toFixed(3)}</div>
+            </div>`;
+          }).join('')}
+        </div>`}
+    </div>`;
+  } else if (active === 'Scorers') {
+    body = `<div class="panel-block">
+      ${panelHeading('Scorers bound to this node', 'Scorer')}
+      ${nodeScorers.length === 0 ? '<div style="font-size:11px;color:var(--text-dim);padding:8px 0;">No scorers bound to this node. Add one from the Settings tab on Live Evals.</div>' :
+        nodeScorers.map(s => `<div style="background:var(--bg-alt);border:1px solid var(--border);border-radius:6px;padding:10px 12px;margin-bottom:8px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+            <div>
+              <strong style="font-size:13px;">${escapeHtml(s.name)}</strong>
+              ${s.breached ? '<span style="color:var(--red-700);font-weight:700;font-size:10px;margin-left:8px;padding:1px 6px;background:var(--red-50);border-radius:4px;">BREACHED</span>' : ''}
+              <div style="font-size:10px;color:var(--text-dim);margin-top:2px;">threshold ${s.threshold.toFixed(2)} · sample ${s.sampleRatePct}% · budget $${s.dailyTokenBudgetUsd}/day</div>
+            </div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;color:${s.breached ? 'var(--red-700)' : 'var(--green-700)'};">${s.value.toFixed(2)}</div>
+          </div>
+          ${renderScorerChart(s, timeWindowHours(STATE.liveEvals.timeWindow), MOCK_DATA.builds)}
+        </div>`).join('')}
     </div>`;
   }
 

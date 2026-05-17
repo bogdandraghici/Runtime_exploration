@@ -244,7 +244,7 @@
     /* Numbers snapshot */
     .stats {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
       gap: 12px;
       margin-top: 16px;
     }
@@ -319,7 +319,7 @@
     <h1>Runtime Tab — Before / After</h1>
     <p>Side-by-side comparison of the current Runtime tab anatomy (captured in <code>runtime_starter.htm</code>) and the redesigned structure produced in the 2026-05-15 design session. Same content, restructured for clarity, integration, and self-explanation.</p>
     <div class="meta">
-      <span>Date: 2026-05-15</span>
+      <span>Date: 2026-05-15 · updated 2026-05-17</span>
       <span>Companion: <a href="docs/superpowers/specs/2026-05-15-runtime-redesign-design.md" style="color: var(--blue-700);">design spec</a></span>
       <span>Source: <a href="runtime_starter.htm" style="color: var(--blue-700);">runtime_starter.htm</a></span>
     </div>
@@ -366,6 +366,42 @@
           <span class="after-v">1 + slices</span>
         </div>
         <div class="delta">Live Evals canonical; embedded slices everywhere</div>
+      </div>
+      <div class="stat">
+        <div class="k">Workflow runs as navigable entity</div>
+        <div class="row">
+          <span class="before-v">—</span>
+          <span class="arrow">→</span>
+          <span class="after-v">First-class</span>
+        </div>
+        <div class="delta"><strong>WorkflowRun</strong> detail panel reachable from 4 lenses; parent chip jumps back to spawning instance</div>
+      </div>
+      <div class="stat">
+        <div class="k">Live Evals depth</div>
+        <div class="row">
+          <span class="before-v">1 flat page</span>
+          <span class="arrow">→</span>
+          <span class="after-v">Landing + per-WF</span>
+        </div>
+        <div class="delta">Workflow promoted to URL segment (<code style="font-size:10px;background:white;border:1px solid var(--border);padding:0 4px;border-radius:3px;font-family:'JetBrains Mono',monospace;">#/live-evals/wf_xxx</code>); Settings, Decisions facet, time-window control, AI-node panel, time-series charts</div>
+      </div>
+      <div class="stat">
+        <div class="k">Tier 1 telemetry breadth</div>
+        <div class="row">
+          <span class="before-v">4 metrics</span>
+          <span class="arrow">→</span>
+          <span class="after-v">8 + 2 dists</span>
+        </div>
+        <div class="delta">+ instance count · mean path length · retry pressure · fallback model %; + terminal-outcome distribution · top-5 paths</div>
+      </div>
+      <div class="stat">
+        <div class="k">Build comparison</div>
+        <div class="row">
+          <span class="before-v">Stub</span>
+          <span class="arrow">→</span>
+          <span class="after-v">Real page</span>
+        </div>
+        <div class="delta">Workflow-scoped at <code style="font-size:10px;background:white;border:1px solid var(--border);padding:0 4px;border-radius:3px;font-family:'JetBrains Mono',monospace;">/builds/&lt;l&gt;/compare/&lt;r&gt;</code>; aggregate · per-scorer · per-AI-node · decision-distribution; <strong>incompatible</strong> state when builds share no scorer history</div>
       </div>
     </div>
   </section>
@@ -509,26 +545,36 @@
         <tr>
           <td class="before-cell">
             <div class="name">Builds list</div>
-            <div class="desc">Lists builds as artifacts. Has no deployment view — "what is currently serving whom" requires bouncing to Active Policy + test-effective.</div>
+            <div class="desc">Lists builds as artifacts. Has no deployment view — "what is currently serving whom" requires bouncing to Active Policy + test-effective. No workflow-runs-scoped-to-build view.</div>
           </td>
           <td class="arrow-cell">→</td>
           <td class="after-cell">
             <span class="change-pill enhance">Enhanced</span>
             <div class="name">Builds</div>
-            <div class="desc">Same list, new <strong>coverage column</strong> per row (% traffic, # users). Detail panel adds Deployment tab (who is and isn't being served) and inline Build comparison pulled from Live Evals.</div>
+            <div class="desc">Same list, new <strong>coverage column</strong> per row (% traffic, # users). Detail panel adds Deployment tab (who is and isn't being served), a <strong>Workflow runs tab</strong> (every AI run on that build; count badge turns red if any run has a breached scorer), and a <strong>Comparison tab</strong> that lists workflows running on this build and links into the workflow-scoped comparison page. The "Compare to…" header button auto-routes to the most-relevant workflow's comparison page using this build as one side.</div>
           </td>
         </tr>
 
         <tr>
           <td class="before-cell">
             <div class="name">Live Evals</div>
-            <div class="desc">Three-tier workflow page with telemetry, scorers, AI nodes. Lives in isolation — workflow runs are duplicated in instance detail tabs.</div>
+            <div class="desc">Three-tier flat page with telemetry, scorers, AI nodes. Workflow chosen via a chip selector that drives the whole page. Lives in isolation — workflow runs are duplicated in instance detail tabs. No way to navigate from a single AI run to its sibling lenses (parent instance, build, Live Evals). No configuration surface — bindings and observation points existed in spec but had no UI.</div>
           </td>
           <td class="arrow-cell">→</td>
           <td class="after-cell">
             <span class="change-pill enhance">Enhanced</span>
-            <div class="name">Live Evals</div>
-            <div class="desc">Same three-tier structure. New: <strong>inbound integration</strong> — embedded slice on Instance detail panels, breached scorers flow into Incidents, comparison data renders inline on Builds. Canonical source for AI run data.</div>
+            <div class="name">Live Evals — landing + per-workflow drill-in</div>
+            <div class="desc">
+              <strong>IA restructure.</strong> Workflow promoted to a URL segment. <code>#/live-evals</code> is now a cross-workflow landing grid (one card per workflow with stats, scorer chips, breach badges). <code>#/live-evals/wf_xxx</code> is a workflow detail page with breadcrumb and tabs <strong>[Overview]&nbsp;[Settings]</strong>. <code>#/live-evals/runs</code> is the cross-workflow runs list. No more chip-selector ambiguity — each workflow's bindings and observation points are scoped to their own URL.
+              <br><br>
+              <strong>Overview tab</strong> — page-level <strong>time window</strong> (1h / 24h / 7d / Custom) and a <strong>Decisions facet</strong> (one chip per observation point, cycles through unique values). Tier 1 now shows 8 metrics plus terminal-outcome distribution and top-5 paths. Tier 2 renders inline SVG line charts per scorer with dashed-orange threshold and vertical build-deploy markers. Tier 3 cards drill into an <strong>AI node detail panel</strong> (Trace / Invocations / Scorers). Recent runs section below.
+              <br><br>
+              <strong>Settings tab</strong> — Scorer bindings table (scope, sample rate, daily budget, threshold, enabled toggle) and Observation points table (dimension, category, bound node, unique values, enabled toggle). Disabling an observation point removes its chip from the Overview filter row.
+              <br><br>
+              <strong>Build comparison sub-route</strong> at <code>#/live-evals/wf_xxx/builds/&lt;l&gt;/compare/&lt;r&gt;</code>. Build picker header (swappable left/right) followed by aggregate metric deltas, per-scorer deltas with regression flags, per-AI-node latency/cost shifts, and decision-distribution shifts per observation point. Archived builds (no scorer history) trigger an <strong>incompatible</strong> empty state.
+              <br><br>
+              <strong>WorkflowRun detail panel</strong> (Trace / Variables / Scores) reachable from every surface; parent chip jumps back to the spawning Process Instance or UI Flow Session — the cross-lens connector that didn't exist before.
+            </div>
           </td>
         </tr>
 
@@ -594,11 +640,11 @@
           <td class="num">3</td>
           <td>
             <div class="fr-title">AI workflow runs appear in three places</div>
-            <div class="fr-desc">Process Instance Workflows tab, UI Flow Session Workflows tab, and Live Evals — three lenses, no cross-navigation.</div>
+            <div class="fr-desc">Process Instance Workflows tab, UI Flow Session Workflows tab, and Live Evals — three lenses, no cross-navigation. A single run could not be opened, navigated to, or linked back to its parent.</div>
           </td>
           <td class="res">
-            <div class="res-title">Live Evals is canonical; everywhere else embeds a slice</div>
-            <div class="res-desc">Instance details show an embedded Live Evals "AI runs" slice with deep-link out. One source of truth.</div>
+            <div class="res-title">WorkflowRun becomes a first-class navigable entity</div>
+            <div class="res-desc">Shared detail panel (Trace / Variables / Scores) reachable from 4 lenses: instance "AI runs" tab, Live Evals workflow page (Recent runs), the new cross-workflow <code>#/live-evals/runs</code> route, and Build detail's Workflow runs tab. Parent chip in the panel header jumps back to the spawning Process Instance or UI Flow Session — the cross-lens connector that didn't exist before.</div>
             <div class="where">See: <code>§ 5, 7, 9</code></div>
           </td>
         </tr>
@@ -675,8 +721,8 @@
             <div class="fr-desc">flx-instance-workflows is a thinner, separate implementation of what Live Evals already renders better.</div>
           </td>
           <td class="res">
-            <div class="res-title">Tab now embeds the Live Evals fragment</div>
-            <div class="res-desc">"AI runs" tab on Instance details embeds a Live Evals slice with "Open in Live Evals →" deep-link. Same data, one source of truth.</div>
+            <div class="res-title">Tab embeds a real Live Evals slice with deep links into the canonical run panel</div>
+            <div class="res-desc">"AI runs" tab on Instance details filters <code>MOCK_DATA.workflowRuns</code> by parent and shows the real runs (not stub samples). Each row opens the shared WorkflowRun detail panel. "Open in Live Evals →" deep-links to the cross-workflow runs view.</div>
             <div class="where">See: <code>§ 5 · § 9</code></div>
           </td>
         </tr>
