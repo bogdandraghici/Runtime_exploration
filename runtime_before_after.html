@@ -297,6 +297,428 @@
     .vh-wire .row.trends { grid-template-columns: repeat(4, 1fr); gap: 4px; }
     .vh-wire .label { font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.04em; font-weight: 700; margin-bottom: 4px; }
 
+    /* Philosophy section */
+    .phil-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 14px;
+    }
+    .phil-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--blue-500);
+      border-radius: 12px;
+      padding: 18px 22px 20px;
+      box-shadow: var(--shadow-m);
+      position: relative;
+    }
+    .phil-card .num-tag {
+      font-family: 'JetBrains Mono', ui-monospace, monospace;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--blue-700);
+      letter-spacing: 0.06em;
+      margin-bottom: 4px;
+    }
+    .phil-card h3 {
+      font-size: 15px;
+      line-height: 22px;
+      font-weight: 700;
+      margin: 0 0 8px;
+      color: var(--text);
+    }
+    .phil-card .body {
+      font-size: 13px;
+      line-height: 20px;
+      color: var(--text-muted);
+      margin: 0;
+    }
+    .phil-card .body strong, .phil-card .body em { color: var(--text); }
+    .phil-card .body em { font-style: normal; font-weight: 600; }
+
+    /* Philosophy schemes */
+    .scheme-block {
+      margin-top: 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .scheme-block-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-bottom: 2px;
+    }
+    .scheme-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 22px;
+      box-shadow: var(--shadow-m);
+    }
+    .scheme-pill {
+      display: inline-block;
+      font-family: 'JetBrains Mono', ui-monospace, monospace;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: var(--blue-700);
+      background: var(--blue-50);
+      padding: 3px 10px;
+      border-radius: 9999px;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+    }
+    .scheme-title {
+      font-size: 16px;
+      line-height: 22px;
+      font-weight: 700;
+      margin: 0 0 4px;
+      color: var(--text);
+    }
+    .scheme-caption {
+      font-size: 13px;
+      line-height: 20px;
+      color: var(--text-muted);
+      margin: 0 0 18px;
+      max-width: 720px;
+    }
+
+    /* Scheme A — Activity-first navigation: catalogue of nouns vs motivation-led zones */
+    .orient-grid {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 14px;
+      align-items: stretch;
+    }
+    @media (max-width: 880px) {
+      .orient-grid { grid-template-columns: 1fr; }
+      .orient-grid .orient-arrow { transform: rotate(90deg); padding: 8px 0; }
+    }
+    .orient-col {
+      border-radius: 8px;
+      padding: 14px 16px 12px;
+      display: flex;
+      flex-direction: column;
+    }
+    .orient-col.before { background: var(--before-soft); border: 1px solid #f7bab0; }
+    .orient-col.after  { background: var(--after-soft); border: 1px solid #b0d8ce; }
+    .orient-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 4px;
+    }
+    .orient-col.before .orient-label { color: var(--before); }
+    .orient-col.after  .orient-label { color: var(--after); }
+    .orient-sublabel {
+      font-size: 12px;
+      font-style: italic;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+      line-height: 17px;
+    }
+
+    /* LEFT — flat catalogue */
+    .cat-list {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      flex: 1;
+    }
+    .cat-item {
+      font-family: 'JetBrains Mono', ui-monospace, monospace;
+      font-size: 11px;
+      padding: 5px 10px;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .cat-item .arr { color: var(--text-dim); font-size: 9px; }
+    .cat-item.child { margin-left: 16px; }
+    .cat-group-head {
+      font-family: 'JetBrains Mono', ui-monospace, monospace;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      padding: 6px 4px 2px;
+    }
+
+    /* RIGHT — vertical merges stack */
+    .merges-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      flex: 1;
+    }
+    .merge-block {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .merge-block-from {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      align-items: center;
+    }
+    .merge-block-to {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      padding-left: 8px;
+    }
+    .merge-arr-down {
+      color: var(--text-dim);
+      font-size: 15px;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .orient-arrow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-dim);
+      font-size: 20px;
+      padding: 0 6px;
+    }
+    .orient-foot {
+      font-size: 11px;
+      line-height: 16px;
+      color: var(--text-muted);
+      margin-top: 12px;
+      padding-top: 10px;
+      border-top: 1px dashed rgba(0, 0, 0, 0.12);
+    }
+
+    /* Merge chips (used in the after-column vertical stack) */
+    .merge-chip {
+      font-family: 'JetBrains Mono', ui-monospace, monospace;
+      font-size: 11px;
+      padding: 3px 9px;
+      background: var(--before-bg);
+      color: var(--before);
+      border-radius: 3px;
+      border: 1px solid #f7bab0;
+      text-decoration: line-through;
+      text-decoration-color: rgba(163, 24, 0, 0.45);
+    }
+    .merge-plus {
+      font-size: 11px;
+      color: var(--text-dim);
+      font-weight: 700;
+    }
+    .merge-target {
+      font-family: 'JetBrains Mono', ui-monospace, monospace;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 4px 12px;
+      background: var(--after-bg);
+      color: var(--after);
+      border-radius: 3px;
+      border: 1px solid #b0d8ce;
+    }
+    .merge-new-tag {
+      font-family: 'JetBrains Mono', ui-monospace, monospace;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      padding: 3px 9px;
+      background: var(--yellow-50);
+      color: var(--yellow-700);
+      border-radius: 3px;
+      border: 1px solid var(--yellow-500);
+      text-transform: uppercase;
+    }
+    .merge-note {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-style: italic;
+    }
+
+    /* Scheme B — Canonical home: abstract diagram */
+    .canon-frames {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+    }
+    @media (max-width: 760px) { .canon-frames { grid-template-columns: repeat(2, 1fr); gap: 14px; } }
+
+    .canon-frame {
+      background: var(--bg-soft);
+      border: 1px solid var(--border);
+      border-top-width: 3px;
+      border-radius: 8px;
+      padding: 14px 12px 18px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      position: relative;
+    }
+    .canon-frame::after {
+      content: '';
+      position: absolute;
+      bottom: -18px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 1px;
+      height: 18px;
+      background: var(--border-strong);
+    }
+    .canon-frame.kind-instance { border-top-color: var(--after); }
+    .canon-frame.kind-build    { border-top-color: var(--blue-500); }
+    .canon-frame.kind-incident { border-top-color: var(--before); }
+    .canon-frame.kind-evals    { border-top-color: var(--orange-500); }
+
+    .frame-identity {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 22px;
+    }
+    .canon-frame-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      letter-spacing: 0.02em;
+    }
+    .kind-icon {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .kind-icon.proc {
+      width: 20px; height: 20px;
+      background: var(--after);
+      color: white;
+      border-radius: 50%;
+      font-family: 'JetBrains Mono', ui-monospace, monospace;
+      font-size: 10px;
+      font-weight: 700;
+    }
+    .kind-icon.tag {
+      padding: 2px 7px;
+      background: var(--blue-50);
+      color: var(--blue-700);
+      border: 1px solid #b0d1f3;
+      font-family: 'JetBrains Mono', ui-monospace, monospace;
+      font-size: 10px;
+      font-weight: 700;
+      border-radius: 3px;
+    }
+    .kind-icon.warn {
+      width: 20px; height: 20px;
+      color: var(--before);
+      font-size: 16px;
+      font-weight: 700;
+      line-height: 1;
+    }
+    .kind-icon.spark {
+      width: 40px;
+      height: 16px;
+    }
+
+    .canon-frame-divider {
+      width: 36px;
+      height: 1px;
+      background: var(--border);
+      margin: 2px 0;
+    }
+
+    .panel-icon {
+      width: 52px;
+      height: 34px;
+      border: 1.5px solid var(--blue-500);
+      border-radius: 3px;
+      background: white;
+      position: relative;
+    }
+    .panel-icon::before {
+      content: '';
+      position: absolute;
+      top: 5px; left: 5px; right: 5px;
+      height: 3px;
+      background: var(--blue-500);
+      border-radius: 1px;
+    }
+    .panel-icon::after {
+      content: '';
+      position: absolute;
+      top: 12px; left: 5px; right: 14px;
+      height: 2px;
+      background: var(--blue-200);
+      border-radius: 1px;
+      box-shadow: 0 4px 0 var(--blue-100);
+    }
+    .panel-icon.large {
+      width: 104px;
+      height: 68px;
+      border-width: 2px;
+      border-radius: 5px;
+    }
+    .panel-icon.large::before {
+      top: 10px; left: 10px; right: 10px;
+      height: 5px;
+      border-radius: 2px;
+    }
+    .panel-icon.large::after {
+      top: 23px; left: 10px; right: 30px;
+      height: 4px;
+      border-radius: 2px;
+      box-shadow: 0 8px 0 var(--blue-100);
+    }
+
+    .canon-converge {
+      text-align: center;
+      font-size: 10px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      font-weight: 700;
+      padding: 24px 0 14px;
+    }
+
+    .canon-source {
+      background: var(--blue-50);
+      border: 2px solid var(--blue-500);
+      border-radius: 10px;
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+    .canon-source-label {
+      font-family: 'JetBrains Mono', ui-monospace, monospace;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--blue-700);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .canon-source-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 18px;
+      text-align: center;
+      max-width: 520px;
+    }
+    .canon-source-sub strong { color: var(--text); }
+
     /* Closing card */
     .summary-card {
       background: var(--bg);
@@ -325,200 +747,205 @@
     </div>
   </header>
 
-  <!-- ============== § 1 — NUMBERS ============== -->
+  <!-- ============== § 1 — PHILOSOPHY ============== -->
   <section>
-    <h2><span class="num">§ 1</span>The change in numbers</h2>
-    <p class="intro">A high-level scoreboard before going into the structural detail.</p>
+    <h2><span class="num">§ 1</span>Redesign philosophy</h2>
+    <p class="intro">Three personas open this tab for three different reasons — <em>what's broken?</em>, <em>how's my workflow behaving?</em>, <em>what did the system do today?</em> The redesign serves all three by reorganising what already exists, not by inventing anything new.</p>
 
-    <div class="stats">
-      <div class="stat">
-        <div class="k">Nav entries</div>
-        <div class="row">
-          <span class="before-v">11</span>
-          <span class="arrow">→</span>
-          <span class="after-v">8</span>
-        </div>
-        <div class="delta">3 merges + 1 new landing</div>
+    <div class="phil-grid">
+
+      <div class="phil-card">
+        <div class="num-tag">01 · ORIENTATION</div>
+        <h3>Activity-first, not artifact-first</h3>
+        <p class="body">The tab is organised around verb-questions, not entity-kinds. Users follow their intent (<em>what's broken? what's running?</em>) instead of guessing which catalogue holds the answer.</p>
       </div>
-      <div class="stat">
-        <div class="k">"Things went wrong" pages</div>
-        <div class="row">
-          <span class="before-v">3</span>
-          <span class="arrow">→</span>
-          <span class="after-v">1</span>
-        </div>
-        <div class="delta">Failed Start · Failed Triggers · Exceptions → <strong>Incidents</strong></div>
+
+      <div class="phil-card">
+        <div class="num-tag">02 · CONSOLIDATION</div>
+        <h3>Merge near-symmetric concepts</h3>
+        <p class="body">When two pages share the same grammar, they become one page with a column or a tab. Four such merges collapse parallel mental models into single surfaces.</p>
       </div>
-      <div class="stat">
-        <div class="k">Detail-panel components</div>
-        <div class="row">
-          <span class="before-v">3</span>
-          <span class="arrow">→</span>
-          <span class="after-v">1</span>
-        </div>
-        <div class="delta">Shared right-slide component reused across surfaces</div>
+
+      <div class="phil-card">
+        <div class="num-tag">03 · CANONICAL HOME</div>
+        <h3>One source of truth</h3>
+        <p class="body">Each concept lives in one place. Other surfaces show filtered <em>slices</em> — windows into the same canonical implementation, never parallel ones.</p>
       </div>
-      <div class="stat">
-        <div class="k">Surfaces showing AI runs</div>
-        <div class="row">
-          <span class="before-v">3</span>
-          <span class="arrow">→</span>
-          <span class="after-v">1 + slices</span>
-        </div>
-        <div class="delta">Live Evals canonical; embedded slices everywhere</div>
+
+      <div class="phil-card">
+        <div class="num-tag">04 · LEGIBILITY</div>
+        <h3>Self-teaching surface</h3>
+        <p class="body">Every concept is definable from inside the product. Help icons, explanatory empty states, and tooltip-revealed raw vocabulary mean any user can learn the system by using it.</p>
       </div>
-      <div class="stat">
-        <div class="k">Workflow runs as navigable entity</div>
-        <div class="row">
-          <span class="before-v">—</span>
-          <span class="arrow">→</span>
-          <span class="after-v">First-class</span>
-        </div>
-        <div class="delta"><strong>WorkflowRun</strong> detail panel reachable from 4 lenses; parent chip jumps back to spawning instance</div>
-      </div>
-      <div class="stat">
-        <div class="k">Live Evals depth</div>
-        <div class="row">
-          <span class="before-v">1 flat page</span>
-          <span class="arrow">→</span>
-          <span class="after-v">Landing + per-WF</span>
-        </div>
-        <div class="delta">Workflow promoted to URL segment (<code style="font-size:10px;background:white;border:1px solid var(--border);padding:0 4px;border-radius:3px;font-family:'JetBrains Mono',monospace;">#/live-evals/wf_xxx</code>); Settings, Decisions facet, time-window control, AI-node panel, time-series charts</div>
-      </div>
-      <div class="stat">
-        <div class="k">Tier 1 telemetry breadth</div>
-        <div class="row">
-          <span class="before-v">4 metrics</span>
-          <span class="arrow">→</span>
-          <span class="after-v">8 + 2 dists</span>
-        </div>
-        <div class="delta">+ instance count · mean path length · retry pressure · fallback model %; + terminal-outcome distribution · top-5 paths</div>
-      </div>
-      <div class="stat">
-        <div class="k">Build comparison</div>
-        <div class="row">
-          <span class="before-v">Stub</span>
-          <span class="arrow">→</span>
-          <span class="after-v">Real page</span>
-        </div>
-        <div class="delta">Workflow-scoped at <code style="font-size:10px;background:white;border:1px solid var(--border);padding:0 4px;border-radius:3px;font-family:'JetBrains Mono',monospace;">/builds/&lt;l&gt;/compare/&lt;r&gt;</code>; aggregate · per-scorer · per-AI-node · decision-distribution; <strong>incompatible</strong> state when builds share no scorer history</div>
-      </div>
-      <div class="stat">
-        <div class="k">Instance detail tabs</div>
-        <div class="row">
-          <span class="before-v">8</span>
-          <span class="arrow">→</span>
-          <span class="after-v">6</span>
-        </div>
-        <div class="delta">Tokens · Subprocesses · Trigger · Notifications dropped as standalone tabs — content folded into Activity tree (subprocess tree + token expand), Overview (initiator KV), and Audit (notification timeline). Variables tab gains an edit affordance + modal scaffold.</div>
-      </div>
-      <div class="stat">
-        <div class="k">Detail-panel stubs</div>
-        <div class="row">
-          <span class="before-v">2</span>
-          <span class="arrow">→</span>
-          <span class="after-v">0</span>
-        </div>
-        <div class="delta">Trigger and Task detail panels were literal "coming soon" placeholders. Both now ship as full right-slide panels with tabs — Trigger: Configuration · Recent fires · Failures (conditional); Task: Overview · Form · History with working Claim / Complete flow.</div>
-      </div>
-      <div class="stat">
-        <div class="k">Override CRUD</div>
-        <div class="row">
-          <span class="before-v">Decorative</span>
-          <span class="arrow">→</span>
-          <span class="after-v">Wired</span>
-        </div>
-        <div class="delta">Edit/Delete on both axes now open the shared <code style="font-size:10px;background:white;border:1px solid var(--border);padding:0 4px;border-radius:3px;font-family:'JetBrains Mono',monospace;">.app-modal</code> (generalized via <code style="font-size:10px;background:white;border:1px solid var(--border);padding:0 4px;border-radius:3px;font-family:'JetBrains Mono',monospace;">STATE.activeModal</code> dispatch). Build axis: target radios + policy-type radios + branch/build dropdowns. Param axis: <code style="font-size:10px;background:white;border:1px solid var(--border);padding:0 4px;border-radius:3px;font-family:'JetBrains Mono',monospace;">key=value</code> textarea. Audit metadata (<code style="font-size:10px;background:white;border:1px solid var(--border);padding:0 4px;border-radius:3px;font-family:'JetBrains Mono',monospace;">createdBy/Date</code>, <code style="font-size:10px;background:white;border:1px solid var(--border);padding:0 4px;border-radius:3px;font-family:'JetBrains Mono',monospace;">modifiedBy/Date</code>) shown in the Edit footer and as a row <code style="font-size:10px;background:white;border:1px solid var(--border);padding:0 4px;border-radius:3px;font-family:'JetBrains Mono',monospace;">title</code> tooltip. Delete is a confirm modal with new <code style="font-size:10px;background:white;border:1px solid var(--border);padding:0 4px;border-radius:3px;font-family:'JetBrains Mono',monospace;">.btn.danger-primary</code>. Re-resolves automatically if "Test as user" was already run.</div>
-      </div>
-      <div class="stat">
-        <div class="k">Param resolution path</div>
-        <div class="row">
-          <span class="before-v">Per-key only</span>
-          <span class="arrow">→</span>
-          <span class="after-v">Ordered</span>
-        </div>
-        <div class="delta">Param axis now emits a <code style="font-size:10px;background:white;border:1px solid var(--border);padding:0 4px;border-radius:3px;font-family:'JetBrains Mono',monospace;">paramPath</code> parallel to the build axis's <code style="font-size:10px;background:white;border:1px solid var(--border);padding:0 4px;border-radius:3px;font-family:'JetBrains Mono',monospace;">resolutionPath</code>. Each step classifies: does-not-match · disabled (with the keys it would set) · matches-and-wins · matches-but-superseded · partial-win. Terminal step lists which keys fell through to defaults. Rendered with the same <code style="font-size:10px;background:white;border:1px solid var(--border);padding:0 4px;border-radius:3px;font-family:'JetBrains Mono',monospace;">.path-step</code> component.</div>
-      </div>
-      <div class="stat">
-        <div class="k">Audit timeline depth</div>
-        <div class="row">
-          <span class="before-v">2–3 events</span>
-          <span class="arrow">→</span>
-          <span class="after-v">6 sources</span>
-        </div>
-        <div class="delta">Weaves trigger fire (from <code style="font-size:10px;background:white;border:1px solid var(--border);padding:0 4px;border-radius:3px;font-family:'JetBrains Mono',monospace;">initiator.when</code>) · instance start · per-token <code style="font-size:10px;background:white;border:1px solid var(--border);padding:0 4px;border-radius:3px;font-family:'JetBrains Mono',monospace;">nodesActionStates</code> (token-id chip + verb mapping) · back-seq flags · subprocess spawns (anchored to each child's own <code style="font-size:10px;background:white;border:1px solid var(--border);padding:0 4px;border-radius:3px;font-family:'JetBrains Mono',monospace;">startedAt</code>) · notifications · all lifecycle states (terminated now included). New <code style="font-size:10px;background:white;border:1px solid var(--border);padding:0 4px;border-radius:3px;font-family:'JetBrains Mono',monospace;">.dot.node</code> glyph distinguishes node-action rows.</div>
-      </div>
-      <div class="stat">
-        <div class="k">Documentation patterns</div>
-        <div class="row">
-          <span class="before-v">5 listed</span>
-          <span class="arrow">→</span>
-          <span class="after-v">6 listed</span>
-        </div>
-        <div class="delta">Permission affordances added as the 6th pattern (matching the prose claim of "six consistent patterns"). Compact captions name the gated permission on each Runtime surface — informational, not behavioral.</div>
-      </div>
+
     </div>
-  </section>
 
-  <!-- ============== § 2 — IA SIDE BY SIDE ============== -->
-  <section>
-    <h2><span class="num">§ 2</span>Information architecture</h2>
-    <p class="intro">Left nav structure before vs after. The current shape is flat with one nested group; the new shape groups all entries semantically and adds Overview as the default landing.</p>
+    <div class="scheme-block">
+      <div class="scheme-block-label">Two principles, illustrated</div>
 
-    <div class="ba-grid">
+      <div class="scheme-card">
+        <div class="scheme-pill">Principle 01 · Orientation</div>
+        <h3 class="scheme-title">Activity-first, not artifact-first</h3>
+        <p class="scheme-caption">It isn't only the landing — the <em>entire navigation</em> is reorganised around what the user is there to do. Same 11 entities, regrouped into a landing plus three motivation-led zones.</p>
 
-      <div class="ba-col">
-        <div class="ba-head before">
-          <span class="label">Before — current</span>
-          <span class="meta-tag">11 entries</span>
-        </div>
-        <div class="ba-body">
-          <div class="ia-list">
-            <div class="item"><span class="glyph">▸</span>Builds list <span style="margin-left:auto;font-size:10px;color:var(--text-dim);font-family:system-ui;">default landing</span></div>
-            <div class="item"><span class="glyph">▸</span>Active Policy</div>
-            <div class="item"><span class="glyph">▸</span>Config Param Overrides</div>
-            <div class="item group">Runtime processes</div>
-            <div class="item child"><span class="glyph">▸</span>Process Instances</div>
-            <div class="item child"><span class="glyph">▸</span>Failed Process Start</div>
-            <div class="item child"><span class="glyph">▸</span>Failed Triggers</div>
-            <div class="item child"><span class="glyph">▸</span>Exceptions</div>
-            <div class="item"><span class="glyph">▸</span>UI Flow Sessions</div>
-            <div class="item"><span class="glyph">▸</span>Live Evals</div>
-            <div class="item"><span class="glyph">▸</span>Scheduled Processes</div>
-            <div class="item"><span class="glyph">▸</span>Manage Triggers</div>
-            <div class="item"><span class="glyph">▸</span>Task Manager</div>
+        <div class="orient-grid">
+          <div class="orient-col before">
+            <div class="orient-label">Before — flat catalogue of entities</div>
+            <div class="orient-sublabel">Every nav entry is a noun. The user must already know which entity holds the answer to find it.</div>
+            <div class="cat-list">
+              <div class="cat-item"><span class="arr">▸</span>Builds</div>
+              <div class="cat-item"><span class="arr">▸</span>Active Policy</div>
+              <div class="cat-item"><span class="arr">▸</span>Config Param Overrides</div>
+              <div class="cat-group-head">Runtime processes</div>
+              <div class="cat-item child"><span class="arr">▸</span>Process Instances</div>
+              <div class="cat-item child"><span class="arr">▸</span>Failed Process Start</div>
+              <div class="cat-item child"><span class="arr">▸</span>Failed Triggers</div>
+              <div class="cat-item child"><span class="arr">▸</span>Exceptions</div>
+              <div class="cat-item"><span class="arr">▸</span>UI Flow Sessions</div>
+              <div class="cat-item"><span class="arr">▸</span>Live Evals</div>
+              <div class="cat-item"><span class="arr">▸</span>Scheduled Processes</div>
+              <div class="cat-item"><span class="arr">▸</span>Manage Triggers</div>
+              <div class="cat-item"><span class="arr">▸</span>Task Manager</div>
+            </div>
+            <div class="orient-foot">11 entries, near-flat, no semantic grouping. The user navigating "<em>I think something's broken</em>" has four candidate pages to check (Failed Start · Failed Triggers · Exceptions · UI Flow Sessions) without knowing which one will show it.</div>
+          </div>
+
+          <div class="orient-arrow">→</div>
+
+          <div class="orient-col after">
+            <div class="orient-label">After — 4 merges + 1 new landing</div>
+            <div class="orient-sublabel">11 entries collapse into 8 — near-symmetric pages merge under a single grammar, and a new activity-first landing leads the way.</div>
+            <div class="merges-stack">
+              <div class="merge-block">
+                <div class="merge-block-from">
+                  <span class="merge-chip">Process Instances</span>
+                  <span class="merge-plus">+</span>
+                  <span class="merge-chip">UI Flow Sessions</span>
+                </div>
+                <div class="merge-block-to">
+                  <span class="merge-arr-down">↳</span>
+                  <span class="merge-target">Instances</span>
+                  <span class="merge-note">type as a column</span>
+                </div>
+              </div>
+
+              <div class="merge-block">
+                <div class="merge-block-from">
+                  <span class="merge-chip">Failed Process Start</span>
+                  <span class="merge-plus">+</span>
+                  <span class="merge-chip">Failed Triggers</span>
+                  <span class="merge-plus">+</span>
+                  <span class="merge-chip">Exceptions</span>
+                </div>
+                <div class="merge-block-to">
+                  <span class="merge-arr-down">↳</span>
+                  <span class="merge-target">Incidents</span>
+                  <span class="merge-note">stage as a tab · + AI breaches</span>
+                </div>
+              </div>
+
+              <div class="merge-block">
+                <div class="merge-block-from">
+                  <span class="merge-chip">Active Policy</span>
+                  <span class="merge-plus">+</span>
+                  <span class="merge-chip">Config Param Overrides</span>
+                </div>
+                <div class="merge-block-to">
+                  <span class="merge-arr-down">↳</span>
+                  <span class="merge-target">Configuration</span>
+                  <span class="merge-note">two axes · shared resolver</span>
+                </div>
+              </div>
+
+              <div class="merge-block">
+                <div class="merge-block-from">
+                  <span class="merge-chip">Scheduled Processes</span>
+                  <span class="merge-plus">+</span>
+                  <span class="merge-chip">Manage Triggers</span>
+                </div>
+                <div class="merge-block-to">
+                  <span class="merge-arr-down">↳</span>
+                  <span class="merge-target">Schedules &amp; Triggers</span>
+                  <span class="merge-note">+ failed-fires tab</span>
+                </div>
+              </div>
+
+              <div class="merge-block">
+                <div class="merge-block-from">
+                  <span class="merge-new-tag">New</span>
+                </div>
+                <div class="merge-block-to">
+                  <span class="merge-arr-down">↳</span>
+                  <span class="merge-target">Overview</span>
+                  <span class="merge-note">activity-first landing</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      <div class="ba-col">
-        <div class="ba-head after">
-          <span class="label">After — proposed</span>
-          <span class="meta-tag">8 entries</span>
-        </div>
-        <div class="ba-body">
-          <div class="ia-list">
-            <div class="item new"><span class="glyph">◆</span>Overview</div>
-            <div class="item group">Live state</div>
-            <div class="item child merged"><span class="glyph">▸</span>Instances<span class="note">Process + UI Flow merged</span></div>
-            <div class="item child merged"><span class="glyph">▸</span>Incidents<span class="note">Failed Start + Triggers + Exceptions + AI breaches</span></div>
-            <div class="item child"><span class="glyph">▸</span>Live Evals</div>
-            <div class="item group">Deployment</div>
-            <div class="item child"><span class="glyph">▸</span>Builds <span style="margin-left:auto;font-size:10px;color:var(--text-dim);font-family:system-ui;">+ deployment lens</span></div>
-            <div class="item child merged"><span class="glyph">▸</span>Configuration<span class="note">Active Policy + Param Overrides</span></div>
-            <div class="item child merged"><span class="glyph">▸</span>Schedules &amp; Triggers<span class="note">Scheduled + Manage + Failed fires</span></div>
-            <div class="item group">Work</div>
-            <div class="item child"><span class="glyph">▸</span>Tasks</div>
+      <div class="scheme-card">
+        <div class="scheme-pill">Principle 03 · Canonical home</div>
+        <h3 class="scheme-title">One source of truth, embedded slices everywhere else</h3>
+        <p class="scheme-caption">The same component shows up in four surfaces — and lives once underneath.</p>
+
+        <div class="canon-frames">
+          <div class="canon-frame kind-instance">
+            <div class="frame-identity">
+              <div class="kind-icon proc">P</div>
+              <div class="canon-frame-label">Instance detail</div>
+            </div>
+            <div class="canon-frame-divider"></div>
+            <div class="panel-icon"></div>
           </div>
+
+          <div class="canon-frame kind-build">
+            <div class="frame-identity">
+              <div class="kind-icon tag">v1.4.2</div>
+              <div class="canon-frame-label">Build detail</div>
+            </div>
+            <div class="canon-frame-divider"></div>
+            <div class="panel-icon"></div>
+          </div>
+
+          <div class="canon-frame kind-incident">
+            <div class="frame-identity">
+              <div class="kind-icon warn">⚠</div>
+              <div class="canon-frame-label">Incident detail</div>
+            </div>
+            <div class="canon-frame-divider"></div>
+            <div class="panel-icon"></div>
+          </div>
+
+          <div class="canon-frame kind-evals">
+            <div class="frame-identity">
+              <svg class="kind-icon spark" viewBox="0 0 40 16" fill="none" aria-hidden="true">
+                <polyline points="2,12 9,9 15,11 22,5 28,8 35,3" stroke="#fd6b1c" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <div class="canon-frame-label">Live Evals</div>
+            </div>
+            <div class="canon-frame-divider"></div>
+            <div class="panel-icon"></div>
+          </div>
+        </div>
+
+        <div class="canon-converge">↓ &nbsp; one implementation &nbsp; ↓</div>
+
+        <div class="canon-source">
+          <div class="panel-icon large"></div>
+          <div class="canon-source-label">WorkflowRun · canonical</div>
+          <div class="canon-source-sub">One panel, four entry points. Fix bugs, evolve features, change vocabulary in one place.</div>
         </div>
       </div>
 
     </div>
+
   </section>
 
-  <!-- ============== § 3 — PAGE-BY-PAGE MAPPING ============== -->
+  <!-- ============== § 2 — PAGE-BY-PAGE MAPPING ============== -->
   <section>
-    <h2><span class="num">§ 3</span>Page-by-page mapping</h2>
+    <h2><span class="num">§ 2</span>Page-by-page mapping</h2>
     <p class="intro">How each page or entity in the current Runtime tab moves to the redesign.</p>
 
     <table class="map-table">
@@ -687,9 +1114,9 @@
     </table>
   </section>
 
-  <!-- ============== § 4 — FRICTION → RESOLUTION ============== -->
+  <!-- ============== § 3 — FRICTION → RESOLUTION ============== -->
   <section>
-    <h2><span class="num">§ 4</span>Friction → resolution</h2>
+    <h2><span class="num">§ 3</span>Friction → resolution</h2>
     <p class="intro">Each friction point from the starter doc and the design choice that addresses it. All nine are resolved.</p>
 
     <table class="fr-table">
@@ -823,9 +1250,9 @@
     </table>
   </section>
 
-  <!-- ============== § 5 — VISUAL HIERARCHY ============== -->
+  <!-- ============== § 4 — VISUAL HIERARCHY ============== -->
   <section>
-    <h2><span class="num">§ 5</span>Visual hierarchy</h2>
+    <h2><span class="num">§ 4</span>Visual hierarchy</h2>
     <p class="intro">The starter has no landing dashboard, so today's "first impression" is just a flat list of builds. The redesign establishes a deliberate visual hierarchy: incident banner → activity feed → KPI cards → trends.</p>
 
     <div class="vh-grid">
@@ -869,95 +1296,9 @@
     </div>
   </section>
 
-  <!-- ============== § 6 — DOCUMENTATION LAYER ============== -->
+  <!-- ============== § 5 — SUMMARY ============== -->
   <section>
-    <h2><span class="num">§ 6</span>Documentation layer — new</h2>
-    <p class="intro">The current Runtime tab has no in-product documentation affordance. The redesign introduces six consistent patterns so any user can learn every concept by using the product.</p>
-
-    <table class="map-table">
-      <thead>
-        <tr><th>Affordance</th><th></th><th>Manifests as</th></tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td class="before-cell">
-            <div class="name">— (none)</div>
-            <div class="desc">Concepts like Token, Scorer, Policy, Build are not defined inside the product. Users either know them or guess.</div>
-          </td>
-          <td class="arrow-cell">→</td>
-          <td class="after-cell">
-            <span class="change-pill new">New</span>
-            <div class="name">Inline help icons + glossary side panel</div>
-            <div class="desc">Every page title and panel heading has a <code>?</code> icon opening a definition popover. Popovers link to a single-source-of-truth glossary panel reachable from any "?".</div>
-          </td>
-        </tr>
-        <tr>
-          <td class="before-cell">
-            <div class="name">— (none)</div>
-            <div class="desc">Novel features and renamed tabs land with no explanation; users must infer behavior from labels.</div>
-          </td>
-          <td class="arrow-cell">→</td>
-          <td class="after-cell">
-            <span class="change-pill new">New</span>
-            <div class="name">Contextual doc banners</div>
-            <div class="desc">Yellow inline banner explains a tab or feature on first encounter. Dismissable per-user; resurfaces only when the feature changes meaningfully.</div>
-          </td>
-        </tr>
-        <tr>
-          <td class="before-cell">
-            <div class="name">— (none)</div>
-            <div class="desc">Empty lists show nothing — no explanation of what would appear, how it gets there.</div>
-          </td>
-          <td class="arrow-cell">→</td>
-          <td class="after-cell">
-            <span class="change-pill new">New</span>
-            <div class="name">Empty-state explanations</div>
-            <div class="desc">Every empty list explains what would appear and how. Example: "No incidents — when a process fails, a trigger errors, or an AI scorer breaches, it'll appear here."</div>
-          </td>
-        </tr>
-        <tr>
-          <td class="before-cell">
-            <div class="name">— (none)</div>
-            <div class="desc">No onboarding for new users; the system must be learned page-by-page.</div>
-          </td>
-          <td class="arrow-cell">→</td>
-          <td class="after-cell">
-            <span class="change-pill new">New</span>
-            <div class="name">Tour mode</div>
-            <div class="desc">Persistent "Tour &amp; help" entry in the sidebar footer launches a guided overlay walkthrough of the current page. Auto-runs on first visit to Overview.</div>
-          </td>
-        </tr>
-        <tr>
-          <td class="before-cell">
-            <div class="name">Raw ProcessState everywhere</div>
-            <div class="desc">UI shows engineering vocabulary (FINISHED_WITH_ERROR, ON_HOLD, …) directly.</div>
-          </td>
-          <td class="arrow-cell">→</td>
-          <td class="after-cell">
-            <span class="change-pill new">New</span>
-            <div class="name">State pill tooltips</div>
-            <div class="desc">Normalized state labels (Running / Waiting / Failed / …) shown to users. Hovering reveals the raw underlying state — bridges simplified vocabulary to engineering vocabulary.</div>
-          </td>
-        </tr>
-        <tr>
-          <td class="before-cell">
-            <div class="name">— (none)</div>
-            <div class="desc">Permissions gate every Runtime surface in production, but there's no in-product hint about which permission gates what. A user denied access sees an empty page; their admin gets a ticket asking for "Tasks access" and has to translate it to a permission string.</div>
-          </td>
-          <td class="arrow-cell">→</td>
-          <td class="after-cell">
-            <span class="change-pill new">New</span>
-            <div class="name">Permission affordances</div>
-            <div class="desc">A compact one-line caption sits under the page-head of every gated surface: shield-check icon + mono permission chip(s) + <em>"granted for this session"</em>. Placed on Configuration (<code style="font-size:10px;background:white;border:1px solid var(--border);padding:0 4px;border-radius:3px;font-family:'JetBrains Mono',monospace;">wks_active_policy_read</code> + <code style="font-size:10px;background:white;border:1px solid var(--border);padding:0 4px;border-radius:3px;font-family:'JetBrains Mono',monospace;">wks_config_param_overrides_read</code>), Live Evals landing (<code style="font-size:10px;background:white;border:1px solid var(--border);padding:0 4px;border-radius:3px;font-family:'JetBrains Mono',monospace;">wks_live_evals_read</code>), Tasks (<code style="font-size:10px;background:white;border:1px solid var(--border);padding:0 4px;border-radius:3px;font-family:'JetBrains Mono',monospace;">wks_tasks_read</code>), and Instance Overview when type is uiflow (<code style="font-size:10px;background:white;border:1px solid var(--border);padding:0 4px;border-radius:3px;font-family:'JetBrains Mono',monospace;">ui_flow_session_read</code>). Variables edit modal already named <code style="font-size:10px;background:white;border:1px solid var(--border);padding:0 4px;border-radius:3px;font-family:'JetBrains Mono',monospace;">wks_process_instance_variables_edit</code>. Informational, not behavioral — it names the contract so users can request the right permission and admins can translate "I need Tasks" into the right grant.</div>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </section>
-
-  <!-- ============== § 7 — SUMMARY ============== -->
-  <section>
-    <h2><span class="num">§ 7</span>Net effect</h2>
+    <h2><span class="num">§ 5</span>Net effect</h2>
     <div class="summary-card">
       <h3>What the redesign actually changes</h3>
       <p>The same content, the same data sources, the same backend services — but reorganised so that every reason someone opens the tab has a deliberate, scannable entry point, and every concept is explainable from inside the product.</p>
