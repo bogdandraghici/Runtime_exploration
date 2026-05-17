@@ -2081,14 +2081,14 @@ const MOCK_DATA = {
     { id: 'fire_006', triggerId: 'cron_retention', triggerName: 'Nightly retention sweep', triggerType: 'cron', firedAt: '8h ago', outcome: 'failed', failureReason: 'invalid cron expression' },
   ],
   tasks: [
-    { id: 'task_1', title: 'Approve loan application — $42,000', source: { instanceId: 'inst_55a1c0', definitionName: 'Loan application', atStep: 'waiting at Manager approval' }, assignee: { userId: 'me', displayName: 'AB' }, dueAt: 'in 4h', isOverdue: false, priority: 'high' },
-    { id: 'task_2', title: 'Verify identity documents — passport + utility bill', source: { instanceId: 'inst_19f3d4', definitionName: 'KYC review', atStep: 'awaiting agent' }, assignee: null, dueAt: 'overdue 2h', isOverdue: true, priority: 'high' },
-    { id: 'task_3', title: 'Confirm escalation — high-value support case', source: { instanceId: 'sess_b34f0e', definitionName: 'Support chat session', atStep: 'awaiting confirmation' }, assignee: { userId: 'me', displayName: 'AB' }, dueAt: 'due tomorrow', isOverdue: false },
-    { id: 'task_4', title: 'Review payment refund — $199.99', source: { instanceId: 'inst_b73e1c', definitionName: 'Payment retry', atStep: 'awaiting review' }, assignee: null, dueAt: 'in 12h', isOverdue: false },
-    { id: 'task_5', title: 'Sign agreement', source: { instanceId: 'inst_e1a234', definitionName: 'Document signature', atStep: 'awaiting customer signature' }, assignee: { userId: 'other', displayName: 'CD' }, dueAt: 'in 3 days', isOverdue: false },
-    { id: 'task_6', title: 'Risk decision — case r_3344', source: { instanceId: 'inst_a5b6c7', definitionName: 'Risk assessment', atStep: 'awaiting decision' }, assignee: { userId: 'me', displayName: 'AB' }, dueAt: 'in 22h', isOverdue: false },
-    { id: 'task_7', title: 'Manual override review', source: { instanceId: 'inst_91ab23', definitionName: 'Email verification', atStep: 'completed' }, assignee: { userId: 'me', displayName: 'AB' }, dueAt: 'completed', isOverdue: false, completed: true },
-    { id: 'task_8', title: 'Customer escalation review', source: { instanceId: 'sess_c12d40', definitionName: 'Application form', atStep: 'awaiting review' }, assignee: null, dueAt: 'in 8h', isOverdue: false },
+    { id: 'task_1', title: 'Approve loan application — $42,000', source: { instanceId: 'inst_55a1c0', definitionName: 'Loan application', atStep: 'waiting at Manager approval' }, assignee: { userId: 'me', displayName: 'AB' }, dueAt: 'in 4h', isOverdue: false, priority: 'high', createdAt: '12m ago' },
+    { id: 'task_2', title: 'Verify identity documents — passport + utility bill', source: { instanceId: 'inst_19f3d4', definitionName: 'KYC review', atStep: 'awaiting agent' }, assignee: null, dueAt: 'overdue 2h', isOverdue: true, priority: 'high', createdAt: '3h ago' },
+    { id: 'task_3', title: 'Confirm escalation — high-value support case', source: { instanceId: 'sess_b34f0e', definitionName: 'Support chat session', atStep: 'awaiting confirmation' }, assignee: { userId: 'me', displayName: 'AB' }, dueAt: 'due tomorrow', isOverdue: false, createdAt: '28m ago' },
+    { id: 'task_4', title: 'Review payment refund — $199.99', source: { instanceId: 'inst_b73e1c', definitionName: 'Payment retry', atStep: 'awaiting review' }, assignee: null, dueAt: 'in 12h', isOverdue: false, createdAt: '2h ago' },
+    { id: 'task_5', title: 'Sign agreement', source: { instanceId: 'inst_e1a234', definitionName: 'Document signature', atStep: 'awaiting customer signature' }, assignee: { userId: 'other', displayName: 'CD' }, dueAt: 'in 3 days', isOverdue: false, createdAt: '4h ago' },
+    { id: 'task_6', title: 'Risk decision — case r_3344', source: { instanceId: 'inst_a5b6c7', definitionName: 'Risk assessment', atStep: 'awaiting decision' }, assignee: { userId: 'me', displayName: 'AB' }, dueAt: 'in 22h', isOverdue: false, createdAt: '6h ago' },
+    { id: 'task_7', title: 'Manual override review', source: { instanceId: 'inst_91ab23', definitionName: 'Email verification', atStep: 'completed' }, assignee: { userId: 'me', displayName: 'AB' }, dueAt: 'completed', isOverdue: false, completed: true, createdAt: '1d ago' },
+    { id: 'task_8', title: 'Customer escalation review', source: { instanceId: 'sess_c12d40', definitionName: 'Application form', atStep: 'awaiting review' }, assignee: null, dueAt: 'in 8h', isOverdue: false, createdAt: '8h ago' },
   ],
   workflows: [
     {
@@ -4182,6 +4182,18 @@ function claimTask(id) {
   if (!t) return;
   t.assignee = { userId: 'me', displayName: 'AB' };
   renderTasks(document.getElementById('page'));
+  if (STATE.detail.open && STATE.detail.kind === 'task' && STATE.detail.id === id) renderDetail();
+}
+function completeTask(id) {
+  const t = MOCK_DATA.tasks.find(x => x.id === id);
+  if (!t) return;
+  t.completed = true;
+  if (!t.assignee) t.assignee = { userId: 'me', displayName: 'AB' };
+  renderTasks(document.getElementById('page'));
+  if (STATE.detail.open && STATE.detail.kind === 'task' && STATE.detail.id === id) {
+    STATE.detail.tab = 2;  // History tab
+    renderDetail();
+  }
 }
 function cycleFilter(page, key, options) {
   const cur = STATE.filters[page][key];
@@ -5177,8 +5189,177 @@ function renderTriggerFiresList(fires, mode) {
     </div>
   </div>`;
 }
-function renderTaskDetail(it, tab) {
-  return [`<div class="topline"><span class="crumb">Task</span><span style="font-family:'JetBrains Mono',monospace">${escapeHtml(it.id)}</span><button class="x" onclick="closeDetail()">×</button></div><h3>${escapeHtml(it.title)}</h3><div class="sub">From ${escapeHtml(it.source.definitionName)} · ${escapeHtml(it.source.atStep)}</div>`, '', '<div class="empty"><p>Detail content coming in Task 8.</p></div>'];
+function taskFormFields(task) {
+  const title = (task.title || '').toLowerCase();
+  if (title.includes('loan')) {
+    return [
+      { label: 'Decision', name: 'decision', type: 'select', options: ['Approve', 'Reject', 'Send back for review'] },
+      { label: 'Amount approved (USD)', name: 'amount', type: 'text', placeholder: '42000' },
+      { label: 'Notes', name: 'notes', type: 'textarea', placeholder: 'Add reasoning visible to the applicant…' },
+    ];
+  }
+  if (title.includes('verify identity') || title.includes('kyc')) {
+    return [
+      { label: 'Identity verified', name: 'verified', type: 'select', options: ['Yes', 'No', 'Needs more documents'] },
+      { label: 'Notes', name: 'notes', type: 'textarea', placeholder: 'Anything unusual to flag?' },
+    ];
+  }
+  if (title.includes('refund')) {
+    return [
+      { label: 'Decision', name: 'decision', type: 'select', options: ['Approve refund', 'Deny refund', 'Partial refund'] },
+      { label: 'Notes', name: 'notes', type: 'textarea', placeholder: 'Customer-visible notes…' },
+    ];
+  }
+  if (title.includes('risk')) {
+    return [
+      { label: 'Risk level', name: 'risk', type: 'select', options: ['Low', 'Medium', 'High', 'Block'] },
+      { label: 'Rationale', name: 'notes', type: 'textarea', placeholder: 'Explain the decision…' },
+    ];
+  }
+  if (title.includes('escalation')) {
+    return [
+      { label: 'Escalate to', name: 'tier', type: 'select', options: ['Tier 2', 'Tier 3 / specialist', 'Manager'] },
+      { label: 'Notes', name: 'notes', type: 'textarea', placeholder: 'Why escalating?' },
+    ];
+  }
+  if (title.includes('sign agreement')) {
+    return [
+      { label: 'Signed', name: 'signed', type: 'select', options: ['Signed', 'Declined'] },
+      { label: 'Notes', name: 'notes', type: 'textarea', placeholder: 'Optional comments…' },
+    ];
+  }
+  // Generic fallback
+  return [
+    { label: 'Decision', name: 'decision', type: 'select', options: ['Approve', 'Reject'] },
+    { label: 'Notes', name: 'notes', type: 'textarea', placeholder: 'Add notes…' },
+  ];
+}
+function renderTaskDetail(it, tabIdx) {
+  const tabs = ['Overview', 'Form', 'History'];
+
+  const dueLabel = (() => {
+    if (!it.dueAt) return '<span style="color:var(--text-muted)">—</span>';
+    if (it.completed) return `<span style="color:var(--text-muted)">${escapeHtml(it.dueAt)}</span>`;
+    if (it.isOverdue) return `<span style="color:var(--red-700);font-weight:600;">${escapeHtml(it.dueAt)}</span>`;
+    if (it.dueAt.includes('in 4h') || it.dueAt.includes('in 1h') || it.dueAt.includes('in 2h') || it.dueAt.includes('in 3h')) {
+      return `<span style="color:var(--yellow-700);font-weight:600;">${escapeHtml(it.dueAt)}</span>`;
+    }
+    return escapeHtml(it.dueAt);
+  })();
+  const priorityPill = it.priority
+    ? `<span style="display:inline-block;padding:1px 8px;border-radius:9999px;background:${it.priority === 'high' ? 'var(--red-50)' : 'var(--bg-alt)'};color:${it.priority === 'high' ? 'var(--red-700)' : 'var(--text-muted)'};font-size:11px;font-weight:600;text-transform:capitalize;">${escapeHtml(it.priority)}</span>`
+    : '';
+  const completedPill = it.completed
+    ? `<span style="display:inline-block;padding:1px 8px;border-radius:9999px;background:var(--green-50);color:var(--green-700);font-size:11px;font-weight:600;">Completed</span>`
+    : '';
+
+  const head = `
+    <div class="topline">
+      <span class="crumb">Task</span>
+      <span style="color:var(--border-strong)">/</span>
+      <span style="font-family:'JetBrains Mono',monospace">${escapeHtml(it.id)}</span>
+      <button class="x" onclick="closeDetail()">×</button>
+    </div>
+    <h3>${escapeHtml(it.title)}</h3>
+    <div class="sub">from <a style="color:var(--blue-500);cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:11px;" onclick="openDetail('instance','${escapeHtml(it.source.instanceId)}')">${escapeHtml(it.source.instanceId)}</a> · ${escapeHtml(it.source.definitionName)} · ${escapeHtml(it.source.atStep)}</div>
+    <div class="meta-row" style="display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap;">
+      ${priorityPill}
+      ${dueLabel}
+      ${completedPill}
+    </div>`;
+
+  const tabsHtml = tabs.map((t, i) => `<button class="tab ${i === tabIdx ? 'active' : ''}" onclick="STATE.detail.tab = ${i}; renderDetail();">${t}</button>`).join('');
+
+  const active = tabs[tabIdx];
+  let body = '';
+  if (active === 'Overview') {
+    const actionBar = (() => {
+      if (it.completed) return '';
+      if (!it.assignee) {
+        return `<div style="display:flex;gap:8px;margin-bottom:14px;"><button class="btn primary" onclick="claimTask('${escapeHtml(it.id)}')">Claim</button></div>`;
+      }
+      if (it.assignee.userId === 'me') {
+        return `<div style="display:flex;gap:8px;margin-bottom:14px;">
+          <button class="btn primary" onclick="STATE.detail.tab = 1; renderDetail();">Open form →</button>
+          <button class="btn ghost" disabled title="Reassign — not wired in this prototype">Reassign</button>
+        </div>`;
+      }
+      return `<div style="font-size:12px;color:var(--text-muted);margin-bottom:14px;padding:8px 10px;background:var(--bg-alt);border-radius:6px;">Assigned to ${escapeHtml(it.assignee.displayName)}. Only the assignee can complete this task.</div>`;
+    })();
+    const assigneeCell = it.assignee
+      ? `<span style="display:inline-flex;align-items:center;gap:6px;"><span style="display:inline-flex;width:18px;height:18px;border-radius:50%;background:${it.assignee.userId === 'me' ? 'var(--blue-500)' : 'var(--purple-500)'};color:white;font-size:9px;font-weight:700;align-items:center;justify-content:center;">${escapeHtml(it.assignee.displayName)}</span>${escapeHtml(it.assignee.displayName)}${it.assignee.userId === 'me' ? ' (you)' : ''}</span>`
+      : '<span style="color:var(--text-muted)">Unassigned</span>';
+    body = `${docBanner('Tasks come from processes.', 'When a Process Instance reaches a human-task node it creates a task here and waits for someone to complete it. Opening the originating instance shows where in the flow this is happening.', 'task-overview')}
+      ${actionBar}
+      <div class="panel-block">
+        ${panelHeading('Details', 'Task')}
+        <div class="kv">
+          <span>Source</span><span><a style="color:var(--blue-500);cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:11px;" onclick="openDetail('instance','${escapeHtml(it.source.instanceId)}')">${escapeHtml(it.source.instanceId)}</a> · ${escapeHtml(it.source.definitionName)}</span>
+          <span>Step</span><span>${escapeHtml(it.source.atStep)}</span>
+          <span>Assignee</span><span>${assigneeCell}</span>
+          <span>Due</span><span>${dueLabel}</span>
+          <span>Priority</span><span>${priorityPill || '<span style="color:var(--text-muted)">—</span>'}</span>
+          <span>Created</span><span>${escapeHtml(it.createdAt || '—')}</span>
+        </div>
+      </div>`;
+  } else if (active === 'Form') {
+    const fields = taskFormFields(it);
+    const disabled = it.completed || !it.assignee || it.assignee.userId !== 'me';
+    const fieldsHtml = fields.map(f => {
+      if (f.type === 'select') {
+        return `<div style="margin-bottom:12px;">
+          <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.04em;color:var(--text-dim);font-weight:700;margin-bottom:4px;">${escapeHtml(f.label)}</div>
+          <select ${disabled ? 'disabled' : ''} style="width:100%;font-size:12px;padding:6px 10px;border:1px solid var(--border-strong);border-radius:6px;background:white;">
+            <option value="">— Select —</option>
+            ${f.options.map(o => `<option value="${escapeHtml(o)}">${escapeHtml(o)}</option>`).join('')}
+          </select>
+        </div>`;
+      }
+      if (f.type === 'textarea') {
+        return `<div style="margin-bottom:12px;">
+          <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.04em;color:var(--text-dim);font-weight:700;margin-bottom:4px;">${escapeHtml(f.label)}</div>
+          <textarea ${disabled ? 'disabled' : ''} placeholder="${escapeHtml(f.placeholder || '')}" style="width:100%;min-height:60px;font-family:'Open Sans',sans-serif;font-size:12px;padding:8px 10px;border:1px solid var(--border-strong);border-radius:6px;background:white;resize:vertical;box-sizing:border-box;"></textarea>
+        </div>`;
+      }
+      // text
+      return `<div style="margin-bottom:12px;">
+        <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.04em;color:var(--text-dim);font-weight:700;margin-bottom:4px;">${escapeHtml(f.label)}</div>
+        <input type="text" ${disabled ? 'disabled' : ''} placeholder="${escapeHtml(f.placeholder || '')}" style="width:100%;font-size:12px;padding:6px 10px;border:1px solid var(--border-strong);border-radius:6px;background:white;font-family:'JetBrains Mono',monospace;box-sizing:border-box;">
+      </div>`;
+    }).join('');
+    const footer = disabled
+      ? `<div style="font-size:11px;color:var(--text-dim);margin-top:4px;">${it.completed ? 'This task is completed — form is read-only.' : !it.assignee ? 'Claim this task first to fill in the form.' : 'Only the assignee can complete this task.'}</div>`
+      : `<div style="display:flex;gap:8px;margin-top:12px;">
+          <button class="btn primary" onclick="completeTask('${escapeHtml(it.id)}')">Complete task</button>
+          <button class="btn ghost" onclick="closeDetail()">Cancel</button>
+        </div>`;
+    body = `${docBanner('Forms are mocked.', "Fields shown here are illustrative and don't validate or persist — they demonstrate the surface, not the runtime.", 'task-form')}
+      <div class="panel-block">
+        ${panelHeading('Form', null)}
+        ${fieldsHtml}
+        ${footer}
+      </div>`;
+  } else if (active === 'History') {
+    const events = [];
+    events.push({ at: it.createdAt || 'earlier', kind: 'created', label: `Task <strong>created</strong> from <a style="color:var(--blue-500);cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:11px;" onclick="openDetail('instance','${escapeHtml(it.source.instanceId)}')">${escapeHtml(it.source.instanceId)}</a> · ${escapeHtml(it.source.definitionName)}` });
+    if (it.assignee) {
+      events.push({ at: 'after creation', kind: 'claimed', label: `Claimed by <strong>${escapeHtml(it.assignee.displayName)}</strong>${it.assignee.userId === 'me' ? ' (you)' : ''}` });
+    }
+    if (it.completed) {
+      events.push({ at: 'just now', kind: 'completed', label: 'Task <strong>completed</strong>', bad: false });
+    }
+    const rows = events.map(e => `<div class="tl-row">
+      <div class="when">${escapeHtml(e.at)}</div>
+      <div class="dot" aria-hidden="true"></div>
+      <div class="lbl">${e.label}</div>
+    </div>`).join('');
+    body = `<div class="panel-block">
+      ${panelHeading('History', null)}
+      <div class="timeline">${rows}</div>
+    </div>`;
+  }
+
+  return [head, tabsHtml, body];
 }
 
 // ============================================================
