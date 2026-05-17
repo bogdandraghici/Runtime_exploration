@@ -38,15 +38,16 @@ The IA restructure (workflow → URL segment) was discovered mid-implementation 
 
 ## Tier 2 — Medium signal
 
-### 5. Process Instance detail tabs are incomplete
-**Spec:** §5 — eight tabs: Variables, Tokens, Subprocesses, Exceptions, Workflows, Trigger, Notifications, Audit Log.
-**Prototype state:** four to six tabs: Overview, Variables, Activity tree, AI runs, [Incidents if any], Audit.
-**Missing pieces:**
-- **5a.** Subprocesses — Activity tree shows "No subprocesses for this instance" (line 3134); mock data has no sub-process tree (only `spawnedBy` in the other direction).
-- **5b.** Trigger tab — initiator info not surfaced.
-- **5c.** Notifications tab — outgoing notifications surface absent.
-- **5d.** Token detail — Activity tree mentions tokens but doesn't surface `state` (ACTIVE/ON_HOLD/etc.), `nodesActionStates[]` per-node history, or `backSeq` navigation.
-- **5e.** Variables edit affordance gated on `wks_process_instance_variables_edit` — variables are read-only.
+### 5. Process Instance detail tabs are incomplete  ✅ **DONE**
+**Spec:** §5 — eight tabs: Variables, Tokens, Subprocesses, Exceptions, Workflows, Trigger, Notifications, Audit.
+**Resolution:** the redesign collapsed the 8 starter tabs into 6 (Overview · Variables · Activity tree · AI runs · Incidents · Audit). Closing the remaining gaps without expanding the IA:
+- **5a.** Subprocesses ✅ — `subprocesses[]` added to representative mock instances + new `inst_doc_scan` grandchild; `renderActivityTree` now renders a recursive subprocess tree under the existing "Subprocesses" section. Rows are click-through to child instance detail. Recursion is guarded by a `seen` set so a cycle terminates cleanly.
+- **5b.** Trigger initiator ✅ — `initiator: { kind, triggerId?, triggerName?, parentId?, userId?, when? }` added to mock instances. Overview gains a `Trigger` KV row with kind icon (manual/cron/webhook/process/uiflow) and a linkable trigger or parent instance reference. `renderInitiator` prefers `triggerName` as the visible label when present (so a uiflow initiator with a friendly name reads "UI Flow · Onboarding chat" not the raw parent id). Unmapped kinds render as "Unknown". Trigger tab not reintroduced — folded into Overview to preserve the 6-tab IA.
+- **5c.** Notifications ✅ — `notifications[]` (channel, target, subject, status) added. `renderAuditTimeline` interleaves lifecycle events + notifications sorted by `atSortable` (minutes ago), with envelope dot for sent and red `!` dot for failed. Both lifecycle and notif dots carry `aria-hidden="true"`. Audit banner updated to call out notifications. Notifications tab not reintroduced — folded into Audit.
+- **5d.** Token detail ✅ — `tokens[]` added (id, name, state, stateDesc, currentNode, nodesActionStates[], backSeq?). Each token in Active tokens is an expandable row; expansion reveals raw state pill (with `data-tip` for stateDesc), back-seq chip when present, and a node-by-node action history table. `STATE.expandedTokens` resets on detail close. Chevron + glyph are `aria-hidden`.
+- **5e.** Variables edit ✅ — `STATE.variableEdits` overlay + per-row pencil affordance + new `.app-modal` scaffold (centered, Esc + scrim close, focus restored to opener). Save persists in-session, edited values display with an `edited` badge, modal exposes a "Revert to original" button when the row carries an edit. Pencil button uses `data-*` attributes + `this.dataset` to avoid JS-string injection. Permission is hard-coded as granted with a doc banner that names `wks_process_instance_variables_edit`.
+
+The 6-tab IA survives intact; the new `.app-modal` scaffold is available for any future modal needs.
 
 ### 6. Trigger and Task detail panels are stubs
 **Spec:** §8 — Triggers and Task Manager are first-class surroundings; tasks come from Process Instances reaching human-task nodes.
