@@ -1662,36 +1662,42 @@ const MOCK_DATA = {
       subprocesses: [
         { id: 'inst_19f3d4', definitionName: 'KYC review', type: 'process', status: 'failed', atStep: 'Document upload · 3 incidents' },
         { id: 'inst_91ab23', definitionName: 'Email verification', type: 'process', status: 'completed', atStep: 'Done' },
-      ] },
+      ],
+      initiator: { kind: 'manual', userId: 'u_4419', when: '1m ago' } },
     { id: 'inst_19f3d4', type: 'process', definitionName: 'KYC review', status: 'failed', rawStatus: 'FINISHED_WITH_ERROR', rawDesc: 'raised exception during execution',
       buildTag: 'v1.4.2', atStep: 'Document upload · 3 incidents', startedAt: '3m ago',
       spawnedBy: { type: 'uiflow', id: 'sess_a82c91' }, activeIncidentCount: 3,
       variables: { applicant: 'u_4419', doc_type: 'passport', risk_score: 0.42 },
       subprocesses: [
         { id: 'inst_doc_scan', definitionName: 'Document scan', type: 'process', status: 'failed', atStep: 'OCR · halted' },
-      ] },
+      ],
+      initiator: { kind: 'uiflow', triggerId: null, triggerName: 'Onboarding chat', parentId: 'sess_a82c91', when: '3m ago' } },
     { id: 'inst_55a1c0', type: 'process', definitionName: 'Loan application', status: 'waiting', rawStatus: 'ON_HOLD', rawDesc: 'paused awaiting input',
       buildTag: 'v1.4.2', atStep: 'Manager approval · awaiting task', startedAt: '12m ago',
-      variables: { applicant: 'u_5512', amount: 42000, currency: 'USD' } },
+      variables: { applicant: 'u_5512', amount: 42000, currency: 'USD' },
+      initiator: { kind: 'webhook', triggerId: 'webhook_loans_api', triggerName: 'Loans API webhook', when: '12m ago' } },
     { id: 'sess_b34f0e', type: 'uiflow', definitionName: 'Support chat', status: 'completed', rawStatus: 'completed', rawDesc: 'session ended normally',
       buildTag: 'v1.4.2', atStep: 'Resolved · 12 turns', startedAt: '28m ago',
       variables: { topic: 'billing', satisfaction: 5, turns: 12 } },
     { id: 'inst_7c20fa', type: 'process', definitionName: 'Document classifier', status: 'running', rawStatus: 'STARTED', rawDesc: 'executing',
       buildTag: 'v1.4.1', atStep: 'AI scoring · 2 tokens active', startedAt: '31m ago',
-      variables: { batch_id: 'b_9921', doc_count: 14 } },
+      variables: { batch_id: 'b_9921', doc_count: 14 },
+      initiator: { kind: 'webhook', triggerId: 'webhook_stripe', triggerName: 'Stripe webhook', when: '31m ago' } },
     { id: 'inst_a01b3e', type: 'process', definitionName: 'Nightly retention sweep', status: 'terminated', rawStatus: 'ABORTED', rawDesc: 'manually terminated',
       buildTag: 'v1.4.1', atStep: 'Manually aborted by ops', startedAt: '2h ago',
       variables: { sweep_id: 's_2031', processed: 412 },
       subprocesses: [
         { id: 'inst_sweep_b1', definitionName: 'Retention batch · users', type: 'process', status: 'terminated', atStep: 'aborted at parent' },
         { id: 'inst_sweep_b2', definitionName: 'Retention batch · logs', type: 'process', status: 'terminated', atStep: 'aborted at parent' },
-      ] },
+      ],
+      initiator: { kind: 'cron', triggerId: 'cron_retention', triggerName: 'Nightly retention sweep', when: '2h ago' } },
     { id: 'sess_c12d40', type: 'uiflow', definitionName: 'Application form', status: 'running', rawStatus: 'active', rawDesc: 'session in progress',
       buildTag: 'v1.4.2', atStep: 'Step 5 / 8', startedAt: '45m ago',
       variables: { applicant: 'u_8830', form_id: 'f_loan' } },
     { id: 'inst_91ab23', type: 'process', definitionName: 'Email verification', status: 'completed', rawStatus: 'FINISHED', rawDesc: 'completed successfully',
       buildTag: 'v1.4.2', atStep: 'Done', startedAt: '1h ago',
-      variables: { email: 'jane@example.com' } },
+      variables: { email: 'jane@example.com' },
+      initiator: { kind: 'process', parentId: 'sess_a82c91', when: '1h ago' } },
     { id: 'inst_b73e1c', type: 'process', definitionName: 'Payment retry', status: 'failed', rawStatus: 'FAILED', rawDesc: 'unrecoverable failure',
       buildTag: 'v1.4.2', atStep: 'Validation error', startedAt: '2h ago',
       variables: { txn: 't_4029', amount: 199.99, attempts: 3 } },
@@ -1716,15 +1722,18 @@ const MOCK_DATA = {
     { id: 'inst_doc_scan', type: 'process', definitionName: 'Document scan', status: 'failed', rawStatus: 'FINISHED_WITH_ERROR', rawDesc: 'subprocess halted',
       buildTag: 'v1.4.2', atStep: 'OCR · halted', startedAt: '3m ago',
       spawnedBy: { type: 'process', id: 'inst_19f3d4' },
-      variables: { doc_id: 'd_9981', mime: 'application/pdf' } },
+      variables: { doc_id: 'd_9981', mime: 'application/pdf' },
+      initiator: { kind: 'process', parentId: 'inst_19f3d4', when: '3m ago' } },
     { id: 'inst_sweep_b1', type: 'process', definitionName: 'Retention batch · users', status: 'terminated', rawStatus: 'ABORTED', rawDesc: 'aborted with parent',
       buildTag: 'v1.4.1', atStep: 'aborted at parent', startedAt: '2h ago',
       spawnedBy: { type: 'process', id: 'inst_a01b3e' },
-      variables: { batch_id: 's_2031_users', processed: 218 } },
+      variables: { batch_id: 's_2031_users', processed: 218 },
+      initiator: { kind: 'process', parentId: 'inst_a01b3e', when: '2h ago' } },
     { id: 'inst_sweep_b2', type: 'process', definitionName: 'Retention batch · logs', status: 'terminated', rawStatus: 'ABORTED', rawDesc: 'aborted with parent',
       buildTag: 'v1.4.1', atStep: 'aborted at parent', startedAt: '2h ago',
       spawnedBy: { type: 'process', id: 'inst_a01b3e' },
-      variables: { batch_id: 's_2031_logs', processed: 194 } },
+      variables: { batch_id: 's_2031_logs', processed: 194 },
+      initiator: { kind: 'process', parentId: 'inst_a01b3e', when: '2h ago' } },
   ],
   incidents: [
     { id: 'inc_001', stage: 'mid-execution', severity: 'critical', status: 'open',
@@ -4025,6 +4034,28 @@ function renderDetail() {
   document.getElementById('detailBody').innerHTML = body;
 }
 
+function renderInitiator(init) {
+  if (!init) return '<span style="color:var(--text-muted)">—</span>';
+  const kindLabels = { manual: 'Manual', cron: 'Cron', webhook: 'Webhook', process: 'Process', uiflow: 'UI Flow' };
+  const kindIcons = { manual: '👤', cron: '⏱', webhook: '↘', process: '▸', uiflow: '◆' };
+  const label = kindLabels[init.kind] || init.kind;
+  const icon = kindIcons[init.kind] || '·';
+  let body = '';
+  if (init.triggerId && init.triggerName) {
+    body = `<a style="color:var(--blue-500);cursor:pointer;" onclick="openDetail('trigger','${escapeHtml(init.triggerId)}')">${escapeHtml(init.triggerName)}</a>`;
+  } else if (init.parentId) {
+    body = `<a style="color:var(--blue-500);cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:11px;" onclick="openDetail('instance','${escapeHtml(init.parentId)}')">${escapeHtml(init.parentId)}</a>`;
+  } else if (init.userId) {
+    body = `<code style="font-family:'JetBrains Mono',monospace;font-size:11px;">${escapeHtml(init.userId)}</code>`;
+  } else if (init.triggerName) {
+    body = escapeHtml(init.triggerName);
+  } else {
+    body = '<span style="color:var(--text-muted)">—</span>';
+  }
+  const when = init.when ? `<span style="color:var(--text-dim);font-size:11px;margin-left:6px;">${escapeHtml(init.when)}</span>` : '';
+  return `<span aria-hidden="true" style="display:inline-block;width:14px;color:var(--text-dim);">${icon}</span><strong>${escapeHtml(label)}</strong> · ${body}${when}`;
+}
+
 function renderInstanceDetail(it, tabIdx) {
   // Tab structure
   const incidentsForThis = MOCK_DATA.incidents.filter(i => i.sourceEntity.kind === 'instance' && i.sourceEntity.id === it.id);
@@ -4076,8 +4107,9 @@ function renderInstanceDetail(it, tabIdx) {
           <span>Updated</span><span>just now</span>
           <span>Definition</span><span>${escapeHtml(it.definitionName)}</span>
           <span>Build at start</span><span>${escapeHtml(it.buildTag)} (committed)</span>
-          <span>Spawned by</span><span>${it.spawnedBy ? `<a style="color:var(--blue-500);cursor:pointer" onclick="openDetail('instance','${it.spawnedBy.id}')">${escapeHtml(it.spawnedBy.id)}</a>` : '<span style="color:var(--text-muted)">—</span>'}</span>
-          <span>Spawned</span><span>${spawnedProcs.length ? spawnedProcs.map(p => `<a style="color:var(--blue-500);cursor:pointer" onclick="openDetail('instance','${p.id}')">${escapeHtml(p.id)}</a>`).join(', ') : '<span style="color:var(--text-muted)">—</span>'}</span>
+          <span>Trigger</span><span>${renderInitiator(it.initiator)}</span>
+          <span>Spawned by</span><span>${it.spawnedBy ? `<a style="color:var(--blue-500);cursor:pointer" onclick="openDetail('instance','${escapeHtml(it.spawnedBy.id)}')">${escapeHtml(it.spawnedBy.id)}</a>` : '<span style="color:var(--text-muted)">—</span>'}</span>
+          <span>Spawned</span><span>${spawnedProcs.length ? spawnedProcs.map(p => `<a style="color:var(--blue-500);cursor:pointer" onclick="openDetail('instance','${escapeHtml(p.id)}')">${escapeHtml(p.id)}</a>`).join(', ') : '<span style="color:var(--text-muted)">—</span>'}</span>
         </div>
       </div>
     `;
