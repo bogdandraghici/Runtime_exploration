@@ -2057,12 +2057,20 @@ const MOCK_DATA = {
     },
   },
   triggers: [
-    { id: 'cron_retention', name: 'Nightly retention sweep', type: 'cron', schedule: '0 2 * * *', spawns: 'retention_v2', lastFire: '14:02 today', status: 'active', errorCount24h: 0 },
-    { id: 'cron_kpi', name: 'Hourly KPI rollup', type: 'cron', schedule: '0 * * * *', spawns: 'kpi_rollup', lastFire: '15:00 today', status: 'active', errorCount24h: 0 },
-    { id: 'cron_reconcile', name: 'Quarterly reconciliation', type: 'cron', schedule: '0 0 1 */3 *', spawns: 'reconcile', lastFire: 'Apr 1 02:00', status: 'paused', errorCount24h: 0 },
-    { id: 'cron_cleanup', name: 'Cleanup logs', type: 'cron', schedule: '30 3 * * *', spawns: 'cleanup', lastFire: '03:30 today', status: 'active', errorCount24h: 0 },
-    { id: 'webhook_sf_sync', name: 'Salesforce sync', type: 'webhook', schedule: 'on event', spawns: 'sf_sync', lastFire: '22m ago', status: 'erroring', errorCount24h: 1 },
-    { id: 'webhook_stripe', name: 'Stripe webhook', type: 'webhook', schedule: 'on event', spawns: 'stripe_handler', lastFire: '5m ago', status: 'active', errorCount24h: 0 },
+    { id: 'cron_retention', name: 'Nightly retention sweep', type: 'cron', schedule: '0 2 * * *', spawns: 'retention_v2', spawnsDefinitionId: 'def_retention_v2', lastFire: '14:02 today', status: 'active', errorCount24h: 0,
+      audit: { createdBy: 'alice', createdDate: '92d ago', modifiedBy: 'alice', modifiedDate: '92d ago' } },
+    { id: 'cron_kpi', name: 'Hourly KPI rollup', type: 'cron', schedule: '0 * * * *', spawns: 'kpi_rollup', spawnsDefinitionId: 'def_kpi_rollup', lastFire: '15:00 today', status: 'active', errorCount24h: 0,
+      audit: { createdBy: 'bob', createdDate: '180d ago', modifiedBy: 'bob', modifiedDate: '14d ago' } },
+    { id: 'cron_reconcile', name: 'Quarterly reconciliation', type: 'cron', schedule: '0 0 1 */3 *', spawns: 'reconcile', spawnsDefinitionId: 'def_reconcile', lastFire: 'Apr 1 02:00', status: 'paused', errorCount24h: 0,
+      audit: { createdBy: 'carlos', createdDate: '270d ago', modifiedBy: 'alice', modifiedDate: '45d ago' } },
+    { id: 'cron_cleanup', name: 'Cleanup logs', type: 'cron', schedule: '30 3 * * *', spawns: 'cleanup', spawnsDefinitionId: 'def_cleanup', lastFire: '03:30 today', status: 'active', errorCount24h: 0,
+      audit: { createdBy: 'alice', createdDate: '120d ago', modifiedBy: 'alice', modifiedDate: '60d ago' } },
+    { id: 'webhook_sf_sync', name: 'Salesforce sync', type: 'webhook', schedule: 'on event', spawns: 'sf_sync', spawnsDefinitionId: 'def_sf_sync', lastFire: '22m ago', status: 'erroring', errorCount24h: 1,
+      audit: { createdBy: 'bob', createdDate: '210d ago', modifiedBy: 'carlos', modifiedDate: '3d ago' } },
+    { id: 'webhook_stripe', name: 'Stripe webhook', type: 'webhook', schedule: 'on event', spawns: 'stripe_handler', spawnsDefinitionId: 'def_stripe_handler', lastFire: '5m ago', status: 'active', errorCount24h: 0,
+      audit: { createdBy: 'alice', createdDate: '60d ago', modifiedBy: 'alice', modifiedDate: '60d ago' } },
+    { id: 'webhook_loans_api', name: 'Loans API webhook', type: 'webhook', schedule: 'on event', spawns: 'loan_application', spawnsDefinitionId: 'def_loan_application', lastFire: '31m ago', status: 'erroring', errorCount24h: 3,
+      audit: { createdBy: 'bob', createdDate: '40d ago', modifiedBy: 'bob', modifiedDate: '12m ago' } },
   ],
   triggerFires: [
     { id: 'fire_001', triggerId: 'cron_retention', triggerName: 'Nightly retention sweep', triggerType: 'cron', firedAt: '14:02 today', outcome: 'success', spawnedInstanceId: 'inst_a01b3e' },
@@ -5074,8 +5082,100 @@ function renderAiNodeDetail(it, tabIdx) {
 
   return [head, tabsHtml, body];
 }
-function renderTriggerDetail(it, tab) {
-  return [`<div class="topline"><span class="crumb">Trigger</span><span style="font-family:'JetBrains Mono',monospace">${escapeHtml(it.id)}</span><button class="x" onclick="closeDetail()">×</button></div><h3>${escapeHtml(it.name)}</h3><div class="sub">${escapeHtml(it.type)} · ${escapeHtml(it.status)}</div>`, '', '<div class="empty"><p>Detail content coming in Task 8.</p></div>'];
+function renderTriggerDetail(it, tabIdx) {
+  const fires = MOCK_DATA.triggerFires.filter(f => f.triggerId === it.id);
+  const failures = fires.filter(f => f.outcome === 'failed');
+  const baseTabs = ['Configuration', 'Recent fires'];
+  if (failures.length > 0) baseTabs.push('Failures');
+  const tabs = baseTabs;
+
+  const kindIcons = { cron: '⏱', webhook: '↘', event: '✦' };
+  const kindLabels = { cron: 'Cron', webhook: 'Webhook', event: 'Event' };
+  const statusPill = (status) => {
+    const map = { active: ['var(--green-50)', 'var(--green-700)'], paused: ['var(--bg-alt)', 'var(--text-muted)'], erroring: ['var(--red-50)', 'var(--red-700)'] };
+    const [bg, fg] = map[status] || map.active;
+    return `<span style="display:inline-block;padding:1px 8px;border-radius:9999px;background:${bg};color:${fg};font-size:11px;font-weight:600;">${escapeHtml(status)}</span>`;
+  };
+
+  const head = `
+    <div class="topline">
+      <span class="crumb">Trigger details</span>
+      <span style="color:var(--border-strong)">/</span>
+      <span style="font-family:'JetBrains Mono',monospace">${escapeHtml(it.id)}</span>
+      <button class="x" onclick="closeDetail()">×</button>
+    </div>
+    <h3>${escapeHtml(it.name)}</h3>
+    <div class="sub"><span aria-hidden="true" style="color:var(--text-dim);margin-right:4px;">${kindIcons[it.type] || '·'}</span>${escapeHtml(kindLabels[it.type] || it.type)} · ${statusPill(it.status)}${it.lastFire ? ` · <span style="color:var(--text-dim);font-size:11px;">last fire ${escapeHtml(it.lastFire)}</span>` : ''}</div>`;
+
+  const tabsHtml = tabs.map((t, i) => {
+    let count = '';
+    if (t === 'Recent fires' && fires.length > 0) count = `<span class="count">${fires.length}</span>`;
+    if (t === 'Failures' && failures.length > 0) count = `<span class="count alert">${failures.length}</span>`;
+    return `<button class="tab ${i === tabIdx ? 'active' : ''}" onclick="STATE.detail.tab = ${i}; renderDetail();">${t}${count}</button>`;
+  }).join('');
+
+  const active = tabs[tabIdx];
+  let body = '';
+  if (active === 'Configuration') {
+    const audit = it.audit || {};
+    body = `${docBanner("What's a trigger?", "Something that starts a process — on a schedule (cron), an incoming event (webhook), or an internal signal. Spawned instances appear in Instances.", 'trigger-config')}
+      <div class="panel-block">
+        ${panelHeading('Configuration', 'Trigger')}
+        <div class="kv">
+          <span>Type</span><span><span aria-hidden="true" style="color:var(--text-dim);margin-right:4px;">${kindIcons[it.type] || '·'}</span>${escapeHtml(kindLabels[it.type] || it.type)}</span>
+          <span>Schedule</span><span>${it.type === 'cron' ? `<code style="font-family:'JetBrains Mono',monospace;font-size:11px;">${escapeHtml(it.schedule)}</code>` : escapeHtml(it.schedule)}</span>
+          <span>Spawns</span><span>${escapeHtml(it.spawns)} <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-muted);">${escapeHtml(it.spawnsDefinitionId || '')}</span></span>
+          <span>Last fire</span><span>${escapeHtml(it.lastFire || '—')}</span>
+          <span>Status</span><span>${statusPill(it.status)}</span>
+          <span>Errors (24h)</span><span style="${it.errorCount24h > 0 ? 'color:var(--red-700);font-weight:600;' : ''}">${it.errorCount24h}</span>
+          <span>Created</span><span>${escapeHtml(audit.createdBy || '—')} · ${escapeHtml(audit.createdDate || '—')}</span>
+          <span>Modified</span><span>${escapeHtml(audit.modifiedBy || '—')} · ${escapeHtml(audit.modifiedDate || '—')}</span>
+        </div>
+      </div>`;
+  } else if (active === 'Recent fires') {
+    body = renderTriggerFiresList(fires, 'all');
+  } else if (active === 'Failures') {
+    body = renderTriggerFiresList(failures, 'failed');
+  }
+
+  return [head, tabsHtml, body];
+}
+
+function renderTriggerFiresList(fires, mode) {
+  const heading = mode === 'failed' ? 'Failed fires' : 'Recent fires';
+  if (fires.length === 0) {
+    return `<div class="panel-block">
+      ${panelHeading(heading, null)}
+      <div style="font-size:11px;color:var(--text-dim);padding:8px 10px;">${mode === 'failed' ? 'No failures recorded for this trigger.' : 'No fires recorded for this trigger yet.'}</div>
+    </div>`;
+  }
+  const rows = fires.map(f => {
+    const incident = mode === 'failed'
+      ? MOCK_DATA.incidents.find(i => i.sourceEntity && i.sourceEntity.kind === 'trigger' && i.sourceEntity.id === f.triggerId)
+      : null;
+    const tail = f.outcome === 'success'
+      ? (f.spawnedInstanceId ? `<a style="color:var(--blue-500);cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:11px;" onclick="openDetail('instance','${escapeHtml(f.spawnedInstanceId)}')">${escapeHtml(f.spawnedInstanceId)}</a>` : '<span style="color:var(--text-muted)">—</span>')
+      : `<span style="color:var(--red-700);">${escapeHtml(f.failureReason || 'failed')}</span>${incident ? ` · <a style="color:var(--blue-500);cursor:pointer;font-size:11px;font-weight:600;" onclick="openDetail('incident','${escapeHtml(incident.id)}')">Open incident →</a>` : ''}`;
+    const outcomeLabel = f.outcome === 'success'
+      ? '<span style="color:var(--green-700);font-weight:600;font-size:11px;">Success</span>'
+      : '<span style="color:var(--red-700);font-weight:600;font-size:11px;">Failed</span>';
+    return `<div class="fire-row" style="display:grid;grid-template-columns:90px 80px 1fr;gap:10px;padding:8px 10px;border-bottom:1px solid var(--border);font-size:12px;align-items:center;">
+      <span style="color:var(--text-dim);font-variant-numeric:tabular-nums;">${escapeHtml(f.firedAt)}</span>
+      <span>${outcomeLabel}</span>
+      <span>${tail}</span>
+    </div>`;
+  }).join('');
+  return `<div class="panel-block">
+    ${panelHeading(heading, null)}
+    <div style="border:1px solid var(--border);border-radius:6px;overflow:hidden;background:white;">
+      <div class="fire-row head" style="display:grid;grid-template-columns:90px 80px 1fr;gap:10px;padding:6px 10px;background:var(--bg-alt);font-size:10px;text-transform:uppercase;letter-spacing:0.04em;color:var(--text-dim);font-weight:700;border-bottom:1px solid var(--border);">
+        <span>When</span>
+        <span>Outcome</span>
+        <span>${mode === 'failed' ? 'Reason' : 'Spawned'}</span>
+      </div>
+      ${rows}
+    </div>
+  </div>`;
 }
 function renderTaskDetail(it, tab) {
   return [`<div class="topline"><span class="crumb">Task</span><span style="font-family:'JetBrains Mono',monospace">${escapeHtml(it.id)}</span><button class="x" onclick="closeDetail()">×</button></div><h3>${escapeHtml(it.title)}</h3><div class="sub">From ${escapeHtml(it.source.definitionName)} · ${escapeHtml(it.source.atStep)}</div>`, '', '<div class="empty"><p>Detail content coming in Task 8.</p></div>'];
