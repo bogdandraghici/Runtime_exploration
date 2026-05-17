@@ -819,6 +819,8 @@ a { color: inherit; }
   color: var(--text-muted);
   border-radius: var(--flowx-radius-4);
 }
+.pill.clickable { cursor: pointer; color: var(--blue-700); border-color: var(--blue-100); background: var(--blue-50); }
+.pill.clickable:hover { background: var(--bg); border-color: var(--blue-500); color: var(--blue-700); }
 
 /* Detail panel */
 .detail-overlay {
@@ -946,6 +948,45 @@ a { color: inherit; }
   display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
 }
 .detail-head .actions { display: flex; gap: 8px; margin-top: 12px; }
+.detail-head .source-target {
+  display: flex; align-items: center; gap: 10px;
+  margin-top: 12px;
+  padding: 10px 12px;
+  background: var(--bg-alt);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 100ms ease, border-color 100ms ease;
+}
+.detail-head .source-target:hover { background: var(--bg); border-color: var(--blue-500); }
+.detail-head .source-target .ic {
+  width: 28px; height: 28px;
+  border-radius: var(--flowx-radius-6);
+  display: inline-flex; align-items: center; justify-content: center;
+  color: white; font-weight: 700; font-size: 13px;
+  flex-shrink: 0;
+}
+.detail-head .source-target .ic.proc { background: var(--green-500); }
+.detail-head .source-target .ic.flow { background: var(--purple-500); }
+.detail-head .source-target .ic.trg  { background: var(--orange-500); }
+.detail-head .source-target .ic.scr  { background: var(--red-500); }
+.detail-head .source-target .ic.wf   { background: var(--yellow-700); }
+.detail-head .source-target .label { flex: 1; display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.detail-head .source-target .label .k {
+  font-size: 10px; color: var(--text-dim);
+  text-transform: uppercase; letter-spacing: 0.04em; font-weight: 700;
+}
+.detail-head .source-target .label .v {
+  font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text); font-weight: 600;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.detail-head .source-target .label .v small {
+  color: var(--text-muted); font-family: 'Open Sans', sans-serif; font-weight: 400;
+  margin-left: 6px; font-size: 11px;
+}
+.detail-head .source-target .arr {
+  color: var(--blue-500); font-weight: 600; font-size: 12px; white-space: nowrap;
+}
 .detail-tabs {
   display: flex;
   padding: 0 18px;
@@ -1494,6 +1535,10 @@ a { color: inherit; }
 .related-card .ic.proc { background: var(--green-500); }
 .related-card .ic.flow { background: var(--purple-500); }
 .related-card .ic.bld { background: var(--blue-500); }
+.related-card .ic.trg { background: var(--orange-500); }
+.related-card .ic.scr { background: var(--red-500); }
+.related-card .ic.wf  { background: var(--yellow-700); }
+.related-card .ic.task { background: var(--text-muted); }
 .related-card .name { flex: 1; font-size: 12px; color: var(--text); }
 .related-card .name small { display: block; font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text-muted); }
 .related-card .arr { color: var(--text-dim); }
@@ -2067,7 +2112,7 @@ const MOCK_DATA = {
   incidents: [
     { id: 'inc_001', stage: 'mid-execution', severity: 'critical', status: 'open',
       title: 'Process failed — token stuck at Document upload',
-      sublineParts: ['{pill}inst_19f3d4', 'KYC review', '{code}NullPointerException', 'at {code}DocumentService.scan()', '3 incidents on this instance', 'spawned by {link}sess_a82c91'],
+      sublineParts: ['{pill:instance:inst_19f3d4}inst_19f3d4', 'KYC review', '{code}NullPointerException', 'at {code}DocumentService.scan()', '3 incidents on this instance', 'spawned by {link:instance:sess_a82c91}sess_a82c91'],
       sourceEntity: { kind: 'instance', id: 'inst_19f3d4' },
       buildTag: 'v1.4.2', when: '3m ago',
       rootCause: { exception: 'NullPointerException', location: 'DocumentService.scan()', line: 142, node: 'Document upload', tokenId: 'tok_p3', firstRaised: '3 min ago', recurrence: 3 },
@@ -2089,9 +2134,11 @@ const MOCK_DATA = {
       title: 'Coherence scorer breached — Checkout / Reasoner',
       sublineParts: ['value **0.71**', 'threshold 0.72', '12 affected runs in last hour', 'first cross 18 min ago'],
       sourceEntity: { kind: 'scorer', id: 'sc_coherence_reasoner' },
+      sourceLink: { kind: 'aiNode', id: 'wf_checkout:Reasoner', label: 'Open in Live Evals' },
       buildTag: 'v1.4.2', when: '18m ago',
       rootCause: { scorer: 'Coherence', node: 'Reasoner (Checkout flow)', currentValue: 0.71, threshold: 0.72, affectedRuns: 12, firstRaised: '18m ago', recurrence: 12 },
       related: [
+        { kind: 'scr', name: 'Coherence on Reasoner', id: 'wf_checkout:Reasoner', meta: 'Checkout flow · value 0.71 / 0.72 · 12 runs' },
         { kind: 'bld', name: 'v1.4.2 — deployed 11m ago', id: 'b_v142', meta: 'regressed vs v1.4.1' },
       ],
       timeline: [
@@ -2101,11 +2148,12 @@ const MOCK_DATA = {
     },
     { id: 'inc_003', stage: 'trigger', severity: 'high', status: 'ack',
       title: 'Webhook validation failed — Salesforce sync',
-      sublineParts: ['{pill}trg_sf_sync', 'invalid signature', '1 of 14 attempts failed in last hour', 'last good fire 12 min ago'],
+      sublineParts: ['{pill:trigger:webhook_sf_sync}webhook_sf_sync', 'invalid signature', '1 of 14 attempts failed in last hour', 'last good fire 12 min ago'],
       sourceEntity: { kind: 'trigger', id: 'webhook_sf_sync' },
       buildTag: 'v1.4.2', when: '22m ago',
       rootCause: { trigger: 'Salesforce sync webhook', reason: 'invalid signature', recurrence: 1, firstRaised: '22m ago' },
       related: [
+        { kind: 'trg', name: 'Salesforce sync', id: 'webhook_sf_sync', meta: 'webhook · erroring · 1 error / 24h' },
         { kind: 'bld', name: 'v1.4.2', id: 'b_v142', meta: 'active' },
       ],
       timeline: [
@@ -2114,11 +2162,14 @@ const MOCK_DATA = {
     },
     { id: 'inc_004', stage: 'pre-start', severity: 'medium', status: 'open',
       title: 'Process refused to start — missing required variable',
-      sublineParts: ['Loan application', 'variable {code}customer_id not provided', '3 starts blocked in last 10 min', 'trigger {link}trg_loans_api'],
+      sublineParts: ['Loan application', 'variable {code}customer_id not provided', '3 starts blocked in last 10 min', 'trigger {link:trigger:webhook_loans_api}webhook_loans_api'],
       sourceEntity: { kind: 'trigger', id: 'webhook_loans_api' },
       buildTag: 'v1.4.2', when: '31m ago',
       rootCause: { definition: 'Loan application', missingVar: 'customer_id', blockedStarts: 3, firstRaised: '31m ago' },
-      related: [],
+      related: [
+        { kind: 'trg', name: 'Loans API webhook', id: 'webhook_loans_api', meta: 'webhook · erroring · 3 errors / 24h' },
+        { kind: 'bld', name: 'v1.4.2', id: 'b_v142', meta: 'active' },
+      ],
       timeline: [
         { when: '31m ago', kind: 'bad', label: 'First refused start — missing customer_id' },
       ],
@@ -2127,9 +2178,11 @@ const MOCK_DATA = {
       title: 'Toxicity scorer alert — Support chat / Responder',
       sublineParts: ['value 0.04 (threshold 0.03)', '2 affected runs', 'build comparison shows regression vs v1.4.1'],
       sourceEntity: { kind: 'scorer', id: 'sc_toxicity_responder' },
+      sourceLink: { kind: 'aiNode', id: 'wf_support:Responder', label: 'Open in Live Evals' },
       buildTag: 'v1.4.2', when: '42m ago',
       rootCause: { scorer: 'Toxicity', node: 'Responder (Support chat)', currentValue: 0.04, threshold: 0.03, affectedRuns: 2, firstRaised: '42m ago' },
       related: [
+        { kind: 'scr', name: 'Toxicity on Responder', id: 'wf_support:Responder', meta: 'Support chat · value 0.04 / 0.03 · 2 runs' },
         { kind: 'bld', name: 'v1.4.2', id: 'b_v142', meta: 'regressed vs v1.4.1' },
       ],
       timeline: [
@@ -2138,11 +2191,13 @@ const MOCK_DATA = {
     },
     { id: 'inc_006', stage: 'trigger', severity: 'low', status: 'resolved',
       title: 'Scheduled fire missed — Nightly retention sweep',
-      sublineParts: ['{pill}cron_retention', 'cron expression was invalid', 'skipped at 02:00 UTC · later fixed'],
+      sublineParts: ['{pill:trigger:cron_retention}cron_retention', 'cron expression was invalid', 'skipped at 02:00 UTC · later fixed'],
       sourceEntity: { kind: 'trigger', id: 'cron_retention' },
       buildTag: 'v1.4.2', when: '8h ago',
       rootCause: { trigger: 'Nightly retention sweep', reason: 'invalid cron expression', firstRaised: '8h ago' },
-      related: [],
+      related: [
+        { kind: 'trg', name: 'Nightly retention sweep', id: 'cron_retention', meta: 'cron · active · resolved' },
+      ],
       timeline: [
         { when: '8h ago', kind: 'bad', label: 'Cron fire skipped — expression invalid' },
         { when: '7h ago', kind: 'default', label: 'Expression corrected · auto-resolved' },
@@ -2150,20 +2205,26 @@ const MOCK_DATA = {
     },
     { id: 'inc_007', stage: 'pre-start', severity: 'medium', status: 'resolved',
       title: 'Failed start — Welcome email (SMTP config issue)',
-      sublineParts: ['{pill}inst_d5e6f7', 'SMTP credentials invalid', '12h ago'],
+      sublineParts: ['{pill:instance:inst_d5e6f7}inst_d5e6f7', 'SMTP credentials invalid', '12h ago'],
       sourceEntity: { kind: 'instance', id: 'inst_d5e6f7' },
       buildTag: 'v1.4.2', when: '12h ago',
       rootCause: { reason: 'SMTP credentials invalid', firstRaised: '12h ago' },
-      related: [],
+      related: [
+        { kind: 'proc', name: 'Welcome email', id: 'inst_d5e6f7', meta: 'failed at start' },
+        { kind: 'bld', name: 'v1.4.2', id: 'b_v142', meta: 'active' },
+      ],
       timeline: [],
     },
     { id: 'inc_008', stage: 'mid-execution', severity: 'high', status: 'resolved',
       title: 'Database connection timeout in Risk assessment',
-      sublineParts: ['{pill}inst_a5b6c7', 'PSQL timeout 30s', '14h ago · resolved 12h ago'],
+      sublineParts: ['{pill:instance:inst_a5b6c7}inst_a5b6c7', 'PSQL timeout 30s', '14h ago · resolved 12h ago'],
       sourceEntity: { kind: 'instance', id: 'inst_a5b6c7' },
       buildTag: 'v1.4.0-beta', when: '14h ago',
       rootCause: { exception: 'PSQLTimeoutException', recurrence: 1, firstRaised: '14h ago' },
-      related: [],
+      related: [
+        { kind: 'proc', name: 'Risk assessment', id: 'inst_a5b6c7', meta: 'running · recovered' },
+        { kind: 'bld', name: 'v1.4.0-beta', id: 'b_v140b', meta: 'beta branch' },
+      ],
       timeline: [],
     },
   ],
@@ -2738,16 +2799,30 @@ function md(s) {
   return out;
 }
 function inlineParts(parts) {
-  // Renders subline parts where some are tagged: {pill}xxx, {code}xxx, {mono}xxx, {link}xxx
+  // Renders subline parts. Tags: {pill}xxx, {code}xxx, {mono}xxx, {link}xxx — expanded
+  // anywhere in the part (not just at the start). pill and link accept an optional click
+  // target: {pill:detailKind:detailId}xxx — emits an openDetail() onclick (with
+  // stopPropagation so it doesn't bubble to the parent row).
+  // Why: prior `^\{...$` regex meant strings like 'spawned by {link}foo' rendered the
+  // literal '{link}' to the user — tags only worked on parts that *started* with one.
+  const tagRe = /\{(pill|code|mono|link)(?::([^:}]+):([^}]+))?\}([^\s{}]+)/g;
   return parts.map(p => {
-    const m = p.match(/^\{(pill|code|mono|link)\}(.+)$/);
-    if (!m) return md(p);
-    const kind = m[1], v = escapeHtml(m[2]);
-    if (kind === 'pill') return `<span class="pill">${v}</span>`;
-    if (kind === 'code') return `<code style="font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--bg);border:1px solid var(--border);padding:1px 5px;border-radius:4px;">${v}</code>`;
-    if (kind === 'mono') return `<code style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-muted);">${v}</code>`;
-    if (kind === 'link') return `<a style="color:var(--blue-500);font-weight:600;font-family:'JetBrains Mono',monospace;font-size:10px;text-decoration:none;cursor:pointer;">${v}</a>`;
-    return v;
+    let html = '';
+    let lastIndex = 0;
+    let m;
+    while ((m = tagRe.exec(p)) !== null) {
+      html += md(p.slice(lastIndex, m.index));
+      const kind = m[1], targetKind = m[2], targetId = m[3], v = escapeHtml(m[4]);
+      const clickable = (kind === 'pill' || kind === 'link') && targetKind && targetId;
+      const onclick = clickable ? ` onclick="event.stopPropagation(); openDetail('${escapeHtml(targetKind)}','${escapeHtml(targetId)}')"` : '';
+      if (kind === 'pill') html += `<span class="pill${clickable ? ' clickable' : ''}"${onclick}>${v}</span>`;
+      else if (kind === 'code') html += `<code style="font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--bg);border:1px solid var(--border);padding:1px 5px;border-radius:4px;">${v}</code>`;
+      else if (kind === 'mono') html += `<code style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-muted);">${v}</code>`;
+      else if (kind === 'link') html += `<a style="color:var(--blue-500);font-weight:600;font-family:'JetBrains Mono',monospace;font-size:10px;text-decoration:none;cursor:pointer;"${onclick}>${v}</a>`;
+      lastIndex = tagRe.lastIndex;
+    }
+    html += md(p.slice(lastIndex));
+    return html;
   }).join(' · ');
 }
 function statePill(state, rawState, rawDesc) {
@@ -3087,7 +3162,7 @@ function renderIncidents(root) {
       </div>
       <div class="filter-bar">
         <div class="pickr"><span>Severity</span><span class="v">Any</span></div>
-        <div class="pickr"><span>Status</span><span class="v">Open + Ack</span></div>
+        <div class="pickr"><span>Status</span><span class="v">Any</span></div>
         <div class="pickr"><span>Build</span><span class="v">Any</span></div>
         <div class="pickr"><span>Source</span><span class="v">Any</span></div>
         <div class="search"><input type="text" placeholder="Search…" oninput="STATE.filters.incidents.search = this.value; renderIncidents(document.getElementById('page'))"></div>
@@ -3490,6 +3565,37 @@ function jumpToBuildComparison(wfId) {
   location.hash = `#/live-evals/${wfId}/builds/${active.id}/compare/${prev.id}`;
 }
 
+// How a workflow's runs are distributed across builds in the current data.
+// A workflow normally runs on its activeBuild, but instances pinned to an older build at
+// start keep running there until they finish — so two builds can be live in parallel.
+// Returns rows sorted by count desc; isActive marks the row matching wf.activeBuild.
+function workflowBuildMix(wfId) {
+  const wf = MOCK_DATA.workflows.find(w => w.id === wfId);
+  if (!wf) return [];
+  const runs = MOCK_DATA.workflowRuns.filter(r => r.workflowId === wfId);
+  const byTag = new Map();
+  for (const r of runs) byTag.set(r.buildTag, (byTag.get(r.buildTag) || 0) + 1);
+  return [...byTag.entries()].map(([tag, count]) => {
+    const build = MOCK_DATA.builds.find(b => b.tag === tag);
+    return {
+      tag, count,
+      buildId: build ? build.id : null,
+      isActive: tag === wf.activeBuild,
+      isArchived: build ? build.isArchived : false,
+    };
+  }).sort((a, b) => b.count - a.count);
+}
+
+// Jump to comparison page with the active build vs a specific older build (the one
+// that actually has parallel runs of THIS workflow — not just any non-archived build).
+function jumpToParallelComparison(wfId, otherBuildId) {
+  const wf = MOCK_DATA.workflows.find(w => w.id === wfId);
+  if (!wf) return;
+  const active = MOCK_DATA.builds.find(b => b.tag === wf.activeBuild);
+  if (!active || !otherBuildId) return;
+  location.hash = `#/live-evals/${wfId}/builds/${active.id}/compare/${otherBuildId}`;
+}
+
 // Jump to comparison from a Build detail panel — picks the most-relevant workflow (one with runs on this build)
 function jumpToBuildComparisonFromBuild(buildId) {
   const b = MOCK_DATA.builds.find(x => x.id === buildId);
@@ -3571,16 +3677,21 @@ function timeWindowHours(tw) {
   return { '1h': 1, '24h': 24, '7d': 168 }[tw] || 24;
 }
 
-function generateScorerSeries(scorer, hoursWindow) {
-  // 30 evenly-spaced samples; oscillates around a baseline; if breached, regresses in the most-recent ~15% of the window
+function generateScorerSeries(scorer, hoursWindow, opts = {}) {
+  // 30 evenly-spaced samples; oscillates around a baseline. When `opts.baseline` is
+  // provided, the series uses that value (used by comparison charts to render the
+  // per-build line at the right level instead of around scorer.value). When breached and
+  // no override is given, the series regresses in the most-recent ~15% of the window.
   const points = 30;
-  const baseline = scorer.breached ? scorer.threshold + 0.10 : scorer.value;
+  const baseline = opts.baseline != null ? opts.baseline : (scorer.breached ? scorer.threshold + 0.10 : scorer.value);
+  const breachedDrop = opts.breachedDrop != null ? opts.breachedDrop : scorer.breached;
   const amplitude = scorer.threshold < 0.5 ? 0.005 : 0.025;
+  const phaseSeed = (opts.phaseKey || scorer.name || '').length;
   const series = [];
   for (let i = 0; i < points; i++) {
     const t = hoursWindow * (1 - i / (points - 1));
-    let v = baseline + Math.sin(i * 0.45 + (scorer.name.length || 0)) * amplitude;
-    if (scorer.breached && t < hoursWindow * 0.15) {
+    let v = baseline + Math.sin(i * 0.45 + phaseSeed) * amplitude;
+    if (breachedDrop && t < hoursWindow * 0.15) {
       const dropFactor = 1 - t / (hoursWindow * 0.15);
       const targetDrop = scorer.threshold < 0.5
         ? (scorer.value - baseline)
@@ -3592,8 +3703,21 @@ function generateScorerSeries(scorer, hoursWindow) {
   return series;
 }
 
+// HTML overlay label helper — pos:abs; CSS percentages anchor labels to chart features as
+// the SVG stretches. font-size in fixed CSS px stays decoupled from the SVG transform, so
+// text reads at 9–11px screen no matter how wide the chart grows.
+function chartLabel(leftPct, topPct, anchor, text, color, size, weight) {
+  const tx = anchor === 'right' ? '-100%' : anchor === 'center' ? '-50%' : '0';
+  return `<div style="position:absolute;left:${leftPct}%;top:${topPct}%;transform:translate(${tx},-50%);font-size:${size}px;color:${color};font-weight:${weight || 400};white-space:nowrap;line-height:1;pointer-events:none;">${escapeHtml(text)}</div>`;
+}
+
 function renderScorerChart(scorer, hoursWindow, builds) {
-  const W = 540, H = 96, padL = 36, padR = 60, padT = 12, padB = 18;
+  // Two-layer chart: SVG holds geometry (axes, lines, paths) and stretches to fill
+  // container width via aspect-ratio. HTML overlay holds text labels at fixed px size.
+  // Earlier attempts at SVG <text> with viewBox stretched glyphs (preserveAspectRatio=none)
+  // or grew them past the surrounding type (uniform scaling), so labels were lifted to
+  // HTML so the chart can span full width while text stays calibrated.
+  const W = 540, H = 110, padL = 36, padR = 64, padT = 14, padB = 20;
   const innerW = W - padL - padR;
   const innerH = H - padT - padB;
   const series = generateScorerSeries(scorer, hoursWindow);
@@ -3616,24 +3740,103 @@ function renderScorerChart(scorer, hoursWindow, builds) {
   const lineColor = scorer.breached ? 'var(--red-500)' : 'var(--green-500)';
   const fillColor = scorer.breached ? 'var(--red-50)' : 'var(--green-50)';
   const windowLabel = { 1: '1h', 24: '24h', 168: '7d' }[hoursWindow] || `${hoursWindow}h`;
+  const lastV = series[series.length - 1].v;
+  const lastX = x(series[series.length - 1].t);
+  const lastY = y(lastV);
+  const labelClash = Math.abs(lastY - thresholdY) < 12;
+  const lastLabelY = labelClash ? Math.max(padT + 8, thresholdY - 8) : lastY;
+  const pctX = (u) => (u / W * 100).toFixed(3);
+  const pctY = (u) => (u / H * 100).toFixed(3);
 
-  return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" style="display:block;width:100%;height:96px;">
-    <rect x="${padL}" y="${padT}" width="${innerW}" height="${innerH}" fill="var(--bg-alt)" rx="3" />
-    <text x="${padL - 4}" y="${y(yMax) + 3}" text-anchor="end" font-size="9" fill="var(--text-dim)">${yMax.toFixed(2)}</text>
-    <text x="${padL - 4}" y="${y(yMin) + 3}" text-anchor="end" font-size="9" fill="var(--text-dim)">${yMin.toFixed(2)}</text>
-    ${markers.map(m => `
-      <line x1="${m.x.toFixed(1)}" y1="${padT}" x2="${m.x.toFixed(1)}" y2="${padT + innerH}" stroke="${m.color}" stroke-width="1" stroke-dasharray="2 2" opacity="0.55" />
-      <text x="${m.x + 3}" y="${padT + 9}" font-size="8" fill="${m.color}" font-weight="700">${escapeHtml(m.label)}</text>
-    `).join('')}
-    <line x1="${padL}" y1="${thresholdY.toFixed(1)}" x2="${padL + innerW}" y2="${thresholdY.toFixed(1)}" stroke="var(--orange-500)" stroke-width="1" stroke-dasharray="3 3" />
-    <text x="${padL + innerW + 4}" y="${thresholdY + 3}" font-size="9" fill="var(--orange-700)" font-weight="600">thr ${scorer.threshold.toFixed(2)}</text>
-    <path d="${areaD}" fill="${fillColor}" opacity="0.6" />
-    <path d="${pathD}" fill="none" stroke="${lineColor}" stroke-width="1.5" />
-    <circle cx="${x(series[series.length-1].t).toFixed(1)}" cy="${y(series[series.length-1].v).toFixed(1)}" r="2.5" fill="${lineColor}" />
-    <text x="${padL}" y="${H - 4}" font-size="9" fill="var(--text-dim)">${windowLabel} ago</text>
-    <text x="${padL + innerW}" y="${H - 4}" text-anchor="end" font-size="9" fill="var(--text-dim)">now</text>
-    <text x="${padL + innerW + 4}" y="${y(series[series.length-1].v).toFixed(1)}" font-size="11" fill="${lineColor}" font-weight="700">${series[series.length-1].v.toFixed(2)}</text>
-  </svg>`;
+  return `
+    <div style="position:relative;width:100%;aspect-ratio: ${W} / ${H};">
+      <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" style="display:block;width:100%;height:100%;">
+        <rect x="${padL}" y="${padT}" width="${innerW}" height="${innerH}" fill="var(--bg-alt)" rx="3" />
+        ${markers.map(m => `<line x1="${m.x.toFixed(1)}" y1="${padT}" x2="${m.x.toFixed(1)}" y2="${padT + innerH}" stroke="${m.color}" stroke-width="1" stroke-dasharray="2 2" opacity="0.55" vector-effect="non-scaling-stroke" />`).join('')}
+        <line x1="${padL}" y1="${thresholdY.toFixed(1)}" x2="${padL + innerW}" y2="${thresholdY.toFixed(1)}" stroke="var(--orange-500)" stroke-width="1" stroke-dasharray="3 3" vector-effect="non-scaling-stroke" />
+        <path d="${areaD}" fill="${fillColor}" opacity="0.6" />
+        <path d="${pathD}" fill="none" stroke="${lineColor}" stroke-width="1.5" vector-effect="non-scaling-stroke" />
+        <circle cx="${lastX.toFixed(1)}" cy="${lastY.toFixed(1)}" r="2.5" fill="${lineColor}" vector-effect="non-scaling-stroke" />
+      </svg>
+      ${chartLabel(pctX(padL - 4), pctY(y(yMax)), 'right', yMax.toFixed(2), 'var(--text-dim)', 9)}
+      ${chartLabel(pctX(padL - 4), pctY(y(yMin)), 'right', yMin.toFixed(2), 'var(--text-dim)', 9)}
+      ${markers.map(m => chartLabel(pctX(m.x + 3), pctY(padT + 6), 'left', m.label, m.color, 9, 700)).join('')}
+      ${chartLabel(pctX(padL + innerW + 4), pctY(thresholdY), 'left', `thr ${scorer.threshold.toFixed(2)}`, 'var(--orange-700)', 9, 600)}
+      ${chartLabel(pctX(padL), pctY(H - 5), 'left', `${windowLabel} ago`, 'var(--text-dim)', 9)}
+      ${chartLabel(pctX(padL + innerW), pctY(H - 5), 'right', 'now', 'var(--text-dim)', 9)}
+      ${chartLabel(pctX(padL + innerW + 4), pctY(lastLabelY), 'left', lastV.toFixed(2), lineColor, 11, 700)}
+    </div>`;
+}
+
+// Two-series chart for build comparison: each line is one build's rolling scorer value
+// across the window. Same scaffold as renderScorerChart but parameterised on baselines.
+function renderComparisonScorerChart(scorer, hoursWindow, leftValue, rightValue, leftBuild, rightBuild) {
+  // Same two-layer approach as renderScorerChart: SVG geometry stretches to width;
+  // HTML labels stay calibrated. Extra padT for the HTML legend that sits above the plot.
+  const W = 540, H = 130, padL = 36, padR = 74, padT = 24, padB = 20;
+  const innerW = W - padL - padR;
+  const innerH = H - padT - padB;
+  const leftSeries = generateScorerSeries(scorer, hoursWindow, { baseline: leftValue, breachedDrop: false, phaseKey: scorer.name + leftBuild.id });
+  const rightSeries = generateScorerSeries(scorer, hoursWindow, { baseline: rightValue, breachedDrop: false, phaseKey: scorer.name + rightBuild.id });
+  const values = [...leftSeries, ...rightSeries].map(s => s.v).concat([scorer.threshold]);
+  const minV = Math.min(...values);
+  const maxV = Math.max(...values);
+  const pad = (maxV - minV) * 0.20 || 0.05;
+  const yMin = Math.max(0, minV - pad);
+  const yMax = Math.min(scorer.threshold < 0.5 ? 0.3 : 1, maxV + pad);
+  const x = (t) => padL + (1 - t / hoursWindow) * innerW;
+  const y = (v) => padT + (1 - (v - yMin) / (yMax - yMin || 1)) * innerH;
+  const pathFor = (series) => series.map((s, i) => `${i === 0 ? 'M' : 'L'} ${x(s.t).toFixed(1)},${y(s.v).toFixed(1)}`).join(' ');
+  const leftPath = pathFor(leftSeries);
+  const rightPath = pathFor(rightSeries);
+  const thresholdY = y(scorer.threshold);
+  const markers = [leftBuild, rightBuild].filter(b => b.cutAtHours <= hoursWindow).map(b => ({
+    x: x(b.cutAtHours),
+    color: b.id === leftBuild.id ? 'var(--blue-500)' : 'var(--text-dim)',
+    label: b.tag,
+  }));
+  const lowIsGood = scorer.threshold < 0.5;
+  const leftBad = lowIsGood ? leftValue > scorer.threshold : leftValue < scorer.threshold;
+  const rightBad = lowIsGood ? rightValue > scorer.threshold : rightValue < scorer.threshold;
+  const leftColor = leftBad ? 'var(--red-500)' : 'var(--blue-500)';
+  const rightColor = rightBad ? 'var(--red-700)' : 'var(--text-muted)';
+  const windowLabel = { 1: '1h', 24: '24h', 168: '7d' }[hoursWindow] || `${hoursWindow}h`;
+  const leftLastX = x(leftSeries[leftSeries.length - 1].t);
+  const leftLastY = y(leftSeries[leftSeries.length - 1].v);
+  const rightLastX = x(rightSeries[rightSeries.length - 1].t);
+  const rightLastY = y(rightSeries[rightSeries.length - 1].v);
+  const labelGap = Math.abs(leftLastY - rightLastY);
+  const leftLabelY = labelGap < 12 && leftLastY < rightLastY ? leftLastY - 4 : leftLastY;
+  const rightLabelY = labelGap < 12 && leftLastY < rightLastY ? rightLastY + 8 : rightLastY;
+  const pctX = (u) => (u / W * 100).toFixed(3);
+  const pctY = (u) => (u / H * 100).toFixed(3);
+
+  return `
+    <div style="position:relative;width:100%;aspect-ratio: ${W} / ${H};">
+      <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" style="display:block;width:100%;height:100%;">
+        <rect x="${padL}" y="${padT}" width="${innerW}" height="${innerH}" fill="var(--bg-alt)" rx="3" />
+        ${markers.map(m => `<line x1="${m.x.toFixed(1)}" y1="${padT}" x2="${m.x.toFixed(1)}" y2="${padT + innerH}" stroke="${m.color}" stroke-width="1" stroke-dasharray="2 2" opacity="0.55" vector-effect="non-scaling-stroke" />`).join('')}
+        <line x1="${padL}" y1="${thresholdY.toFixed(1)}" x2="${padL + innerW}" y2="${thresholdY.toFixed(1)}" stroke="var(--orange-500)" stroke-width="1" stroke-dasharray="3 3" vector-effect="non-scaling-stroke" />
+        <path d="${rightPath}" fill="none" stroke="${rightColor}" stroke-width="1.5" stroke-dasharray="3 2" opacity="0.85" vector-effect="non-scaling-stroke" />
+        <path d="${leftPath}" fill="none" stroke="${leftColor}" stroke-width="1.8" vector-effect="non-scaling-stroke" />
+        <circle cx="${rightLastX.toFixed(1)}" cy="${rightLastY.toFixed(1)}" r="2.5" fill="${rightColor}" />
+        <circle cx="${leftLastX.toFixed(1)}" cy="${leftLastY.toFixed(1)}" r="3" fill="${leftColor}" />
+      </svg>
+      <!-- Legend (top-left, fixed-size HTML) -->
+      <div style="position:absolute;left:${pctX(padL)}%;top:4px;display:flex;gap:14px;font-size:10px;line-height:1.2;pointer-events:none;">
+        <span style="display:inline-flex;align-items:center;gap:5px;color:var(--text);font-weight:600;"><span style="display:inline-block;width:14px;height:2px;background:${leftColor};"></span>${escapeHtml(leftBuild.tag)}</span>
+        <span style="display:inline-flex;align-items:center;gap:5px;color:var(--text-muted);font-weight:600;"><span style="display:inline-block;width:14px;height:2px;background:${rightColor};opacity:0.85;border-top:1px dashed ${rightColor};box-sizing:border-box;"></span>${escapeHtml(rightBuild.tag)}</span>
+        <span style="display:inline-flex;align-items:center;gap:5px;color:var(--orange-700);"><span style="display:inline-block;width:14px;height:0;border-top:1px dashed var(--orange-500);"></span>threshold</span>
+      </div>
+      ${chartLabel(pctX(padL - 4), pctY(y(yMax)), 'right', yMax.toFixed(2), 'var(--text-dim)', 9)}
+      ${chartLabel(pctX(padL - 4), pctY(y(yMin)), 'right', yMin.toFixed(2), 'var(--text-dim)', 9)}
+      ${markers.map(m => chartLabel(pctX(m.x + 3), pctY(padT + 6), 'left', m.label, m.color, 9, 700)).join('')}
+      ${chartLabel(pctX(padL + innerW + 4), pctY(thresholdY), 'left', `thr ${scorer.threshold.toFixed(2)}`, 'var(--orange-700)', 9, 600)}
+      ${chartLabel(pctX(padL), pctY(H - 5), 'left', `${windowLabel} ago`, 'var(--text-dim)', 9)}
+      ${chartLabel(pctX(padL + innerW), pctY(H - 5), 'right', 'now', 'var(--text-dim)', 9)}
+      ${chartLabel(pctX(padL + innerW + 4), pctY(leftLabelY), 'left', leftValue.toFixed(2), leftColor, 11, 700)}
+      ${chartLabel(pctX(padL + innerW + 4), pctY(rightLabelY), 'left', rightValue.toFixed(2), rightColor, 11, 700)}
+    </div>`;
 }
 
 function renderLiveEvalsLanding(root) {
@@ -3648,8 +3851,11 @@ function renderLiveEvalsLanding(root) {
     const wfRuns = MOCK_DATA.workflowRuns.filter(r => r.workflowId === wf.id);
     const wfRunsBreached = wfRuns.filter(r => r.scores.some(s => s.breached)).length;
     const wfOps = MOCK_DATA.observationPoints.filter(op => op.workflowId === wf.id && op.enabled).length;
+    const mix = workflowBuildMix(wf.id);
+    const otherBuilds = mix.filter(m => !m.isActive && m.buildId);
+    const otherRunCount = otherBuilds.reduce((s, o) => s + o.count, 0);
 
-    return `<div onclick="location.hash='#/live-evals/${wf.id}'" style="background:var(--bg);border:1px solid ${breached > 0 ? 'var(--red-100)' : 'var(--border)'};border-left:3px solid ${breached > 0 ? 'var(--red-500)' : 'var(--green-500)'};border-radius:8px;padding:16px;cursor:pointer;transition:background 100ms ease, box-shadow 100ms ease;" onmouseover="this.style.boxShadow='var(--shadow-m)'" onmouseout="this.style.boxShadow='none'">
+    return `<div onclick="location.hash='#/live-evals/${wf.id}'" style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:16px;cursor:pointer;transition:background 100ms ease, box-shadow 100ms ease;" onmouseover="this.style.boxShadow='var(--shadow-m)'" onmouseout="this.style.boxShadow='none'">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:6px;">
         <div style="flex:1;min-width:0;">
           <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
@@ -3658,6 +3864,11 @@ function renderLiveEvalsLanding(root) {
               ? `<span style="display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:9999px;background:var(--red-50);color:var(--red-700);font-size:10px;font-weight:700;border:1px solid var(--red-100);"><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--red-500);"></span>${breached} breached</span>`
               : '<span style="display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:9999px;background:var(--green-50);color:var(--green-700);font-size:10px;font-weight:700;border:1px solid var(--green-100);"><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--green-500);"></span>Healthy</span>'}
             ${buildChip(wf.activeBuild)}
+            ${otherBuilds.length ? `<span
+              onclick="event.stopPropagation(); jumpToParallelComparison('${wf.id}','${otherBuilds[0].buildId}')"
+              title="Same workflow has ${otherRunCount} run${otherRunCount === 1 ? '' : 's'} still active on ${otherBuilds.map(o => o.tag + ' (' + o.count + ')').join(', ')} — click to compare against active build"
+              style="display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:9999px;background:var(--yellow-50);color:var(--yellow-700);font-size:10px;font-weight:700;border:1px solid var(--yellow-100);cursor:pointer;font-family:'JetBrains Mono',monospace;"
+            ><span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--yellow-700);"></span>+${otherRunCount} on ${escapeHtml(otherBuilds.map(o => o.tag).join(', '))}</span>` : ''}
           </div>
           <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">${wf.nodes.length} AI node${wf.nodes.length === 1 ? '' : 's'} · ${wf.scorers.length} scorer${wf.scorers.length === 1 ? '' : 's'} · ${wfOps} observation point${wfOps === 1 ? '' : 's'}</div>
         </div>
@@ -3722,8 +3933,29 @@ function renderLiveEvalsWorkflow(root) {
   const opsForWf = MOCK_DATA.observationPoints.filter(op => op.workflowId === wfId && op.enabled);
   const activeDecisionCount = Object.keys(STATE.liveEvals.decisions).length;
   const breachedCount = wf.scorers.filter(s => s.breached).length;
+  // Build-mix detection: which non-active builds still have running/recent workflow runs?
+  // When >1 build is present, the active-build framing of telemetry below is partial —
+  // the banner surfaces the parallel state and offers a one-click jump to comparison.
+  const buildMix = workflowBuildMix(wfId);
+  const otherBuilds = buildMix.filter(m => !m.isActive && m.buildId);
+  const otherRunCount = otherBuilds.reduce((s, o) => s + o.count, 0);
+  const activeRunCount = (buildMix.find(m => m.isActive) || { count: 0 }).count;
+
+  const parallelBuildBanner = otherBuilds.length ? `
+      <div style="background:var(--yellow-50);border:1px solid var(--yellow-100);border-left:3px solid var(--yellow-500);border-radius:6px;padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;gap:12px;">
+        <div style="flex:1;font-size:12px;line-height:18px;color:var(--text);">
+          <strong>Parallel-build runs in this window.</strong>
+          <span style="color:var(--text-muted);">
+            ${activeRunCount} run${activeRunCount === 1 ? '' : 's'} on the active build (<strong style="font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--text);">${escapeHtml(wf.activeBuild)}</strong>) and ${otherRunCount} on ${otherBuilds.map(o => `<strong style="font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--text);">${escapeHtml(o.tag)}</strong> (${o.count})`).join(', ')}.
+            Telemetry and scorer values below mix all builds — use comparison to isolate the active build against an older one.
+          </span>
+        </div>
+        <button class="btn ghost" style="white-space:nowrap;flex-shrink:0;" onclick="jumpToParallelComparison('${wfId}','${otherBuilds[0].buildId}')">Compare vs ${escapeHtml(otherBuilds[0].tag)} →</button>
+      </div>
+    ` : '';
 
   const overviewBody = `
+      ${parallelBuildBanner}
       <div class="le-tier">
         <h4>Tier 1 — Telemetry <span class="pill-mini free">FREE</span></h4>
         <div class="descr">Always on. Throughput · latency · cost · path shape · retry &amp; fallback pressure · terminal outcomes.</div>
@@ -3886,7 +4118,7 @@ function renderLiveEvalsWorkflow(root) {
         </div>
       </div>
       <span class="sub">${escapeHtml(wf.nodes.length)} AI node${wf.nodes.length === 1 ? '' : 's'} · ${wf.scorers.length} scorer${wf.scorers.length === 1 ? '' : 's'} bound · ${opsForWf.length} observation point${opsForWf.length === 1 ? '' : 's'}</span>
-      <span class="meta">active build: <strong>${escapeHtml(wf.activeBuild)}</strong> · <a style="color:var(--blue-500);cursor:pointer;font-weight:600;" onclick="jumpToBuildComparison('${wfId}')">Compare builds →</a> · <a style="color:var(--blue-500);cursor:pointer;font-weight:600;" onclick="location.hash='#/live-evals/runs'">View all runs →</a></span>
+      <span class="meta">active build: <strong>${escapeHtml(wf.activeBuild)}</strong>${otherBuilds.length ? ` · <span style="color:var(--yellow-700);font-weight:600;">+${otherRunCount} run${otherRunCount === 1 ? '' : 's'} on ${escapeHtml(otherBuilds.map(o => o.tag).join(', '))}</span>` : ''} · <a style="color:var(--blue-500);cursor:pointer;font-weight:600;" onclick="jumpToBuildComparison('${wfId}')">Compare builds →</a> · <a style="color:var(--blue-500);cursor:pointer;font-weight:600;" onclick="location.hash='#/live-evals/runs'">View all runs →</a></span>
     </div>
     <div class="page-section">
       <div class="stage-tabs">
@@ -4100,6 +4332,29 @@ function renderBuildComparison(root, wfId, leftId, rightId) {
         ${scorerRows}
       </div>`;
 
+  // Per-scorer trend charts — two-line overlay per scorer using the same compare window.
+  const scorerChartsHtml = wf.scorers.length === 0 ? '' : `
+    <div style="display:flex;flex-direction:column;gap:10px;margin-top:12px;">
+      ${wf.scorers.map(s => {
+        const lv = scorerValueOn(s, left);
+        const rv = scorerValueOn(s, right);
+        const delta = lv - rv;
+        const lowIsGood = s.threshold < 0.5;
+        const regression = lowIsGood ? (lv > rv && lv > s.threshold) : (lv < rv && lv < s.threshold);
+        return `<div style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px 14px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+            <div>
+              <strong style="font-size:13px;">${escapeHtml(s.name)}</strong>
+              <span style="font-size:11px;color:var(--text-muted);margin-left:6px;">on ${escapeHtml(s.node)} · threshold ${s.threshold.toFixed(2)}</span>
+              ${regression ? '<span style="font-size:10px;color:var(--red-700);font-weight:700;margin-left:8px;padding:1px 6px;background:var(--red-50);border-radius:4px;">REGRESSION</span>' : ''}
+            </div>
+            <div style="font-size:11px;color:var(--text-dim);">${escapeHtml(left.tag)} vs ${escapeHtml(right.tag)} · ${Math.abs(delta) < 0.001 ? 'flat' : (delta > 0 ? '+' : '') + delta.toFixed(2)}</div>
+          </div>
+          ${renderComparisonScorerChart(s, timeWindowHours(STATE.liveEvals.timeWindow), lv, rv, left, right)}
+        </div>`;
+      }).join('')}
+    </div>`;
+
   // Per-node latency / cost
   const nodeRows = wf.nodes.map(n => {
     const l = nodeLatencyOn(n.name, left);
@@ -4184,6 +4439,7 @@ function renderBuildComparison(root, wfId, leftId, rightId) {
         <h4>Per-scorer <span class="pill-mini optin">${wf.scorers.length}</span></h4>
         <div class="descr">Scorer values on each build. Regression flag fires when the active-build value crosses its threshold.</div>
         ${scorerHtml}
+        ${scorerChartsHtml}
       </div>
 
       <div class="le-tier">
@@ -5165,6 +5421,63 @@ function confirmOverrideDelete() {
   if (STATE.configResolver.result) resolveConfig();
   else renderConfiguration(document.getElementById('page'));
 }
+// Related-card / incident-source navigation helpers — shared by Context tab and the
+// incident-detail header. Dispatches the related-card `kind` (proc/flow/bld/trg/scr/wf/task)
+// to the right openDetail() call or route hash.
+function relatedCardOnclick(r) {
+  if (r.kind === 'proc' || r.kind === 'flow') return `openDetail('instance','${r.id}')`;
+  if (r.kind === 'bld') return `openDetail('build','${r.id}')`;
+  if (r.kind === 'trg') return `openDetail('trigger','${r.id}')`;
+  if (r.kind === 'scr') return `openDetail('aiNode','${r.id}')`;
+  if (r.kind === 'task') return `openDetail('task','${r.id}')`;
+  if (r.kind === 'wf') return `closeDetail(); location.hash='#/live-evals/${r.id}'`;
+  return '';
+}
+function relatedCardGlyph(kind) {
+  return { proc: 'P', flow: 'F', bld: '◆', trg: '⚡', scr: '!', wf: 'W', task: 'T' }[kind] || '·';
+}
+// Returns a clickable source-target descriptor for the incident header, or null when the
+// incident's source entity doesn't map to a navigable surface in this prototype.
+function incidentSourceTarget(it) {
+  const se = it.sourceEntity;
+  if (!se) return null;
+  if (se.kind === 'instance') {
+    const inst = MOCK_DATA.instances.find(i => i.id === se.id);
+    if (!inst) return null;
+    const isFlow = inst.type === 'uiflow';
+    return {
+      kind: isFlow ? 'flow' : 'proc',
+      detailKind: 'instance', detailId: inst.id,
+      label: isFlow ? 'UI Flow session' : 'Process instance',
+      name: inst.definitionName, id: inst.id,
+      meta: inst.status + (inst.atStep ? ` · ${inst.atStep}` : ''),
+      cta: isFlow ? 'Open session' : 'Open instance',
+    };
+  }
+  if (se.kind === 'trigger') {
+    const trg = MOCK_DATA.triggers.find(t => t.id === se.id);
+    return {
+      kind: 'trg',
+      detailKind: 'trigger', detailId: se.id,
+      label: 'Trigger',
+      name: trg ? trg.name : se.id, id: se.id,
+      meta: trg ? `${trg.type} · ${trg.status}` : '',
+      cta: 'Open trigger',
+    };
+  }
+  if (se.kind === 'scorer' && it.sourceLink) {
+    const rc = it.rootCause || {};
+    return {
+      kind: 'scr',
+      detailKind: it.sourceLink.kind, detailId: it.sourceLink.id,
+      label: 'AI node',
+      name: rc.node || it.sourceLink.id, id: it.sourceLink.id,
+      meta: rc.scorer ? `${rc.scorer} · ${rc.currentValue} / ${rc.threshold}` : '',
+      cta: it.sourceLink.label || 'Open in Live Evals',
+    };
+  }
+  return null;
+}
 function renderIncidentDetail(it, tabIdx) {
   const hasStackTrace = !!it.stackTrace;
   const tabs = ['Context'];
@@ -5174,6 +5487,7 @@ function renderIncidentDetail(it, tabIdx) {
 
   const stageLabel = { 'pre-start': 'Pre-start', 'trigger': 'Trigger', 'mid-execution': 'Mid-execution', 'ai-quality': 'AI quality' };
   const sevLabel = { critical: 'Critical', high: 'High', medium: 'Medium', low: 'Low' };
+  const src = incidentSourceTarget(it);
 
   const head = `
     <div class="topline">
@@ -5189,6 +5503,15 @@ function renderIncidentDetail(it, tabIdx) {
       ${buildChip(it.buildTag)}
       <span style="color:var(--text-dim);font-size:11px">Severity: ${sevLabel[it.severity]}</span>
     </div>
+    ${src ? `
+    <div class="source-target" onclick="openDetail('${src.detailKind}','${src.detailId}')" title="${escapeHtml(src.cta)} →">
+      <div class="ic ${src.kind}">${relatedCardGlyph(src.kind)}</div>
+      <div class="label">
+        <span class="k">${escapeHtml(src.label)}</span>
+        <span class="v">${escapeHtml(src.id)}<small>${escapeHtml(src.name)}${src.meta ? ' · ' + escapeHtml(src.meta) : ''}</small></span>
+      </div>
+      <span class="arr">${escapeHtml(src.cta)} →</span>
+    </div>` : ''}
     <div class="actions">
       ${it.status === 'open' ? `<button class="btn primary" onclick="mutateIncident('${it.id}','ack')">Acknowledge</button>` : ''}
       ${it.status !== 'resolved' ? `<button class="btn ghost" onclick="mutateIncident('${it.id}','assign')">Assign to me</button>` : ''}
@@ -5217,8 +5540,8 @@ function renderIncidentDetail(it, tabIdx) {
       ${it.related.length > 0 ? `<div class="panel-block">
         ${panelHeading('Related entities', null)}
         ${it.related.map(r => `
-          <div class="related-card" onclick="openDetail('${r.kind === 'proc' || r.kind === 'flow' ? 'instance' : 'build'}','${r.id}')">
-            <div class="ic ${r.kind}">${r.kind === 'proc' ? 'P' : r.kind === 'flow' ? 'F' : '◆'}</div>
+          <div class="related-card" onclick="${relatedCardOnclick(r)}">
+            <div class="ic ${r.kind}">${relatedCardGlyph(r.kind)}</div>
             <div class="name">${escapeHtml(r.name)}<small>${escapeHtml(r.id)} · ${escapeHtml(r.meta)}</small></div>
             <div class="arr">→</div>
           </div>
