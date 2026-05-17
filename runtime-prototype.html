@@ -1265,6 +1265,8 @@ a { color: inherit; }
 .timeline .tl-row .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border-strong); margin-top: 6px; flex-shrink: 0; }
 .timeline .tl-row.bad .dot { background: var(--red-500); }
 .timeline .tl-row.deploy .dot { background: var(--purple-500); }
+.timeline .tl-row .dot.notif { width: 14px; height: 14px; border-radius: 4px; background: var(--blue-50); color: var(--blue-700); margin-top: 2px; font-size: 9px; line-height: 14px; text-align: center; font-weight: 700; border: 1px solid var(--blue-100); }
+.timeline .tl-row.bad .dot.notif { background: var(--red-50); color: var(--red-700); border-color: var(--red-100); }
 .timeline .tl-row .lbl { color: var(--text-muted); }
 .timeline .tl-row .lbl strong { color: var(--text); }
 
@@ -1663,7 +1665,10 @@ const MOCK_DATA = {
         { id: 'inst_19f3d4', definitionName: 'KYC review', type: 'process', status: 'failed', atStep: 'Document upload · 3 incidents' },
         { id: 'inst_91ab23', definitionName: 'Email verification', type: 'process', status: 'completed', atStep: 'Done' },
       ],
-      initiator: { kind: 'manual', userId: 'u_4419', when: '1m ago' } },
+      initiator: { kind: 'manual', userId: 'u_4419', when: '1m ago' },
+      notifications: [
+        { at: '0m ago', atSortable: 0, channel: 'in-app', target: 'u_4419', subject: "Welcome — let's finish setting up your account", status: 'sent' },
+      ] },
     { id: 'inst_19f3d4', type: 'process', definitionName: 'KYC review', status: 'failed', rawStatus: 'FINISHED_WITH_ERROR', rawDesc: 'raised exception during execution',
       buildTag: 'v1.4.2', atStep: 'Document upload · 3 incidents', startedAt: '3m ago',
       spawnedBy: { type: 'uiflow', id: 'sess_a82c91' }, activeIncidentCount: 3,
@@ -1671,11 +1676,18 @@ const MOCK_DATA = {
       subprocesses: [
         { id: 'inst_doc_scan', definitionName: 'Document scan', type: 'process', status: 'failed', atStep: 'OCR · halted' },
       ],
-      initiator: { kind: 'uiflow', triggerId: null, triggerName: 'Onboarding chat', parentId: 'sess_a82c91', when: '3m ago' } },
+      initiator: { kind: 'uiflow', triggerId: null, triggerName: 'Onboarding chat', parentId: 'sess_a82c91', when: '3m ago' },
+      notifications: [
+        { at: '4m ago', atSortable: 4, channel: 'email', target: 'compliance@flowx.ai', subject: 'KYC review escalated — Document scan failed', status: 'failed' },
+        { at: '8m ago', atSortable: 8, channel: 'in-app', target: 'u_4419', subject: 'Verification in progress', status: 'sent' },
+      ] },
     { id: 'inst_55a1c0', type: 'process', definitionName: 'Loan application', status: 'waiting', rawStatus: 'ON_HOLD', rawDesc: 'paused awaiting input',
       buildTag: 'v1.4.2', atStep: 'Manager approval · awaiting task', startedAt: '12m ago',
       variables: { applicant: 'u_5512', amount: 42000, currency: 'USD' },
-      initiator: { kind: 'webhook', triggerId: 'webhook_loans_api', triggerName: 'Loans API webhook', when: '12m ago' } },
+      initiator: { kind: 'webhook', triggerId: 'webhook_loans_api', triggerName: 'Loans API webhook', when: '12m ago' },
+      notifications: [
+        { at: '11m ago', atSortable: 11, channel: 'in-app', target: 'manager:approvals', subject: 'New loan task assigned — $42,000', status: 'sent' },
+      ] },
     { id: 'sess_b34f0e', type: 'uiflow', definitionName: 'Support chat', status: 'completed', rawStatus: 'completed', rawDesc: 'session ended normally',
       buildTag: 'v1.4.2', atStep: 'Resolved · 12 turns', startedAt: '28m ago',
       variables: { topic: 'billing', satisfaction: 5, turns: 12 } },
@@ -1718,7 +1730,10 @@ const MOCK_DATA = {
       variables: { new_user: 'u_9981' } },
     { id: 'inst_d5e6f7', type: 'process', definitionName: 'Welcome email', status: 'failed', rawStatus: 'FAILED', rawDesc: 'unrecoverable failure',
       buildTag: 'v1.4.2', atStep: 'SMTP timeout', startedAt: '12h ago',
-      variables: { user: 'u_9981', template: 'welcome_v3' } },
+      variables: { user: 'u_9981', template: 'welcome_v3' },
+      notifications: [
+        { at: '12h ago', atSortable: 720, channel: 'email', target: 'u_9981@example.com', subject: 'Welcome to FlowX', status: 'failed' },
+      ] },
     { id: 'inst_doc_scan', type: 'process', definitionName: 'Document scan', status: 'failed', rawStatus: 'FINISHED_WITH_ERROR', rawDesc: 'subprocess halted',
       buildTag: 'v1.4.2', atStep: 'OCR · halted', startedAt: '3m ago',
       spawnedBy: { type: 'process', id: 'inst_19f3d4' },
@@ -4060,6 +4075,17 @@ function renderInitiator(init) {
   return `<span aria-hidden="true" style="display:inline-block;width:14px;color:var(--text-dim);">${icon}</span><strong>${escapeHtml(label)}</strong> · ${body}${when}`;
 }
 
+function parseAgoMinutes(s) {
+  // Accepts "3m ago", "2h ago", "5d ago", "just now", "now"
+  if (!s) return 9999;
+  const t = s.trim().toLowerCase();
+  if (t.startsWith('just') || t === 'now') return 0;
+  const m = t.match(/(\d+)\s*([mhd])\s*ago/);
+  if (!m) return 9999;
+  const n = parseInt(m[1], 10);
+  return m[2] === 'm' ? n : m[2] === 'h' ? n * 60 : n * 60 * 24;
+}
+
 function renderInstanceDetail(it, tabIdx) {
   // Tab structure
   const incidentsForThis = MOCK_DATA.incidents.filter(i => i.sourceEntity.kind === 'instance' && i.sourceEntity.id === it.id);
@@ -4142,14 +4168,7 @@ function renderInstanceDetail(it, tabIdx) {
         </div>`).join('')}
     </div>`;
   } else if (active === 'Audit') {
-    body = `<div class="panel-block">
-      ${panelHeading('Audit timeline', null)}
-      <div class="timeline">
-        <div class="tl-row"><div class="when">${escapeHtml(it.startedAt)}</div><div class="dot"></div><div class="lbl">Instance <strong>started</strong> on build ${escapeHtml(it.buildTag)}</div></div>
-        ${it.status === 'failed' ? `<div class="tl-row bad"><div class="when">recently</div><div class="dot"></div><div class="lbl"><strong>Execution failed</strong> at ${escapeHtml(it.atStep)}</div></div>` : ''}
-        ${it.status === 'completed' ? `<div class="tl-row"><div class="when">earlier</div><div class="dot"></div><div class="lbl">Instance <strong>completed</strong></div></div>` : ''}
-      </div>
-    </div>`;
+    body = renderAuditTimeline(it);
   }
 
   return [head, tabsHtml, body];
@@ -4182,6 +4201,61 @@ function renderActivityTree(it) {
     <div class="panel-block">
       ${panelHeading('Subprocesses', null)}
       ${subprocessesHtml || '<div style="font-size:11px;color:var(--text-dim);padding:8px 10px;">This instance hasn\'t spawned any subprocesses.</div>'}
+    </div>`;
+}
+
+function renderAuditTimeline(it) {
+  // Build a unified set of timeline events: lifecycle + notifications, sorted by atSortable (minutes ago, ascending = most recent first)
+  const events = [];
+  events.push({
+    atSortable: parseAgoMinutes(it.startedAt),
+    at: it.startedAt,
+    kind: 'lifecycle',
+    label: `Instance <strong>started</strong> on build ${escapeHtml(it.buildTag)}`,
+    bad: false,
+  });
+  if (it.status === 'failed') {
+    events.push({
+      atSortable: 1,
+      at: 'recently',
+      kind: 'lifecycle',
+      label: `<strong>Execution failed</strong> at ${escapeHtml(it.atStep)}`,
+      bad: true,
+    });
+  }
+  if (it.status === 'completed') {
+    events.push({
+      atSortable: Math.max(0, parseAgoMinutes(it.startedAt) - 1),
+      at: 'earlier',
+      kind: 'lifecycle',
+      label: 'Instance <strong>completed</strong>',
+      bad: false,
+    });
+  }
+  (it.notifications || []).forEach(n => {
+    const channelLabel = { 'email': 'Email', 'webhook': 'Webhook', 'in-app': 'In-app' }[n.channel] || n.channel;
+    const verb = n.status === 'failed' ? 'failed' : 'sent';
+    events.push({
+      atSortable: typeof n.atSortable === 'number' ? n.atSortable : parseAgoMinutes(n.at),
+      at: n.at,
+      kind: 'notif',
+      label: `<strong>${escapeHtml(channelLabel)}</strong> ${escapeHtml(verb)} → <code style="font-family:'JetBrains Mono',monospace;font-size:11px;">${escapeHtml(n.target)}</code><div style="color:var(--text-muted);margin-top:2px;">${escapeHtml(n.subject)}</div>`,
+      bad: n.status === 'failed',
+    });
+  });
+  events.sort((a, b) => a.atSortable - b.atSortable);
+  return `${docBanner('Audit timeline.', 'Lifecycle events (started, paused, completed) plus outgoing notifications (email, webhook, in-app) in one chronological log.', 'inst-audit')}
+    <div class="panel-block">
+      ${panelHeading('Audit timeline', null)}
+      <div class="timeline">
+        ${events.map(e => {
+          const rowClass = e.bad ? 'tl-row bad' : 'tl-row';
+          const dot = e.kind === 'notif'
+            ? `<div class="dot notif">${e.bad ? '!' : '✉'}</div>`
+            : `<div class="dot"></div>`;
+          return `<div class="${rowClass}"><div class="when">${escapeHtml(e.at)}</div>${dot}<div class="lbl">${e.label}</div></div>`;
+        }).join('')}
+      </div>
     </div>`;
 }
 
