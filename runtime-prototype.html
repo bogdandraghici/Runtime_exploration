@@ -3717,7 +3717,9 @@ function renderScorerChart(scorer, hoursWindow, builds) {
   // Earlier attempts at SVG <text> with viewBox stretched glyphs (preserveAspectRatio=none)
   // or grew them past the surrounding type (uniform scaling), so labels were lifted to
   // HTML so the chart can span full width while text stays calibrated.
-  const W = 540, H = 110, padL = 36, padR = 64, padT = 14, padB = 20;
+  // padL/padR are 0 so the gray plot rect spans flush to the card's content edges;
+  // y-axis / threshold / current-value labels are HTML overlays placed inside the plot.
+  const W = 540, H = 110, padL = 0, padR = 0, padT = 14, padB = 18;
   const innerW = W - padL - padR;
   const innerH = H - padT - padB;
   const series = generateScorerSeries(scorer, hoursWindow);
@@ -3758,13 +3760,13 @@ function renderScorerChart(scorer, hoursWindow, builds) {
         <path d="${pathD}" fill="none" stroke="${lineColor}" stroke-width="1.5" vector-effect="non-scaling-stroke" />
         <circle cx="${lastX.toFixed(1)}" cy="${lastY.toFixed(1)}" r="2.5" fill="${lineColor}" vector-effect="non-scaling-stroke" />
       </svg>
-      ${chartLabel(pctX(padL - 4), pctY(y(yMax)), 'right', yMax.toFixed(2), 'var(--text-dim)', 9)}
-      ${chartLabel(pctX(padL - 4), pctY(y(yMin)), 'right', yMin.toFixed(2), 'var(--text-dim)', 9)}
-      ${markers.map(m => chartLabel(pctX(m.x + 3), pctY(padT + 6), 'left', m.label, m.color, 9, 700)).join('')}
-      ${chartLabel(pctX(padL + innerW + 4), pctY(thresholdY), 'left', `thr ${scorer.threshold.toFixed(2)}`, 'var(--orange-700)', 9, 600)}
-      ${chartLabel(pctX(padL), pctY(H - 5), 'left', `${windowLabel} ago`, 'var(--text-dim)', 9)}
-      ${chartLabel(pctX(padL + innerW), pctY(H - 5), 'right', 'now', 'var(--text-dim)', 9)}
-      ${chartLabel(pctX(padL + innerW + 4), pctY(lastLabelY), 'left', lastV.toFixed(2), lineColor, 11, 700)}
+      ${chartLabel('0.4', pctY(padT - 4), 'left', yMax.toFixed(2), 'var(--text-muted)', 9, 600)}
+      ${chartLabel('0.4', pctY(padT + innerH + 4), 'left', yMin.toFixed(2), 'var(--text-muted)', 9, 600)}
+      ${markers.map(m => chartLabel(pctX(m.x + 3), pctY(padT - 4), 'left', m.label, m.color, 9, 700)).join('')}
+      ${chartLabel('99.6', pctY(thresholdY), 'right', `thr ${scorer.threshold.toFixed(2)}`, 'var(--orange-700)', 9, 600)}
+      ${chartLabel('0.4', pctY(H - 4), 'left', `${windowLabel} ago`, 'var(--text-dim)', 9)}
+      ${chartLabel('99.6', pctY(H - 4), 'right', 'now', 'var(--text-dim)', 9)}
+      ${chartLabel('99.6', pctY(lastLabelY), 'right', lastV.toFixed(2), lineColor, 11, 700)}
     </div>`;
 }
 
@@ -3772,8 +3774,9 @@ function renderScorerChart(scorer, hoursWindow, builds) {
 // across the window. Same scaffold as renderScorerChart but parameterised on baselines.
 function renderComparisonScorerChart(scorer, hoursWindow, leftValue, rightValue, leftBuild, rightBuild) {
   // Same two-layer approach as renderScorerChart: SVG geometry stretches to width;
-  // HTML labels stay calibrated. Extra padT for the HTML legend that sits above the plot.
-  const W = 540, H = 130, padL = 36, padR = 74, padT = 24, padB = 20;
+  // HTML labels stay calibrated. padL/padR=0 so the gray plot rect spans flush.
+  // Extra padT accommodates the HTML legend that sits above the plot.
+  const W = 540, H = 130, padL = 0, padR = 0, padT = 28, padB = 18;
   const innerW = W - padL - padR;
   const innerH = H - padT - padB;
   const leftSeries = generateScorerSeries(scorer, hoursWindow, { baseline: leftValue, breachedDrop: false, phaseKey: scorer.name + leftBuild.id });
@@ -3823,19 +3826,19 @@ function renderComparisonScorerChart(scorer, hoursWindow, leftValue, rightValue,
         <circle cx="${leftLastX.toFixed(1)}" cy="${leftLastY.toFixed(1)}" r="3" fill="${leftColor}" />
       </svg>
       <!-- Legend (top-left, fixed-size HTML) -->
-      <div style="position:absolute;left:${pctX(padL)}%;top:4px;display:flex;gap:14px;font-size:10px;line-height:1.2;pointer-events:none;">
+      <div style="position:absolute;left:0;top:4px;display:flex;gap:14px;font-size:10px;line-height:1.2;pointer-events:none;">
         <span style="display:inline-flex;align-items:center;gap:5px;color:var(--text);font-weight:600;"><span style="display:inline-block;width:14px;height:2px;background:${leftColor};"></span>${escapeHtml(leftBuild.tag)}</span>
         <span style="display:inline-flex;align-items:center;gap:5px;color:var(--text-muted);font-weight:600;"><span style="display:inline-block;width:14px;height:2px;background:${rightColor};opacity:0.85;border-top:1px dashed ${rightColor};box-sizing:border-box;"></span>${escapeHtml(rightBuild.tag)}</span>
         <span style="display:inline-flex;align-items:center;gap:5px;color:var(--orange-700);"><span style="display:inline-block;width:14px;height:0;border-top:1px dashed var(--orange-500);"></span>threshold</span>
       </div>
-      ${chartLabel(pctX(padL - 4), pctY(y(yMax)), 'right', yMax.toFixed(2), 'var(--text-dim)', 9)}
-      ${chartLabel(pctX(padL - 4), pctY(y(yMin)), 'right', yMin.toFixed(2), 'var(--text-dim)', 9)}
-      ${markers.map(m => chartLabel(pctX(m.x + 3), pctY(padT + 6), 'left', m.label, m.color, 9, 700)).join('')}
-      ${chartLabel(pctX(padL + innerW + 4), pctY(thresholdY), 'left', `thr ${scorer.threshold.toFixed(2)}`, 'var(--orange-700)', 9, 600)}
-      ${chartLabel(pctX(padL), pctY(H - 5), 'left', `${windowLabel} ago`, 'var(--text-dim)', 9)}
-      ${chartLabel(pctX(padL + innerW), pctY(H - 5), 'right', 'now', 'var(--text-dim)', 9)}
-      ${chartLabel(pctX(padL + innerW + 4), pctY(leftLabelY), 'left', leftValue.toFixed(2), leftColor, 11, 700)}
-      ${chartLabel(pctX(padL + innerW + 4), pctY(rightLabelY), 'left', rightValue.toFixed(2), rightColor, 11, 700)}
+      ${chartLabel('0.4', pctY(padT - 4), 'left', yMax.toFixed(2), 'var(--text-muted)', 9, 600)}
+      ${chartLabel('0.4', pctY(padT + innerH + 4), 'left', yMin.toFixed(2), 'var(--text-muted)', 9, 600)}
+      ${markers.map(m => chartLabel(pctX(m.x + 3), pctY(padT - 4), 'left', m.label, m.color, 9, 700)).join('')}
+      ${chartLabel('99.6', pctY(thresholdY), 'right', `thr ${scorer.threshold.toFixed(2)}`, 'var(--orange-700)', 9, 600)}
+      ${chartLabel('0.4', pctY(H - 4), 'left', `${windowLabel} ago`, 'var(--text-dim)', 9)}
+      ${chartLabel('99.6', pctY(H - 4), 'right', 'now', 'var(--text-dim)', 9)}
+      ${chartLabel('99.6', pctY(leftLabelY), 'right', leftValue.toFixed(2), leftColor, 11, 700)}
+      ${chartLabel('99.6', pctY(rightLabelY), 'right', rightValue.toFixed(2), rightColor, 11, 700)}
     </div>`;
 }
 
