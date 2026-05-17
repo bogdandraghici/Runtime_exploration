@@ -421,6 +421,42 @@
         </div>
         <div class="delta">Trigger and Task detail panels were literal "coming soon" placeholders. Both now ship as full right-slide panels with tabs — Trigger: Configuration · Recent fires · Failures (conditional); Task: Overview · Form · History with working Claim / Complete flow.</div>
       </div>
+      <div class="stat">
+        <div class="k">Override CRUD</div>
+        <div class="row">
+          <span class="before-v">Decorative</span>
+          <span class="arrow">→</span>
+          <span class="after-v">Wired</span>
+        </div>
+        <div class="delta">Edit/Delete on both axes now open the shared <code style="font-size:10px;background:white;border:1px solid var(--border);padding:0 4px;border-radius:3px;font-family:'JetBrains Mono',monospace;">.app-modal</code> (generalized via <code style="font-size:10px;background:white;border:1px solid var(--border);padding:0 4px;border-radius:3px;font-family:'JetBrains Mono',monospace;">STATE.activeModal</code> dispatch). Build axis: target radios + policy-type radios + branch/build dropdowns. Param axis: <code style="font-size:10px;background:white;border:1px solid var(--border);padding:0 4px;border-radius:3px;font-family:'JetBrains Mono',monospace;">key=value</code> textarea. Audit metadata (<code style="font-size:10px;background:white;border:1px solid var(--border);padding:0 4px;border-radius:3px;font-family:'JetBrains Mono',monospace;">createdBy/Date</code>, <code style="font-size:10px;background:white;border:1px solid var(--border);padding:0 4px;border-radius:3px;font-family:'JetBrains Mono',monospace;">modifiedBy/Date</code>) shown in the Edit footer and as a row <code style="font-size:10px;background:white;border:1px solid var(--border);padding:0 4px;border-radius:3px;font-family:'JetBrains Mono',monospace;">title</code> tooltip. Delete is a confirm modal with new <code style="font-size:10px;background:white;border:1px solid var(--border);padding:0 4px;border-radius:3px;font-family:'JetBrains Mono',monospace;">.btn.danger-primary</code>. Re-resolves automatically if "Test as user" was already run.</div>
+      </div>
+      <div class="stat">
+        <div class="k">Param resolution path</div>
+        <div class="row">
+          <span class="before-v">Per-key only</span>
+          <span class="arrow">→</span>
+          <span class="after-v">Ordered</span>
+        </div>
+        <div class="delta">Param axis now emits a <code style="font-size:10px;background:white;border:1px solid var(--border);padding:0 4px;border-radius:3px;font-family:'JetBrains Mono',monospace;">paramPath</code> parallel to the build axis's <code style="font-size:10px;background:white;border:1px solid var(--border);padding:0 4px;border-radius:3px;font-family:'JetBrains Mono',monospace;">resolutionPath</code>. Each step classifies: does-not-match · disabled (with the keys it would set) · matches-and-wins · matches-but-superseded · partial-win. Terminal step lists which keys fell through to defaults. Rendered with the same <code style="font-size:10px;background:white;border:1px solid var(--border);padding:0 4px;border-radius:3px;font-family:'JetBrains Mono',monospace;">.path-step</code> component.</div>
+      </div>
+      <div class="stat">
+        <div class="k">Audit timeline depth</div>
+        <div class="row">
+          <span class="before-v">2–3 events</span>
+          <span class="arrow">→</span>
+          <span class="after-v">6 sources</span>
+        </div>
+        <div class="delta">Weaves trigger fire (from <code style="font-size:10px;background:white;border:1px solid var(--border);padding:0 4px;border-radius:3px;font-family:'JetBrains Mono',monospace;">initiator.when</code>) · instance start · per-token <code style="font-size:10px;background:white;border:1px solid var(--border);padding:0 4px;border-radius:3px;font-family:'JetBrains Mono',monospace;">nodesActionStates</code> (token-id chip + verb mapping) · back-seq flags · subprocess spawns (anchored to each child's own <code style="font-size:10px;background:white;border:1px solid var(--border);padding:0 4px;border-radius:3px;font-family:'JetBrains Mono',monospace;">startedAt</code>) · notifications · all lifecycle states (terminated now included). New <code style="font-size:10px;background:white;border:1px solid var(--border);padding:0 4px;border-radius:3px;font-family:'JetBrains Mono',monospace;">.dot.node</code> glyph distinguishes node-action rows.</div>
+      </div>
+      <div class="stat">
+        <div class="k">Documentation patterns</div>
+        <div class="row">
+          <span class="before-v">5 listed</span>
+          <span class="arrow">→</span>
+          <span class="after-v">6 listed</span>
+        </div>
+        <div class="delta">Permission affordances added as the 6th pattern (matching the prose claim of "six consistent patterns"). Compact captions name the gated permission on each Runtime surface — informational, not behavioral.</div>
+      </div>
     </div>
   </section>
 
@@ -524,7 +560,7 @@
               <ul style="margin: 6px 0 0 16px; padding: 0; font-size: 12px; line-height: 18px;">
                 <li><strong>Subprocesses</strong> render under Activity tree as a recursive tree of child instances (cycle-guarded). Each row is click-through to the child's detail.</li>
                 <li><strong>Trigger</strong> initiator (manual · cron · webhook · process · uiflow) shows as a KV row in Overview with a kind glyph and a linkable trigger or parent reference.</li>
-                <li><strong>Notifications</strong> weave into the Audit timeline chronologically with envelope dots (sent) or red bang dots (failed) alongside lifecycle events.</li>
+                <li><strong>Audit timeline</strong> rebuilt as a full chronological log weaving six event sources: trigger fire (from <code style="font-size:10px;background:white;border:1px solid var(--border);padding:0 4px;border-radius:3px;font-family:'JetBrains Mono',monospace;">initiator.when</code>), instance start, per-token <code style="font-size:10px;background:white;border:1px solid var(--border);padding:0 4px;border-radius:3px;font-family:'JetBrains Mono',monospace;">nodesActionStates</code> (token-id chip + verb mapping: <code style="font-size:10px;background:white;border:1px solid var(--border);padding:0 4px;border-radius:3px;font-family:'JetBrains Mono',monospace;">enter</code>→arrived, <code style="font-size:10px;background:white;border:1px solid var(--border);padding:0 4px;border-radius:3px;font-family:'JetBrains Mono',monospace;">complete</code>→finished, <code style="font-size:10px;background:white;border:1px solid var(--border);padding:0 4px;border-radius:3px;font-family:'JetBrains Mono',monospace;">execute</code>→executing, <code style="font-size:10px;background:white;border:1px solid var(--border);padding:0 4px;border-radius:3px;font-family:'JetBrains Mono',monospace;">abort</code>→aborted), back-seq flags as <code style="font-size:10px;background:white;border:1px solid var(--border);padding:0 4px;border-radius:3px;font-family:'JetBrains Mono',monospace;">↺ Back to &lt;node&gt;</code>, subprocess spawns anchored to each child's own <code style="font-size:10px;background:white;border:1px solid var(--border);padding:0 4px;border-radius:3px;font-family:'JetBrains Mono',monospace;">startedAt</code>, terminated lifecycle (previously only failed/completed surfaced), and notifications (envelope dot for sent, red bang for failed). New <code style="font-size:10px;background:white;border:1px solid var(--border);padding:0 4px;border-radius:3px;font-family:'JetBrains Mono',monospace;">.dot.node</code> glyph (small outlined circle) distinguishes node-action rows. A typical instance now renders ~7 events instead of ~2.</li>
                 <li><strong>Tokens</strong> in Activity tree are expandable — chevron reveals raw ProcessState pill (with description tooltip), per-node action history table, and a back-seq chip when applicable.</li>
                 <li><strong>Variables</strong> gain a per-row pencil affordance opening a centered <code style="font-size:10px;background:white;border:1px solid var(--border);padding:0 4px;border-radius:3px;font-family:'JetBrains Mono',monospace;">.app-modal</code> (Esc + scrim close, focus restored to opener). Edits live in <code style="font-size:10px;background:white;border:1px solid var(--border);padding:0 4px;border-radius:3px;font-family:'JetBrains Mono',monospace;">STATE.variableEdits</code> in-session; an "edited" badge marks overrides; "Revert to original" undoes per-key.</li>
               </ul>
@@ -554,7 +590,15 @@
           <td class="after-cell">
             <span class="change-pill merge">Merged</span>
             <div class="name">Configuration</div>
-            <div class="desc">Two axes (Build version + Config parameters) on one page, shared override grammar. Persistent right-side "Test as user" resolver shows BOTH outcomes in one shot with full resolution path.</div>
+            <div class="desc">
+              Two axes (Build version + Config parameters) on one page, shared override grammar. Persistent right-side "Test as user" resolver shows BOTH outcomes in one shot with full resolution path.
+              <br><br>
+              <strong>Working override CRUD.</strong> Edit and Delete on each row open the shared <code style="font-size:10px;background:white;border:1px solid var(--border);padding:0 4px;border-radius:3px;font-family:'JetBrains Mono',monospace;">.app-modal</code> scaffold (now driven by a <code style="font-size:10px;background:white;border:1px solid var(--border);padding:0 4px;border-radius:3px;font-family:'JetBrains Mono',monospace;">STATE.activeModal</code> dispatcher so it can host any client). Build axis exposes target radios, policy-type radios (Latest-on-branch ↔ Fixed-version with dimmed inactive dropdown), branch + build selectors, and priority. Param axis uses a <code style="font-size:10px;background:white;border:1px solid var(--border);padding:0 4px;border-radius:3px;font-family:'JetBrains Mono',monospace;">key=value</code> textarea with the defaults-keys listed below as mono chips. Saving mutates the in-session policy and bumps the audit fields. Delete is a confirm modal with a target/policy summary and a filled red primary button. The resolver auto-re-runs if a result was already on screen.
+              <br><br>
+              <strong>Audit metadata</strong> (<code style="font-size:10px;background:white;border:1px solid var(--border);padding:0 4px;border-radius:3px;font-family:'JetBrains Mono',monospace;">createdBy/Date</code>, <code style="font-size:10px;background:white;border:1px solid var(--border);padding:0 4px;border-radius:3px;font-family:'JetBrains Mono',monospace;">modifiedBy/Date</code>) added to every override and surfaced two ways: a row <code style="font-size:10px;background:white;border:1px solid var(--border);padding:0 4px;border-radius:3px;font-family:'JetBrains Mono',monospace;">title</code> tooltip and a dedicated footer block inside the Edit modal.
+              <br><br>
+              <strong>Param-axis resolution path.</strong> The resolver now emits an ordered <code style="font-size:10px;background:white;border:1px solid var(--border);padding:0 4px;border-radius:3px;font-family:'JetBrains Mono',monospace;">paramPath</code> parallel to the build axis's path. Each step is classified — does-not-match · disabled (with the keys it would have set) · matches-and-wins · matches-but-superseded (every key already won by a higher-priority rule) · partial-win (sets some keys, others already won). Terminal step calls out which keys fell through to defaults. Same <code style="font-size:10px;background:white;border:1px solid var(--border);padding:0 4px;border-radius:3px;font-family:'JetBrains Mono',monospace;">.path-step</code> renderer as the build axis.
+            </div>
           </td>
         </tr>
 
@@ -893,6 +937,18 @@
             <span class="change-pill new">New</span>
             <div class="name">State pill tooltips</div>
             <div class="desc">Normalized state labels (Running / Waiting / Failed / …) shown to users. Hovering reveals the raw underlying state — bridges simplified vocabulary to engineering vocabulary.</div>
+          </td>
+        </tr>
+        <tr>
+          <td class="before-cell">
+            <div class="name">— (none)</div>
+            <div class="desc">Permissions gate every Runtime surface in production, but there's no in-product hint about which permission gates what. A user denied access sees an empty page; their admin gets a ticket asking for "Tasks access" and has to translate it to a permission string.</div>
+          </td>
+          <td class="arrow-cell">→</td>
+          <td class="after-cell">
+            <span class="change-pill new">New</span>
+            <div class="name">Permission affordances</div>
+            <div class="desc">A compact one-line caption sits under the page-head of every gated surface: shield-check icon + mono permission chip(s) + <em>"granted for this session"</em>. Placed on Configuration (<code style="font-size:10px;background:white;border:1px solid var(--border);padding:0 4px;border-radius:3px;font-family:'JetBrains Mono',monospace;">wks_active_policy_read</code> + <code style="font-size:10px;background:white;border:1px solid var(--border);padding:0 4px;border-radius:3px;font-family:'JetBrains Mono',monospace;">wks_config_param_overrides_read</code>), Live Evals landing (<code style="font-size:10px;background:white;border:1px solid var(--border);padding:0 4px;border-radius:3px;font-family:'JetBrains Mono',monospace;">wks_live_evals_read</code>), Tasks (<code style="font-size:10px;background:white;border:1px solid var(--border);padding:0 4px;border-radius:3px;font-family:'JetBrains Mono',monospace;">wks_tasks_read</code>), and Instance Overview when type is uiflow (<code style="font-size:10px;background:white;border:1px solid var(--border);padding:0 4px;border-radius:3px;font-family:'JetBrains Mono',monospace;">ui_flow_session_read</code>). Variables edit modal already named <code style="font-size:10px;background:white;border:1px solid var(--border);padding:0 4px;border-radius:3px;font-family:'JetBrains Mono',monospace;">wks_process_instance_variables_edit</code>. Informational, not behavioral — it names the contract so users can request the right permission and admins can translate "I need Tasks" into the right grant.</div>
           </td>
         </tr>
       </tbody>

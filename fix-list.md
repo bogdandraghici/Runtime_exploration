@@ -55,27 +55,29 @@ The 6-tab IA survives intact; the new `.app-modal` scaffold is available for any
 - **Trigger panel** — three tabs (Configuration · Recent fires · Failures). Failures is conditional (rendered only when the trigger has ≥1 failed fire). Configuration shows schedule (mono when cron), spawned definition, status pill, 24h error count, and audit fields. Recent fires lists chronological fires from `MOCK_DATA.triggerFires` filtered by trigger id with click-through to spawned instances on success. Failures rows deep-link to the corresponding Incident via `sourceEntity.kind === 'trigger'`. Adds the missing `webhook_loans_api` trigger so the Instance Overview's cross-link from Tier 2 #5 resolves cleanly.
 - **Task panel** — three tabs (Overview · Form · History). Overview surfaces source instance link, assignee, due chip, priority pill, and an action row that adapts: Claim (unassigned) / Open form → (assigned to me) / read-only "Assigned to X" (assigned to another) / completed pill. Form synthesizes 2–3 fields tailored to the task title (loan tasks get Decision + Amount approved + Notes; KYC gets Identity verified + Notes; etc.); disabled when completed or not assigned to you; submit calls `completeTask(id)`. History derives created / claimed / completed events from current state. New `completeTask(id)` matches the existing `claimTask(id)` pattern (direct `MOCK_DATA.tasks` mutation), so the Tasks list auto-correctly moves completed tasks out of the Pending filter.
 
-### 7. Overrides have Edit/Delete buttons but no working flow
+### 7. Overrides have Edit/Delete buttons but no working flow  ✅ **DONE**
 **Spec:** §4 — overrides have full CRUD plus audit metadata (`createdBy`, `createdDate`, `modifiedBy`, `modifiedDate`).
-**Prototype state:** Edit/Delete are decorative links (lines 2526, 2536). No modal, no audit metadata shown.
+**Resolution:** Edit/Delete now open the shared `.app-modal` scaffold (generalized from variable-only to a dispatch table: `STATE.activeModal = { kind, payload, returnFocusTo }`). Edit modal exposes target type (USER/ROLE radios) + value, policy (Latest-on-branch ↔ Fixed-version radios with branch/build selectors for build axis; key=value textarea for param axis), priority, and a footer block surfacing `createdBy/Date` + `modifiedBy/Date`. Saving mutates the in-session `MOCK_DATA.policies` and bumps `modifiedBy='me' · modifiedDate='just now'`. Delete is a confirm modal showing a target/policy summary and a filled red primary button (new `.btn.danger-primary`). Re-resolves automatically if the user already ran "Test as user". Audit metadata also tooltips on the row via `title`.
 
-### 8. Param-axis resolver lacks an ordered resolution path
+### 8. Param-axis resolver lacks an ordered resolution path  ✅ **DONE**
 **Spec:** §4 — `resolutionPath` is an ordered list of `{description, matched}` showing which override rules were checked and which won.
-**Prototype state:** Build axis correctly produces this (lines 2694-2722). Param axis is flattened per key — annotates `via/viaTarget/viaPriority` but no ordered path of evaluated rules (lines 2724-2757).
+**Resolution:** `resolveConfig` now emits `paramPath` parallel to `buildResult.resolutionPath`. The path walks overrides in priority order and labels each: does-not-match · disabled (with the keys it would have set) · matches-and-wins (with the keys it set) · matches-but-superseded (when every key was already won by a higher-priority rule) · partial-win (matched: true; sets some keys, others already won). A terminal step calls out which keys fell through to defaults. Rendered with the same `.path-step` component used by the build axis.
 
-### 9. Audit Log is minimal
+### 9. Audit Log is minimal  ✅ **DONE**
 **Spec:** §5 — "full timeline" with token arrivals, finishes, action data per node.
-**Prototype state:** instance detail audit shows just `started` + optionally `failed` or `completed` (lines 3087-3095).
+**Resolution:** `renderAuditTimeline` rebuilt to weave six event sources into one chronological log: (1) initiator/trigger fire from `it.initiator.when`, (2) instance start, (3) per-token `nodesActionStates[]` — token-id chip + verb mapping (`enter` → "arrived at", `complete` → "finished at", `execute` → "executing at", `abort` → "aborted at") + status line; error/abort flags trigger the bad row variant, (4) `backSeq` flagged as `↺ Back to <node>` reason, (5) subprocess spawn events anchored to each child instance's own `startedAt`, (6) terminated lifecycle state now emits a row (previously only `failed`/`completed` did). Notifications continue to surface as before. New `.dot.node` glyph (small outlined circle) distinguishes node-action rows from lifecycle ticks and notification envelopes.
 
 ---
 
 ## Tier 3 — Low signal / cosmetic
 
-### 10. Permission gates not modeled
-Starter mentions `wks_process_instance_variables_edit`, `ui_flow_session_read`, `wks_tasks_read`, `wks_live_evals_read`, `wks_active_policy_read`, `wks_config_param_overrides_read`. Prototype has no permission layer. Fine for prototype; flag if the redesign target is permission-aware.
+### 10. Permission gates not modeled  ✅ **DONE**
+Starter mentions `wks_process_instance_variables_edit`, `ui_flow_session_read`, `wks_tasks_read`, `wks_live_evals_read`, `wks_active_policy_read`, `wks_config_param_overrides_read`. Prototype has no permission layer.
+**Resolution:** modeled as an *informational* layer rather than behavioral gating — matches the prototype's documentation-affordance philosophy. New `permLine(perms)` helper emits a compact one-line caption (shield-check icon + mono permission chip(s) + "granted for this session") underneath the page-head of each gated surface. Placed on: Configuration (`wks_active_policy_read` + `wks_config_param_overrides_read`), Live Evals landing (`wks_live_evals_read`), Tasks (`wks_tasks_read`), and the Instance Overview tab when `it.type === 'uiflow'` (`ui_flow_session_read`). The Variables edit banner already named `wks_process_instance_variables_edit`. No behavior change — the prototype assumes all permissions are granted, but the surface now documents the contract so a real deployment knows where the gates would attach. New `.perm-line` + `.perm-chip` CSS, no new tokens or images.
 
-### 11. Failed-fires drill-down goes back to trigger config, not a per-fire page
-Spec §8 mentions a `runtime/failed-triggers/:id` per-fire detail. Prototype's failed-fires rows route to the parent trigger detail (line 2858). Incidents cover the failure context, so this may not need its own surface — design call.
+### 11. Failed-fires drill-down goes back to trigger config, not a per-fire page  ✅ **DONE**
+Spec §8 mentions a `runtime/failed-triggers/:id` per-fire detail. Prototype's failed-fires rows route to the parent trigger detail.
+**Resolution:** the design-call answered "no new surface" — **Incidents *is* the per-failure surface in the redesign.** Every failed fire already had a corresponding incident with `sourceEntity.kind === 'trigger'` (verified: `fire_004`→`inc_003`, `fire_005`→`inc_004`, `fire_006`→`inc_006`). The fix wires the routing: failed-fire row click now opens the matching incident (with `title` attr explaining which incident it's about to open), and the failure-reason cell shows the incident id as a `→ inc_xxx` mono chip. Trigger name remains a secondary link via the first column so users who want trigger config can still get there in one click. Falls back to the parent trigger detail if no incident matches (defensive — shouldn't happen in well-formed data). The Schedules & Triggers doc banner now ends with "each row opens the corresponding incident" to teach the behavior. Success-fire rows keep their existing routing (to trigger detail) since the design call only applies to failures.
 
 ### 12. `buildId` (canonical id) never exposed
 Only `buildTag` shown in UI. Ops users may need the canonical `b_v142`-style id. Minor.

@@ -505,6 +505,24 @@ a { color: inherit; }
 /* Danger · Tertiary */
 .btn.danger { background: transparent; border-color: transparent; color: var(--flowx-red-500); }
 .btn.danger:hover { background: var(--flowx-surface-secondary); }
+/* Danger · Primary (filled — used for confirm-delete) */
+.btn.danger-primary { background: var(--flowx-red-500); border-color: var(--flowx-red-500); color: var(--flowx-white); }
+.btn.danger-primary:hover { background: var(--flowx-red-600); border-color: var(--flowx-red-600); }
+
+/* Inline Edit / Delete link-buttons used on Configuration override rows */
+.ov-link {
+  background: none; border: 0; cursor: pointer; font: inherit;
+  font-size: 11px; font-weight: 600; padding: 2px 4px; border-radius: 4px;
+  transition: background 80ms ease;
+}
+.ov-link.edit { color: var(--flowx-blue-500); margin-right: 4px; }
+.ov-link.edit:hover { background: var(--flowx-blue-50); }
+.ov-link.delete { color: var(--flowx-red-500); }
+.ov-link.delete:hover { background: var(--flowx-red-50, #fde9e6); }
+
+/* Override edit modal radio labels */
+.ov-radio { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: var(--text); cursor: pointer; padding: 4px 8px; border: 1px solid var(--border); border-radius: 6px; background: white; }
+.ov-radio input { margin: 0; }
 
 /* Filter chips — FlowX-styled pill toggle */
 .chip {
@@ -652,6 +670,28 @@ a { color: inherit; }
   color: inherit;
   font-size: 14px;
   padding: 0;
+}
+
+/* Compact permission-required caption — sits below doc-banner where applicable */
+.perm-line {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text-dim);
+  padding: 4px 0;
+  margin-bottom: 12px;
+}
+.perm-line i { font-size: 13px; color: var(--text-muted); flex-shrink: 0; }
+.cfg-shell .perm-line { margin: 0 24px 12px; }
+.perm-chip {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  background: var(--bg-alt);
+  border: 1px solid var(--border);
+  padding: 1px 5px;
+  border-radius: 3px;
+  color: var(--text-muted);
 }
 
 /* Tables */
@@ -1396,6 +1436,8 @@ a { color: inherit; }
 .timeline .tl-row.deploy .dot { background: var(--purple-500); }
 .timeline .tl-row .dot.notif { width: 14px; height: 14px; border-radius: 4px; background: var(--blue-50); color: var(--blue-700); margin-top: 2px; font-size: 9px; line-height: 14px; text-align: center; font-weight: 700; border: 1px solid var(--blue-100); }
 .timeline .tl-row.bad .dot.notif { background: var(--red-50); color: var(--red-700); border-color: var(--red-100); }
+.timeline .tl-row .dot.node { width: 10px; height: 10px; border-radius: 50%; background: var(--bg); color: var(--text-dim); border: 1px solid var(--border-strong); margin-top: 5px; font-size: 12px; line-height: 8px; text-align: center; font-weight: 700; }
+.timeline .tl-row.bad .dot.node { background: var(--red-50); color: var(--red-700); border-color: var(--red-100); }
 .timeline .tl-row .lbl { color: var(--text-muted); }
 .timeline .tl-row .lbl strong { color: var(--text); }
 
@@ -1740,19 +1782,14 @@ a { color: inherit; }
 
 <!-- Right-slide detail panel -->
 <div class="detail-overlay" id="detailOverlay"></div>
-<div class="app-modal-scrim" id="appModalScrim" onclick="closeVariableEditModal()"></div>
+<div class="app-modal-scrim" id="appModalScrim" onclick="closeAppModal()"></div>
 <div class="app-modal" id="appModal" role="dialog" aria-modal="true" aria-labelledby="appModalTitle">
   <div class="app-modal-head">
-    <h3 id="appModalTitle">Edit variable</h3>
-    <button class="x" onclick="closeVariableEditModal()" aria-label="Close">×</button>
+    <h3 id="appModalTitle">Edit</h3>
+    <button class="x" onclick="closeAppModal()" aria-label="Close">×</button>
   </div>
   <div class="app-modal-body" id="appModalBody"></div>
-  <div class="app-modal-foot">
-    <button id="appModalRevert" style="background:none;border:0;padding:0;color:var(--blue-500);cursor:pointer;font-size:12px;font-weight:600;display:none;font-family:inherit;" onclick="revertVariableEdit()">Revert to original</button>
-    <div style="flex:1"></div>
-    <button class="btn ghost" onclick="closeVariableEditModal()">Cancel</button>
-    <button class="btn primary" onclick="saveVariableEdit()">Save</button>
-  </div>
+  <div class="app-modal-foot" id="appModalFoot"></div>
 </div>
 <aside class="detail-panel" id="detailPanel">
   <div class="detail-head" id="detailHead"></div>
@@ -2043,16 +2080,21 @@ const MOCK_DATA = {
     build: {
       default: { type: 'LATEST_ON_BRANCH', branchId: 'main', resolvesToTag: 'v1.4.2' },
       overrides: [
-        { id: 'bo_1', target: { type: 'ROLE', value: 'legacy-tier' }, policy: { type: 'FIXED_VERSION', buildId: 'b_v141', resolvesToTag: 'v1.4.1' }, priority: 10, enabled: true },
-        { id: 'bo_2', target: { type: 'ROLE', value: 'beta-testers' }, policy: { type: 'LATEST_ON_BRANCH', branchId: 'beta', resolvesToTag: 'v1.4.0-beta' }, priority: 20, enabled: true },
-        { id: 'bo_3', target: { type: 'USER', value: 'u_4419' }, policy: { type: 'FIXED_VERSION', buildId: 'b_v142', resolvesToTag: 'v1.4.2' }, priority: 100, enabled: true },
+        { id: 'bo_1', target: { type: 'ROLE', value: 'legacy-tier' }, policy: { type: 'FIXED_VERSION', buildId: 'b_v141', resolvesToTag: 'v1.4.1' }, priority: 10, enabled: true,
+          audit: { createdBy: 'alice', createdDate: '210d ago', modifiedBy: 'alice', modifiedDate: '210d ago' } },
+        { id: 'bo_2', target: { type: 'ROLE', value: 'beta-testers' }, policy: { type: 'LATEST_ON_BRANCH', branchId: 'beta', resolvesToTag: 'v1.4.0-beta' }, priority: 20, enabled: true,
+          audit: { createdBy: 'bob',   createdDate: '120d ago', modifiedBy: 'carlos', modifiedDate: '4d ago' } },
+        { id: 'bo_3', target: { type: 'USER', value: 'u_4419' }, policy: { type: 'FIXED_VERSION', buildId: 'b_v142', resolvesToTag: 'v1.4.2' }, priority: 100, enabled: true,
+          audit: { createdBy: 'carlos',createdDate: '30d ago',  modifiedBy: 'carlos', modifiedDate: '30d ago' } },
       ],
     },
     param: {
       defaults: { max_retries: 3, llm_temperature: 0.7, timeout_ms: 30000, region: 'us-east', logging: 'info' },
       overrides: [
-        { id: 'po_1', target: { type: 'ROLE', value: 'admins' }, params: { logging: 'debug', timeout_ms: 60000 }, priority: 10, enabled: true },
-        { id: 'po_2', target: { type: 'ROLE', value: 'beta-testers' }, params: { llm_temperature: 0.9 }, priority: 20, enabled: false },
+        { id: 'po_1', target: { type: 'ROLE', value: 'admins' }, params: { logging: 'debug', timeout_ms: 60000 }, priority: 10, enabled: true,
+          audit: { createdBy: 'alice', createdDate: '180d ago', modifiedBy: 'alice', modifiedDate: '21d ago' } },
+        { id: 'po_2', target: { type: 'ROLE', value: 'beta-testers' }, params: { llm_temperature: 0.9 }, priority: 20, enabled: false,
+          audit: { createdBy: 'bob',   createdDate: '60d ago',  modifiedBy: 'bob',    modifiedDate: '60d ago' } },
       ],
     },
   },
@@ -2364,6 +2406,7 @@ const STATE = {
   expandedTokens: new Set(),
   variableEdits: {},          // { [instanceId]: { [key]: newValue } }
   variableEditModal: { open: false, instanceId: null, key: null, originalValue: null, returnFocusTo: null },
+  activeModal: { kind: null, payload: null, returnFocusTo: null }, // 'variable' | 'override-edit' | 'override-delete'
   glossary: { open: false, scrollToTerm: null },
   filters: {
     overview: { type: 'all', search: '' },
@@ -2988,23 +3031,24 @@ function renderConfiguration(root) {
   const params = MOCK_DATA.policies.param;
   const resolver = STATE.configResolver;
 
+  const auditTitle = (a) => a ? `Created by ${a.createdBy} · ${a.createdDate}\nModified by ${a.modifiedBy} · ${a.modifiedDate}` : '';
   const buildOverridesHtml = policy.overrides.map(o => `
-    <tr>
+    <tr title="${escapeHtml(auditTitle(o.audit))}">
       <td><span class="target-badge ${o.target.type === 'USER' ? 'user' : 'role'}">${o.target.type}</span> <code style="font-family:'JetBrains Mono',monospace;font-size:11px;margin-left:4px;">${escapeHtml(o.target.value)}</code></td>
       <td>${escapeHtml(o.policy.type)} → <code style="font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--bg-alt);border:1px solid var(--border);padding:1px 5px;border-radius:4px;">${escapeHtml(o.policy.resolvesToTag)}</code></td>
       <td style="font-family:'JetBrains Mono',monospace;color:var(--text-muted);font-size:11px;text-align:center;width:50px;">${o.priority}</td>
       <td><button class="toggle ${o.enabled ? '' : 'off'}" onclick="toggleOverride('build','${o.id}')"><span class="switch"></span>${o.enabled ? 'On' : 'Off'}</button></td>
-      <td style="text-align:right"><a style="color:var(--blue-500);cursor:pointer;font-size:11px;font-weight:600;margin-right:8px">Edit</a><a class="btn danger" style="color:var(--red-700);cursor:pointer;font-size:11px;font-weight:600;background:none;border:none;padding:0;">Delete</a></td>
+      <td style="text-align:right;white-space:nowrap;"><button class="ov-link edit" onclick="openOverrideEditModal('build','${o.id}')">Edit</button><button class="ov-link delete" onclick="openOverrideDeleteModal('build','${o.id}')">Delete</button></td>
     </tr>
   `).join('');
 
   const paramOverridesHtml = params.overrides.map(o => `
-    <tr>
+    <tr title="${escapeHtml(auditTitle(o.audit))}">
       <td><span class="target-badge ${o.target.type === 'USER' ? 'user' : 'role'}">${o.target.type}</span> <code style="font-family:'JetBrains Mono',monospace;font-size:11px;margin-left:4px;">${escapeHtml(o.target.value)}</code></td>
       <td>${Object.entries(o.params).map(([k, v]) => `<code style="font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--bg-alt);border:1px solid var(--border);padding:1px 5px;border-radius:4px;margin-right:4px;">${escapeHtml(k)}=${escapeHtml(String(v))}</code>`).join('')}</td>
       <td style="font-family:'JetBrains Mono',monospace;color:var(--text-muted);font-size:11px;text-align:center;width:50px;">${o.priority}</td>
       <td><button class="toggle ${o.enabled ? '' : 'off'}" onclick="toggleOverride('param','${o.id}')"><span class="switch"></span>${o.enabled ? 'On' : 'Off'}</button></td>
-      <td style="text-align:right"><a style="color:var(--blue-500);cursor:pointer;font-size:11px;font-weight:600;margin-right:8px">Edit</a><a style="color:var(--red-700);cursor:pointer;font-size:11px;font-weight:600;">Delete</a></td>
+      <td style="text-align:right;white-space:nowrap;"><button class="ov-link edit" onclick="openOverrideEditModal('param','${o.id}')">Edit</button><button class="ov-link delete" onclick="openOverrideDeleteModal('param','${o.id}')">Delete</button></td>
     </tr>
   `).join('');
 
@@ -3047,6 +3091,17 @@ function renderConfiguration(root) {
             </div>
           </div>
         `).join('')}
+        ${r.paramPath ? `
+          <div style="margin-top:8px;">
+            <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.04em;font-weight:700;margin-bottom:4px;">Resolution path</div>
+            ${r.paramPath.map(p => `
+              <div class="path-step ${p.matched ? 'matched' : 'skipped'}">
+                <span class="dot"></span>
+                <div class="label">${escapeHtml(p.description)}</div>
+              </div>
+            `).join('')}
+          </div>
+        ` : ''}
       </div>`;
   }
 
@@ -3060,6 +3115,7 @@ function renderConfiguration(root) {
     <div class="page-section cfg-shell">
       <div>
         ${docBanner('How configuration works.', 'Every caller has a default for each axis. Overrides match users or roles and replace the default for those callers. Higher-priority overrides win when multiple match. The resolver on the right shows the effective values for a specific user.', 'cfg-howto')}
+        ${permLine(['wks_active_policy_read', 'wks_config_param_overrides_read'])}
 
         <div class="axis-section">
           <div class="axis-header">
@@ -3194,9 +3250,10 @@ function resolveConfig() {
   // Param axis resolution — per key
   const paramOverridesSorted = params.overrides.slice().sort((a, b) => b.priority - a.priority);
   const resolvedParams = {};
+  const keyWinner = {};
+  const keyDisabledHigher = {};
   for (const [key, defaultValue] of Object.entries(params.defaults)) {
     let winner = null;
-    let suppressedHigherEnabled = false;
     let suppressedHigherDisabled = null;
     for (const o of paramOverridesSorted) {
       const matches = o.target.type === 'USER' ? o.target.value === username : roles.includes(o.target.value);
@@ -3209,6 +3266,8 @@ function resolveConfig() {
         }
       }
     }
+    keyWinner[key] = winner;
+    keyDisabledHigher[key] = suppressedHigherDisabled;
     if (winner) {
       resolvedParams[key] = {
         value: winner.params[key],
@@ -3227,7 +3286,41 @@ function resolveConfig() {
     }
   }
 
-  STATE.configResolver.result = { build: buildResult, params: resolvedParams };
+  // Build an ordered resolution path for the param axis (same shape as the build axis).
+  const paramPath = [];
+  for (const o of paramOverridesSorted) {
+    const matchesTarget = o.target.type === 'USER' ? o.target.value === username : roles.includes(o.target.value);
+    const ovKeys = Object.keys(o.params);
+    const keysHere = ovKeys.map(k => `${k}=${o.params[k]}`).join(', ');
+    if (!matchesTarget) {
+      paramPath.push({ description: `${o.target.type} override ${o.target.value} · priority ${o.priority} — does not match`, matched: false });
+      continue;
+    }
+    if (!o.enabled) {
+      paramPath.push({ description: `${o.target.type} override ${o.target.value} · priority ${o.priority} — matches user (would set ${keysHere}) · disabled`, matched: false });
+      continue;
+    }
+    // enabled + matches — figure out which of its keys actually won
+    const wonKeys = ovKeys.filter(k => keyWinner[k] === o);
+    const lostKeys = ovKeys.filter(k => keyWinner[k] !== o);
+    if (wonKeys.length === 0) {
+      paramPath.push({ description: `${o.target.type} override ${o.target.value} · priority ${o.priority} — matches user but ${lostKeys.join(', ')} already set by higher priority`, matched: false });
+    } else if (lostKeys.length === 0) {
+      paramPath.push({ description: `${o.target.type} override ${o.target.value} · priority ${o.priority} — matches user; sets ${wonKeys.map(k => `${k}=${o.params[k]}`).join(', ')}`, matched: true });
+    } else {
+      paramPath.push({ description: `${o.target.type} override ${o.target.value} · priority ${o.priority} — matches user; sets ${wonKeys.map(k => `${k}=${o.params[k]}`).join(', ')} · ${lostKeys.join(', ')} already won by higher priority`, matched: true });
+    }
+  }
+  const keysFromDefaults = Object.keys(params.defaults).filter(k => !keyWinner[k]);
+  if (keysFromDefaults.length === Object.keys(params.defaults).length) {
+    paramPath.push({ description: `Defaults applied for all params`, matched: true });
+  } else if (keysFromDefaults.length > 0) {
+    paramPath.push({ description: `Defaults applied for ${keysFromDefaults.join(', ')}`, matched: true });
+  } else {
+    paramPath.push({ description: `Defaults — every param had a winning override`, matched: false });
+  }
+
+  STATE.configResolver.result = { build: buildResult, params: resolvedParams, paramPath };
   renderConfiguration(document.getElementById('page'));
 }
 
@@ -3473,6 +3566,7 @@ function renderLiveEvalsLanding(root) {
         ${['1h','24h','7d','custom'].map(t => `<button class="chip ${tw === t ? 'active' : ''}" onclick="setLiveEvalsTimeWindow('${t}')">${t === 'custom' ? 'Custom' : t}</button>`).join('')}
       </div>
       ${docBanner("What's on Live Evals?", "Each card is one AI workflow in this app. Telemetry stats are shown for the active time window. Drill into a workflow to see its three observability tiers, configure scorers, and define observation points.", 'le-landing-howto')}
+      ${permLine('wks_live_evals_read')}
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px;">
         ${cardsHtml}
       </div>
@@ -4083,16 +4177,29 @@ function renderTriggers(root) {
     bodyHtml = `
       <table class="list-table">
         <thead><tr>
-          <th>Trigger</th><th>Type</th><th>Fired at</th><th>Outcome</th><th>${tab === 'failed-fires' ? 'Failure reason' : 'Spawned'}</th>
+          <th>Trigger</th><th>Type</th><th>Fired at</th><th>Outcome</th><th>${tab === 'failed-fires' ? 'Failure reason · incident' : 'Spawned'}</th>
         </tr></thead>
         <tbody>
-          ${rows.map(f => `<tr onclick="openDetail('trigger','${f.triggerId}')">
-            <td><strong>${escapeHtml(f.triggerName)}</strong></td>
-            <td style="text-transform:capitalize">${escapeHtml(f.triggerType)}</td>
-            <td style="color:var(--text-muted);font-size:11px;">${escapeHtml(f.firedAt)}</td>
-            <td>${f.outcome === 'success' ? '<span style="color:var(--green-700);font-weight:600;font-size:11px;">Success</span>' : '<span style="color:var(--red-700);font-weight:600;font-size:11px;">Failed</span>'}</td>
-            <td>${f.outcome === 'success' ? (f.spawnedInstanceId ? `<a class="mono" style="color:var(--blue-500);cursor:pointer" onclick="event.stopPropagation(); openDetail('instance','${f.spawnedInstanceId}')">${escapeHtml(f.spawnedInstanceId)}</a>` : '<span style="color:var(--text-dim)">—</span>') : `<span style="color:var(--red-700);font-size:11px">${escapeHtml(f.failureReason)}</span>`}</td>
-          </tr>`).join('')}
+          ${rows.map(f => {
+            // For failed fires, route the row to the corresponding incident (the per-failure surface),
+            // falling back to the parent trigger when none exists. The trigger name remains a secondary link.
+            const incidentForFire = f.outcome === 'failed'
+              ? MOCK_DATA.incidents.find(i => i.sourceEntity && i.sourceEntity.kind === 'trigger' && i.sourceEntity.id === f.triggerId)
+              : null;
+            const rowClick = incidentForFire ? `openDetail('incident','${incidentForFire.id}')` : `openDetail('trigger','${f.triggerId}')`;
+            const rowTitle = incidentForFire ? `Opens incident ${incidentForFire.id}` : `Opens trigger detail`;
+            const triggerLink = `<a style="color:var(--text);text-decoration:none;font-weight:700;cursor:pointer;" onclick="event.stopPropagation(); openDetail('trigger','${f.triggerId}')">${escapeHtml(f.triggerName)}</a>`;
+            const failureCell = f.outcome === 'success'
+              ? (f.spawnedInstanceId ? `<a class="mono" style="color:var(--blue-500);cursor:pointer" onclick="event.stopPropagation(); openDetail('instance','${f.spawnedInstanceId}')">${escapeHtml(f.spawnedInstanceId)}</a>` : '<span style="color:var(--text-dim)">—</span>')
+              : `<span style="color:var(--red-700);font-size:11px">${escapeHtml(f.failureReason)}</span>${incidentForFire ? ` · <a class="mono" style="color:var(--blue-500);cursor:pointer;font-size:11px;font-weight:600;" onclick="event.stopPropagation(); openDetail('incident','${incidentForFire.id}')">→ ${escapeHtml(incidentForFire.id)}</a>` : ''}`;
+            return `<tr onclick="${rowClick}" title="${escapeHtml(rowTitle)}">
+              <td>${triggerLink}</td>
+              <td style="text-transform:capitalize">${escapeHtml(f.triggerType)}</td>
+              <td style="color:var(--text-muted);font-size:11px;">${escapeHtml(f.firedAt)}</td>
+              <td>${f.outcome === 'success' ? '<span style="color:var(--green-700);font-weight:600;font-size:11px;">Success</span>' : '<span style="color:var(--red-700);font-weight:600;font-size:11px;">Failed</span>'}</td>
+              <td>${failureCell}</td>
+            </tr>`;
+          }).join('')}
         </tbody>
       </table>`;
   }
@@ -4105,7 +4212,7 @@ function renderTriggers(root) {
       <span class="meta">${counts.scheduled} scheduled · ${counts.external} external · ${counts['failed-fires']} failed</span>
     </div>
     <div class="page-body" style="padding-bottom:0;">
-      ${docBanner("What's combined here.", "Old Scheduled Processes + old Manage Triggers + the trigger-failure subset of Failed Triggers. Mid-execution / Pre-start failures live in Incidents. The 'Failed fires' tab here is just for fires that didn't reach a process start.", 'triggers-howto')}
+      ${docBanner("What's combined here.", "Old Scheduled Processes + old Manage Triggers + the trigger-failure subset of Failed Triggers. Mid-execution / Pre-start failures live in Incidents. The 'Failed fires' tab here is just for fires that didn't reach a process start — each row opens the corresponding incident.", 'triggers-howto')}
     </div>
     <div class="page-section">
       <div class="stage-tabs">
@@ -4166,6 +4273,7 @@ function renderTasks(root) {
       <span class="sub">User-task inbox. Tasks are created by Process Instances reaching a human-task node.</span>
       <span class="meta">${pendingCount} pending</span>
     </div>
+    ${permLine('wks_tasks_read')}
     <div class="page-section">
       <div class="filter-bar">
         <div class="pickr ${f.assignee !== 'anyone' ? 'active' : ''}" onclick="cycleFilter('tasks','assignee', ['anyone','me','unassigned'])">Assignee <span class="v">${f.assignee.charAt(0).toUpperCase() + f.assignee.slice(1)}</span></div>
@@ -4341,6 +4449,7 @@ function renderInstanceDetail(it, tabIdx) {
     const spawnedProcs = MOCK_DATA.instances.filter(x => x.spawnedBy && x.spawnedBy.id === it.id);
     body = `
       ${docBanner('What an Instance overview shows.', 'A snapshot of identity, timing, build context, and where the instance came from / spawned.', `inst-overview-${it.type}`)}
+      ${it.type === 'uiflow' ? permLine('ui_flow_session_read') : ''}
       <div class="panel-block">
         ${panelHeading('Status', 'Normalized status')}
         <div class="kv">
@@ -4469,8 +4578,23 @@ function renderTokenRow(t, it) {
 }
 
 function renderAuditTimeline(it) {
-  // Build a unified set of timeline events: lifecycle + notifications, sorted by atSortable (minutes ago, ascending = most recent first)
+  // Unified timeline: trigger fire, instance start, per-token node arrivals + actions,
+  // subprocess spawns, outgoing notifications, and terminal lifecycle. Sorted ascending by
+  // atSortable (smaller = more recent, since timestamps are stored as "minutes ago").
   const events = [];
+
+  if (it.initiator && it.initiator.when) {
+    const initLabel = { manual: 'Manually started', cron: 'Cron fired', webhook: 'Webhook received', process: 'Spawned by parent process', uiflow: 'Started from UI Flow' }[it.initiator.kind] || 'Initiated';
+    const initiatorMeta = it.initiator.triggerName || it.initiator.parentId || it.initiator.userId || '';
+    events.push({
+      atSortable: parseAgoMinutes(it.initiator.when) + 0.1, // just before instance start
+      at: it.initiator.when,
+      kind: 'lifecycle',
+      label: `<strong>${escapeHtml(initLabel)}</strong>${initiatorMeta ? ` · <span style="color:var(--text-muted);">${escapeHtml(initiatorMeta)}</span>` : ''}`,
+      bad: false,
+    });
+  }
+
   events.push({
     atSortable: parseAgoMinutes(it.startedAt),
     at: it.startedAt,
@@ -4478,9 +4602,53 @@ function renderAuditTimeline(it) {
     label: `Instance <strong>started</strong> on build ${escapeHtml(it.buildTag)}`,
     bad: false,
   });
+
+  // Per-token node action history — token arrivals ("enter"), executions, finishes ("complete"), aborts/errors.
+  (it.tokens || []).forEach(tok => {
+    (tok.nodesActionStates || []).forEach(h => {
+      const isError = /error|abort|fail/i.test(h.status) || /abort|error|fail/i.test(h.action);
+      const actionVerb = ({
+        enter: 'arrived at',
+        complete: 'finished at',
+        execute: 'executing at',
+        abort: 'aborted at',
+      })[h.action] || h.action;
+      const tokenChip = `<span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-muted);background:var(--bg-alt);border:1px solid var(--border);padding:0 4px;border-radius:3px;margin-right:6px;">${escapeHtml(tok.id)}</span>`;
+      events.push({
+        atSortable: parseAgoMinutes(h.at),
+        at: h.at,
+        kind: 'node',
+        label: `${tokenChip}<strong>${escapeHtml(actionVerb)} ${escapeHtml(h.node)}</strong><div style="color:var(--text-muted);margin-top:2px;">${escapeHtml(h.status)}</div>`,
+        bad: isError,
+      });
+    });
+    if (tok.backSeq) {
+      events.push({
+        atSortable: parseAgoMinutes(it.startedAt) - 0.3,
+        at: it.startedAt,
+        kind: 'node',
+        label: `↺ <strong>Back to ${escapeHtml(tok.backSeq.node)}</strong> <span style="color:var(--text-muted);">— ${escapeHtml(tok.backSeq.reason)}</span>`,
+        bad: false,
+      });
+    }
+  });
+
+  // Subprocess spawns — anchor to the child instance's own startedAt if we have it, otherwise the parent's
+  (it.subprocesses || []).forEach(sp => {
+    const child = MOCK_DATA.instances.find(x => x.id === sp.id);
+    const at = child?.startedAt || it.startedAt;
+    events.push({
+      atSortable: parseAgoMinutes(at) + 0.05,
+      at,
+      kind: 'lifecycle',
+      label: `Spawned subprocess <strong>${escapeHtml(sp.definitionName)}</strong> · <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-muted);">${escapeHtml(sp.id)}</span>`,
+      bad: false,
+    });
+  });
+
   if (it.status === 'failed') {
     events.push({
-      atSortable: 1,
+      atSortable: 0.5,
       at: 'recently',
       kind: 'lifecycle',
       label: `<strong>Execution failed</strong> at ${escapeHtml(it.atStep)}`,
@@ -4496,6 +4664,16 @@ function renderAuditTimeline(it) {
       bad: false,
     });
   }
+  if (it.status === 'terminated') {
+    events.push({
+      atSortable: Math.max(0, parseAgoMinutes(it.startedAt) - 1),
+      at: 'recently',
+      kind: 'lifecycle',
+      label: `Instance <strong>terminated</strong> · ${escapeHtml(it.atStep)}`,
+      bad: true,
+    });
+  }
+
   (it.notifications || []).forEach(n => {
     const channelLabel = { 'email': 'Email', 'webhook': 'Webhook', 'in-app': 'In-app' }[n.channel] || n.channel;
     const verb = n.status === 'failed' ? 'failed' : 'sent';
@@ -4508,15 +4686,17 @@ function renderAuditTimeline(it) {
     });
   });
   events.sort((a, b) => a.atSortable - b.atSortable);
-  return `${docBanner('Audit timeline.', 'Lifecycle events (started, paused, completed) plus outgoing notifications (email, webhook, in-app) in one chronological log.', 'inst-audit')}
+  return `${docBanner('Audit timeline.', 'Full chronological log — trigger fires, instance lifecycle, token arrivals and node finishes with action data, subprocess spawns, and outgoing notifications.', 'inst-audit')}
     <div class="panel-block">
       ${panelHeading('Audit timeline', null)}
       <div class="timeline">
         ${events.map(e => {
           const rowClass = e.bad ? 'tl-row bad' : 'tl-row';
           const dot = e.kind === 'notif'
-            ? `<div class="dot notif" aria-hidden="true">${e.bad ? '!' : '✉'}</div>`
-            : `<div class="dot" aria-hidden="true"></div>`;
+              ? `<div class="dot notif" aria-hidden="true">${e.bad ? '!' : '✉'}</div>`
+            : e.kind === 'node'
+              ? `<div class="dot node" aria-hidden="true">·</div>`
+              : `<div class="dot" aria-hidden="true"></div>`;
           return `<div class="${rowClass}"><div class="when">${escapeHtml(e.at)}</div>${dot}<div class="lbl">${e.label}</div></div>`;
         }).join('')}
       </div>
@@ -4591,6 +4771,16 @@ function docBanner(title, body, id) {
     <button class="x" onclick="dismissBanner('${id}'); this.parentElement.remove();">×</button>
   </div>`;
 }
+// Compact one-line permission-required caption.
+// Permissions are enforced by the platform; the prototype is signed in as a user with the
+// listed permissions granted. The caption documents the contract so users know what they'd
+// need to actually use this surface.
+function permLine(perms) {
+  const list = Array.isArray(perms) ? perms : [perms];
+  const chips = list.map(p => `<code class="perm-chip">${escapeHtml(p)}</code>`).join(' ');
+  const label = list.length > 1 ? 'permissions' : 'permission';
+  return `<div class="perm-line"><i class="ph ph-shield-check" aria-hidden="true"></i><span>Requires ${chips} ${label} · granted for this session</span></div>`;
+}
 function dismissBanner(id) {
   STATE.dismissedBanners.add(id);
   sessionStorage.setItem('dismissedBanners', JSON.stringify([...STATE.dismissedBanners]));
@@ -4600,6 +4790,25 @@ function toggleToken(tokenId) {
   else STATE.expandedTokens.add(tokenId);
   renderDetail();
 }
+// Generic modal dispatcher — opens/closes the .app-modal scaffold for any client.
+// Clients populate title + body + foot, store anything they need in STATE.activeModal.payload.
+function showAppModal({ title, bodyHtml, footHtml, focusSelector, kind, payload }) {
+  STATE.activeModal = { kind, payload, returnFocusTo: document.activeElement };
+  document.getElementById('appModalTitle').textContent = title;
+  document.getElementById('appModalBody').innerHTML = bodyHtml;
+  document.getElementById('appModalFoot').innerHTML = footHtml;
+  document.getElementById('appModalScrim').classList.add('open');
+  document.getElementById('appModal').classList.add('open');
+  if (focusSelector) setTimeout(() => document.querySelector(focusSelector)?.focus(), 50);
+}
+function closeAppModal() {
+  const returnFocusTo = STATE.activeModal.returnFocusTo;
+  STATE.activeModal = { kind: null, payload: null, returnFocusTo: null };
+  STATE.variableEditModal = { open: false, instanceId: null, key: null, originalValue: null, returnFocusTo: null };
+  document.getElementById('appModalScrim').classList.remove('open');
+  document.getElementById('appModal').classList.remove('open');
+  setTimeout(() => returnFocusTo?.focus?.(), 0);
+}
 function openVariableEditModal(instanceId, key) {
   const it = MOCK_DATA.instances.find(x => x.id === instanceId);
   if (!it) return;
@@ -4607,30 +4816,31 @@ function openVariableEditModal(instanceId, key) {
   const edited = STATE.variableEdits[instanceId]?.[key];
   const current = edited !== undefined ? edited : original;
   STATE.variableEditModal = { open: true, instanceId, key, originalValue: original, returnFocusTo: document.activeElement };
-  document.getElementById('appModalTitle').textContent = `Edit variable · ${key}`;
-  document.getElementById('appModalBody').innerHTML = `
-    <div class="field-label">Key</div>
-    <div class="field-readonly">${escapeHtml(key)}</div>
-    <div class="field-label">Original value</div>
-    <div class="field-readonly">${escapeHtml(String(original))}</div>
-    <div class="field-label">New value</div>
-    <textarea id="appModalInput">${escapeHtml(String(current))}</textarea>
-    <div style="font-size:11px;color:var(--text-dim);margin-top:8px;">In-session change · requires <code style="font-family:'JetBrains Mono',monospace;font-size:10px;">wks_process_instance_variables_edit</code> · not persisted.</div>
-  `;
-  document.getElementById('appModalRevert').style.display = edited !== undefined ? 'inline' : 'none';
-  document.getElementById('appModalScrim').classList.add('open');
-  document.getElementById('appModal').classList.add('open');
-  setTimeout(() => document.getElementById('appModalInput').focus(), 50);
-}
-function closeVariableEditModal() {
-  const returnFocusTo = STATE.variableEditModal.returnFocusTo;
-  STATE.variableEditModal = { open: false, instanceId: null, key: null, originalValue: null, returnFocusTo: null };
-  document.getElementById('appModalScrim').classList.remove('open');
-  document.getElementById('appModal').classList.remove('open');
-  setTimeout(() => returnFocusTo?.focus?.(), 0);
+  const revertVisible = edited !== undefined ? 'inline' : 'none';
+  showAppModal({
+    kind: 'variable',
+    payload: { instanceId, key, originalValue: original },
+    title: `Edit variable · ${key}`,
+    bodyHtml: `
+      <div class="field-label">Key</div>
+      <div class="field-readonly">${escapeHtml(key)}</div>
+      <div class="field-label">Original value</div>
+      <div class="field-readonly">${escapeHtml(String(original))}</div>
+      <div class="field-label">New value</div>
+      <textarea id="appModalInput">${escapeHtml(String(current))}</textarea>
+      <div style="font-size:11px;color:var(--text-dim);margin-top:8px;">In-session change · requires <code style="font-family:'JetBrains Mono',monospace;font-size:10px;">wks_process_instance_variables_edit</code> · not persisted.</div>
+    `,
+    footHtml: `
+      <button id="appModalRevert" style="background:none;border:0;padding:0;color:var(--blue-500);cursor:pointer;font-size:12px;font-weight:600;display:${revertVisible};font-family:inherit;" onclick="revertVariableEdit()">Revert to original</button>
+      <div style="flex:1"></div>
+      <button class="btn ghost" onclick="closeAppModal()">Cancel</button>
+      <button class="btn primary" onclick="saveVariableEdit()">Save</button>
+    `,
+    focusSelector: '#appModalInput',
+  });
 }
 function saveVariableEdit() {
-  const { instanceId, key, originalValue } = STATE.variableEditModal;
+  const { instanceId, key, originalValue } = STATE.activeModal.payload || {};
   if (!instanceId) return;
   const raw = document.getElementById('appModalInput').value;
   let newValue = raw;
@@ -4639,16 +4849,181 @@ function saveVariableEdit() {
   }
   if (!STATE.variableEdits[instanceId]) STATE.variableEdits[instanceId] = {};
   STATE.variableEdits[instanceId][key] = newValue;
-  closeVariableEditModal();
+  closeAppModal();
   renderDetail();
 }
 function revertVariableEdit() {
-  const { instanceId, key } = STATE.variableEditModal;
-  if (!instanceId || !STATE.variableEdits[instanceId]) return closeVariableEditModal();
+  const { instanceId, key } = STATE.activeModal.payload || {};
+  if (!instanceId || !STATE.variableEdits[instanceId]) return closeAppModal();
   delete STATE.variableEdits[instanceId][key];
   if (Object.keys(STATE.variableEdits[instanceId]).length === 0) delete STATE.variableEdits[instanceId];
-  closeVariableEditModal();
+  closeAppModal();
   renderDetail();
+}
+
+// ----- Override edit / delete modals (build + param axes) ------------------
+function findOverride(axis, id) {
+  const list = axis === 'build' ? MOCK_DATA.policies.build.overrides : MOCK_DATA.policies.param.overrides;
+  return list.find(o => o.id === id);
+}
+
+function openOverrideEditModal(axis, id) {
+  const o = findOverride(axis, id);
+  if (!o) return;
+  const audit = o.audit || {};
+  const isBuild = axis === 'build';
+  const branches = Array.from(new Set(MOCK_DATA.builds.map(b => b.branch)));
+  const builds = MOCK_DATA.builds.filter(b => !b.isArchived);
+
+  let policyFields = '';
+  if (isBuild) {
+    const isFixed = o.policy.type === 'FIXED_VERSION';
+    policyFields = `
+      <div class="field-label">Policy type</div>
+      <div style="display:flex;gap:8px;margin-bottom:12px;">
+        <label class="ov-radio"><input type="radio" name="ovPolicyType" value="LATEST_ON_BRANCH" ${!isFixed ? 'checked' : ''}> Latest on branch</label>
+        <label class="ov-radio"><input type="radio" name="ovPolicyType" value="FIXED_VERSION" ${isFixed ? 'checked' : ''}> Fixed version</label>
+      </div>
+      <div class="field-label">Branch / Build</div>
+      <div style="display:flex;gap:8px;margin-bottom:12px;">
+        <select id="ovBranch" style="flex:1;font-family:'JetBrains Mono',monospace;font-size:12px;padding:6px 8px;border:1px solid var(--border-strong);border-radius:6px;background:white;${isFixed ? 'opacity:0.4;pointer-events:none;' : ''}">
+          ${branches.map(b => `<option value="${escapeHtml(b)}" ${o.policy.branchId === b ? 'selected' : ''}>${escapeHtml(b)}</option>`).join('')}
+        </select>
+        <select id="ovBuild" style="flex:1;font-family:'JetBrains Mono',monospace;font-size:12px;padding:6px 8px;border:1px solid var(--border-strong);border-radius:6px;background:white;${!isFixed ? 'opacity:0.4;pointer-events:none;' : ''}">
+          ${builds.map(b => `<option value="${escapeHtml(b.id)}" data-tag="${escapeHtml(b.tag)}" ${o.policy.buildId === b.id ? 'selected' : ''}>${escapeHtml(b.tag)}</option>`).join('')}
+        </select>
+      </div>
+    `;
+  } else {
+    const paramRows = Object.entries(o.params).map(([k, v]) => `${k}=${v}`).join('\n');
+    policyFields = `
+      <div class="field-label">Param overrides — one per line, <code style="font-family:'JetBrains Mono',monospace;font-size:10px;">key=value</code></div>
+      <textarea id="ovParams" style="font-family:'JetBrains Mono',monospace;min-height:80px;">${escapeHtml(paramRows)}</textarea>
+      <div style="font-size:11px;color:var(--text-dim);margin:4px 0 12px;">Defaults: ${Object.keys(MOCK_DATA.policies.param.defaults).map(k => `<code style="font-family:'JetBrains Mono',monospace;font-size:10px;">${escapeHtml(k)}</code>`).join(' · ')}</div>
+    `;
+  }
+
+  showAppModal({
+    kind: 'override-edit',
+    payload: { axis, id },
+    title: `Edit ${isBuild ? 'build' : 'param'} override · ${o.target.value}`,
+    bodyHtml: `
+      <div class="field-label">Target</div>
+      <div style="display:flex;gap:8px;margin-bottom:12px;align-items:center;">
+        <label class="ov-radio"><input type="radio" name="ovTargetType" value="USER" ${o.target.type === 'USER' ? 'checked' : ''}> User</label>
+        <label class="ov-radio"><input type="radio" name="ovTargetType" value="ROLE" ${o.target.type === 'ROLE' ? 'checked' : ''}> Role</label>
+        <input type="text" id="ovTargetValue" value="${escapeHtml(o.target.value)}" style="flex:1;font-family:'JetBrains Mono',monospace;font-size:12px;padding:6px 8px;border:1px solid var(--border-strong);border-radius:6px;">
+      </div>
+      ${policyFields}
+      <div class="field-label">Priority</div>
+      <input type="number" id="ovPriority" value="${o.priority}" min="0" step="10" style="width:100%;font-family:'JetBrains Mono',monospace;font-size:12px;padding:6px 8px;border:1px solid var(--border-strong);border-radius:6px;margin-bottom:12px;">
+      <div style="margin-top:14px;padding:10px 12px;background:var(--bg-alt);border:1px solid var(--border);border-radius:6px;font-size:11px;color:var(--text-muted);">
+        <div style="display:grid;grid-template-columns:90px 1fr;gap:4px 12px;">
+          <span style="color:var(--text-dim);text-transform:uppercase;letter-spacing:0.04em;font-weight:700;">Created</span><span>${escapeHtml(audit.createdBy || '—')} · ${escapeHtml(audit.createdDate || '—')}</span>
+          <span style="color:var(--text-dim);text-transform:uppercase;letter-spacing:0.04em;font-weight:700;">Modified</span><span>${escapeHtml(audit.modifiedBy || '—')} · ${escapeHtml(audit.modifiedDate || '—')}</span>
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--text-dim);margin-top:8px;">In-session change · not persisted.</div>
+    `,
+    footHtml: `
+      <div style="flex:1"></div>
+      <button class="btn ghost" onclick="closeAppModal()">Cancel</button>
+      <button class="btn primary" onclick="saveOverrideEdit()">Save</button>
+    `,
+    focusSelector: '#ovTargetValue',
+  });
+
+  if (isBuild) {
+    document.querySelectorAll('input[name="ovPolicyType"]').forEach(r => r.addEventListener('change', () => {
+      const fixed = document.querySelector('input[name="ovPolicyType"]:checked').value === 'FIXED_VERSION';
+      document.getElementById('ovBranch').style.cssText = `flex:1;font-family:'JetBrains Mono',monospace;font-size:12px;padding:6px 8px;border:1px solid var(--border-strong);border-radius:6px;background:white;${fixed ? 'opacity:0.4;pointer-events:none;' : ''}`;
+      document.getElementById('ovBuild').style.cssText = `flex:1;font-family:'JetBrains Mono',monospace;font-size:12px;padding:6px 8px;border:1px solid var(--border-strong);border-radius:6px;background:white;${!fixed ? 'opacity:0.4;pointer-events:none;' : ''}`;
+    }));
+  }
+}
+
+function saveOverrideEdit() {
+  const { axis, id } = STATE.activeModal.payload || {};
+  const o = findOverride(axis, id);
+  if (!o) return closeAppModal();
+
+  const targetType = document.querySelector('input[name="ovTargetType"]:checked')?.value || o.target.type;
+  const targetValue = document.getElementById('ovTargetValue').value.trim() || o.target.value;
+  const priority = parseInt(document.getElementById('ovPriority').value, 10);
+  o.target = { type: targetType, value: targetValue };
+  if (Number.isFinite(priority)) o.priority = priority;
+
+  if (axis === 'build') {
+    const policyType = document.querySelector('input[name="ovPolicyType"]:checked')?.value || o.policy.type;
+    if (policyType === 'FIXED_VERSION') {
+      const buildSel = document.getElementById('ovBuild');
+      const buildId = buildSel.value;
+      const resolvesToTag = buildSel.options[buildSel.selectedIndex]?.dataset.tag || o.policy.resolvesToTag;
+      o.policy = { type: 'FIXED_VERSION', buildId, resolvesToTag };
+    } else {
+      const branchId = document.getElementById('ovBranch').value;
+      const latest = MOCK_DATA.builds.filter(b => b.branch === branchId && !b.isArchived)[0];
+      o.policy = { type: 'LATEST_ON_BRANCH', branchId, resolvesToTag: latest?.tag || o.policy.resolvesToTag };
+    }
+  } else {
+    const raw = document.getElementById('ovParams').value;
+    const parsed = {};
+    raw.split(/\r?\n/).map(s => s.trim()).filter(Boolean).forEach(line => {
+      const eq = line.indexOf('=');
+      if (eq === -1) return;
+      const k = line.slice(0, eq).trim();
+      const vRaw = line.slice(eq + 1).trim();
+      if (!k) return;
+      const asNum = Number(vRaw);
+      parsed[k] = !isNaN(asNum) && vRaw !== '' ? asNum : vRaw;
+    });
+    o.params = parsed;
+  }
+
+  o.audit = { ...(o.audit || {}), modifiedBy: 'me', modifiedDate: 'just now' };
+  closeAppModal();
+  if (STATE.configResolver.result) resolveConfig();
+  else renderConfiguration(document.getElementById('page'));
+}
+
+function openOverrideDeleteModal(axis, id) {
+  const o = findOverride(axis, id);
+  if (!o) return;
+  const isBuild = axis === 'build';
+  const summary = isBuild
+    ? `${o.policy.type} → <code style="font-family:'JetBrains Mono',monospace;font-size:11px;">${escapeHtml(o.policy.resolvesToTag)}</code>`
+    : Object.entries(o.params).map(([k, v]) => `<code style="font-family:'JetBrains Mono',monospace;font-size:11px;">${escapeHtml(k)}=${escapeHtml(String(v))}</code>`).join(' ');
+  showAppModal({
+    kind: 'override-delete',
+    payload: { axis, id },
+    title: `Delete ${isBuild ? 'build' : 'param'} override?`,
+    bodyHtml: `
+      <p style="margin:0 0 12px;color:var(--text);font-size:13px;line-height:20px;">This will remove the override for <strong>${escapeHtml(o.target.value)}</strong>. Affected users fall back to ${isBuild ? 'the default policy or a lower-priority override' : 'defaults or lower-priority param overrides'}.</p>
+      <div style="padding:10px 12px;background:var(--bg-alt);border:1px solid var(--border);border-radius:6px;font-size:12px;">
+        <div style="display:grid;grid-template-columns:80px 1fr;gap:4px 12px;">
+          <span style="color:var(--text-dim);text-transform:uppercase;letter-spacing:0.04em;font-weight:700;font-size:11px;">Target</span><span><span class="target-badge ${o.target.type === 'USER' ? 'user' : 'role'}">${o.target.type}</span> <code style="font-family:'JetBrains Mono',monospace;font-size:11px;">${escapeHtml(o.target.value)}</code></span>
+          <span style="color:var(--text-dim);text-transform:uppercase;letter-spacing:0.04em;font-weight:700;font-size:11px;">${isBuild ? 'Policy' : 'Params'}</span><span>${summary}</span>
+          <span style="color:var(--text-dim);text-transform:uppercase;letter-spacing:0.04em;font-weight:700;font-size:11px;">Priority</span><span><code style="font-family:'JetBrains Mono',monospace;font-size:11px;">${o.priority}</code></span>
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--text-dim);margin-top:8px;">In-session change · not persisted.</div>
+    `,
+    footHtml: `
+      <div style="flex:1"></div>
+      <button class="btn ghost" onclick="closeAppModal()">Cancel</button>
+      <button class="btn danger-primary" onclick="confirmOverrideDelete()">Delete override</button>
+    `,
+  });
+}
+
+function confirmOverrideDelete() {
+  const { axis, id } = STATE.activeModal.payload || {};
+  const list = axis === 'build' ? MOCK_DATA.policies.build.overrides : MOCK_DATA.policies.param.overrides;
+  const idx = list.findIndex(o => o.id === id);
+  if (idx >= 0) list.splice(idx, 1);
+  closeAppModal();
+  if (STATE.configResolver.result) resolveConfig();
+  else renderConfiguration(document.getElementById('page'));
 }
 function renderIncidentDetail(it, tabIdx) {
   const hasStackTrace = !!it.stackTrace;
@@ -5472,7 +5847,7 @@ setInterval(simulateActivity, 7000);
 document.addEventListener('keydown', (ev) => {
   if (ev.key === 'Escape') {
     if (STATE.glossary.open) closeGlossary();
-    else if (STATE.variableEditModal.open) closeVariableEditModal();
+    else if (STATE.activeModal.kind) closeAppModal();
     else if (STATE.detail.open) closeDetail();
   }
 });
