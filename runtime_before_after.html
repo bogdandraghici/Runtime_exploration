@@ -403,6 +403,15 @@
         </div>
         <div class="delta">Workflow-scoped at <code style="font-size:10px;background:white;border:1px solid var(--border);padding:0 4px;border-radius:3px;font-family:'JetBrains Mono',monospace;">/builds/&lt;l&gt;/compare/&lt;r&gt;</code>; aggregate · per-scorer · per-AI-node · decision-distribution; <strong>incompatible</strong> state when builds share no scorer history</div>
       </div>
+      <div class="stat">
+        <div class="k">Instance detail tabs</div>
+        <div class="row">
+          <span class="before-v">8</span>
+          <span class="arrow">→</span>
+          <span class="after-v">6</span>
+        </div>
+        <div class="delta">Tokens · Subprocesses · Trigger · Notifications dropped as standalone tabs — content folded into Activity tree (subprocess tree + token expand), Overview (initiator KV), and Audit (notification timeline). Variables tab gains an edit affordance + modal scaffold.</div>
+      </div>
     </div>
   </section>
 
@@ -493,13 +502,24 @@
         <tr>
           <td class="before-cell">
             <div class="name">Process Instances<br>UI Flow Sessions</div>
-            <div class="desc">Two separate top-level entries. Near-symmetric anatomy (list + detail with tabs), but with different chrome, different status models, and live under different parents in the nav.</div>
+            <div class="desc">Two separate top-level entries. Near-symmetric anatomy (list + detail with tabs), but with different chrome, different status models, and live under different parents in the nav. Starter spec called for 8 instance-detail tabs (Variables · Tokens · Subprocesses · Exceptions · Workflows · Trigger · Notifications · Audit), each thin and easy to miss.</div>
           </td>
           <td class="arrow-cell">→</td>
           <td class="after-cell">
             <span class="change-pill merge">Merged</span>
             <div class="name">Instances</div>
-            <div class="desc">One list, type as a column (green P · purple F). Five-state normalized status pill (Running / Waiting / Completed / Failed / Terminated). Shared detail panel with "Activity tree" tab that adapts to type. Cross-link via "spawned by" indicator.</div>
+            <div class="desc">
+              One list, type as a column (green P · purple F). Five-state normalized status pill (Running / Waiting / Completed / Failed / Terminated). Shared detail panel with "Activity tree" tab that adapts to type. Cross-link via "spawned by" indicator.
+              <br><br>
+              <strong>6-tab detail panel.</strong> The starter's 8 tabs collapse to 6 (Overview · Variables · Activity tree · AI runs · Incidents · Audit) without dropping content. Dropped tabs fold into existing ones:
+              <ul style="margin: 6px 0 0 16px; padding: 0; font-size: 12px; line-height: 18px;">
+                <li><strong>Subprocesses</strong> render under Activity tree as a recursive tree of child instances (cycle-guarded). Each row is click-through to the child's detail.</li>
+                <li><strong>Trigger</strong> initiator (manual · cron · webhook · process · uiflow) shows as a KV row in Overview with a kind glyph and a linkable trigger or parent reference.</li>
+                <li><strong>Notifications</strong> weave into the Audit timeline chronologically with envelope dots (sent) or red bang dots (failed) alongside lifecycle events.</li>
+                <li><strong>Tokens</strong> in Activity tree are expandable — chevron reveals raw ProcessState pill (with description tooltip), per-node action history table, and a back-seq chip when applicable.</li>
+                <li><strong>Variables</strong> gain a per-row pencil affordance opening a centered <code style="font-size:10px;background:white;border:1px solid var(--border);padding:0 4px;border-radius:3px;font-family:'JetBrains Mono',monospace;">.app-modal</code> (Esc + scrim close, focus restored to opener). Edits live in <code style="font-size:10px;background:white;border:1px solid var(--border);padding:0 4px;border-radius:3px;font-family:'JetBrains Mono',monospace;">STATE.variableEdits</code> in-session; an "edited" badge marks overrides; "Revert to original" undoes per-key.</li>
+              </ul>
+            </div>
           </td>
         </tr>
 
