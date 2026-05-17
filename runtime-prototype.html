@@ -4251,8 +4251,8 @@ function renderAuditTimeline(it) {
         ${events.map(e => {
           const rowClass = e.bad ? 'tl-row bad' : 'tl-row';
           const dot = e.kind === 'notif'
-            ? `<div class="dot notif">${e.bad ? '!' : '✉'}</div>`
-            : `<div class="dot"></div>`;
+            ? `<div class="dot notif" aria-hidden="true">${e.bad ? '!' : '✉'}</div>`
+            : `<div class="dot" aria-hidden="true"></div>`;
           return `<div class="${rowClass}"><div class="when">${escapeHtml(e.at)}</div>${dot}<div class="lbl">${e.label}</div></div>`;
         }).join('')}
       </div>
