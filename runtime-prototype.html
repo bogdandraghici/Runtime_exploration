@@ -328,9 +328,85 @@ a { color: inherit; }
   background: var(--flowx-red-500);
   box-shadow: 0 0 0 3px rgba(230,34,0,0.15);
 }
+
+/* User card at the bottom of the sidebar */
+.nav-user-wrap { position: relative; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--flowx-neutrals-100); }
+.nav-user {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 8px;
+  border-radius: var(--flowx-radius-8);
+  background: none; border: none; width: 100%; text-align: left;
+  cursor: pointer;
+  transition: background 100ms ease;
+}
+.nav-user:hover { background: var(--flowx-surface-secondary); }
+.nav-user.open { background: var(--flowx-surface-secondary); }
+.nav-user .avatar {
+  width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
+  background: var(--flowx-blue-500); color: white;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.02em;
+}
+.nav-user .info { flex: 1; min-width: 0; }
+.nav-user .info .name {
+  font-size: 13px; line-height: 16px; font-weight: 600;
+  color: var(--flowx-text-primary);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.nav-user .info .role {
+  font-size: 11px; line-height: 14px; color: var(--flowx-text-secondary);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  margin-top: 1px;
+}
+.nav-user .menu-trigger {
+  color: var(--flowx-text-secondary); font-size: 14px; line-height: 1;
+  padding: 4px; border-radius: 4px; flex-shrink: 0;
+}
+.nav-user:hover .menu-trigger { color: var(--flowx-text-primary); }
+
+/* User menu popover — anchored above the user card */
+.user-menu {
+  position: absolute; bottom: calc(100% + 4px); left: 4px; right: 4px;
+  background: white;
+  border: 1px solid var(--flowx-border-default);
+  border-radius: var(--flowx-radius-8);
+  box-shadow: 0 8px 24px rgba(20, 30, 50, 0.18);
+  padding: 4px;
+  z-index: 50;
+  opacity: 0; pointer-events: none;
+  transform: translateY(4px);
+  transition: opacity 120ms ease, transform 120ms ease;
+}
+.user-menu.open { opacity: 1; pointer-events: auto; transform: translateY(0); }
+.user-menu .um-header {
+  padding: 10px 12px 8px;
+  border-bottom: 1px solid var(--flowx-neutrals-100);
+  margin-bottom: 4px;
+}
+.user-menu .um-header .name { font-size: 13px; font-weight: 700; color: var(--flowx-text-primary); }
+.user-menu .um-header .email { font-size: 11px; color: var(--flowx-text-secondary); margin-top: 2px; font-family: 'JetBrains Mono', monospace; }
+.user-menu .um-header .workspace { font-size: 10px; color: var(--flowx-text-secondary); text-transform: uppercase; letter-spacing: 0.04em; margin-top: 6px; font-weight: 700; }
+.user-menu .um-item {
+  display: flex; align-items: center; gap: 10px;
+  width: 100%; padding: 8px 12px;
+  background: none; border: 0; cursor: pointer;
+  font-size: 12px; line-height: 16px;
+  color: var(--flowx-text-primary);
+  border-radius: var(--flowx-radius-6);
+  text-align: left;
+  font-family: inherit;
+}
+.user-menu .um-item:hover { background: var(--flowx-surface-secondary); }
+.user-menu .um-item i { font-size: 14px; color: var(--flowx-text-secondary); flex-shrink: 0; }
+.user-menu .um-item.danger { color: var(--flowx-red-500); }
+.user-menu .um-item.danger i { color: var(--flowx-red-500); }
+.user-menu .um-divider { height: 1px; background: var(--flowx-neutrals-100); margin: 4px 6px; }
+
 @media (max-width: 760px) {
   .nav-parent .label, .nav-children, .nav-badge, .nav-help .text { display: none; }
   .nav-parent { justify-content: center; padding: 8px 4px; }
+  .nav-user .info, .nav-user .menu-trigger { display: none; }
+  .nav-user { justify-content: center; }
 }
 
 /* ============ MAIN — card-on-canvas rhythm ============ */
@@ -1820,6 +1896,14 @@ a { color: inherit; }
 //  MOCK DATA
 // ============================================================
 const MOCK_DATA = {
+  currentUser: {
+    userId: 'me',
+    initials: 'AB',
+    fullName: 'Alex Brennan',
+    role: 'Runtime engineer',
+    email: 'alex.brennan@flowx.ai',
+    workspace: 'flowx-prod · eu-west-1',
+  },
   builds: [
     { id: 'b_v142', tag: 'v1.4.2', branch: 'main', cutAt: '11m ago', cutAtHours: 0.18, cutBy: 'alice', isActive: true, isArchived: false,
       coverage: { percent: 78, userCount: 347, totalUsers: 445 },
@@ -2407,6 +2491,7 @@ const STATE = {
   variableEdits: {},          // { [instanceId]: { [key]: newValue } }
   variableEditModal: { open: false, instanceId: null, key: null, originalValue: null, returnFocusTo: null },
   activeModal: { kind: null, payload: null, returnFocusTo: null }, // 'variable' | 'override-edit' | 'override-delete'
+  userMenu: { open: false },
   glossary: { open: false, scrollToTerm: null },
   filters: {
     overview: { type: 'all', search: '' },
@@ -2502,6 +2587,8 @@ function renderSidebar() {
   });
   // footer
   const footerHealthy = cnt.openIncidentCount === 0;
+  const user = MOCK_DATA.currentUser;
+  const menuOpen = STATE.userMenu.open;
   html += `<div class="nav-bottom">
     <div class="nav-help ${footerHealthy ? '' : 'alert'}">
       <span class="dot"></span>
@@ -2511,8 +2598,60 @@ function renderSidebar() {
       <span style="opacity:0.6">?</span>
       <span class="text">Tour &amp; help</span>
     </button>
+    <div class="nav-user-wrap">
+      <button class="nav-user ${menuOpen ? 'open' : ''}" onclick="toggleUserMenu(event)" aria-haspopup="menu" aria-expanded="${menuOpen}">
+        <div class="avatar" aria-hidden="true">${escapeHtml(user.initials)}</div>
+        <div class="info">
+          <div class="name">${escapeHtml(user.fullName)}</div>
+          <div class="role">${escapeHtml(user.role)}</div>
+        </div>
+        <i class="ph ph-dots-three-vertical menu-trigger" aria-hidden="true"></i>
+      </button>
+      <div class="user-menu ${menuOpen ? 'open' : ''}" role="menu" aria-hidden="${!menuOpen}">
+        <div class="um-header">
+          <div class="name">${escapeHtml(user.fullName)}</div>
+          <div class="email">${escapeHtml(user.email)}</div>
+          <div class="workspace">${escapeHtml(user.workspace)}</div>
+        </div>
+        <button class="um-item" role="menuitem" onclick="userMenuAction('profile')"><i class="ph ph-user"></i>My profile</button>
+        <button class="um-item" role="menuitem" onclick="userMenuAction('preferences')"><i class="ph ph-sliders"></i>Preferences</button>
+        <button class="um-item" role="menuitem" onclick="userMenuAction('switch')"><i class="ph ph-swap"></i>Switch workspace</button>
+        <button class="um-item" role="menuitem" onclick="userMenuAction('keyboard')"><i class="ph ph-keyboard"></i>Keyboard shortcuts</button>
+        <div class="um-divider"></div>
+        <button class="um-item danger" role="menuitem" onclick="userMenuAction('signout')"><i class="ph ph-sign-out"></i>Sign out</button>
+      </div>
+    </div>
   </div>`;
   sb.innerHTML = html;
+}
+
+function toggleUserMenu(ev) {
+  if (ev) ev.stopPropagation();
+  STATE.userMenu.open = !STATE.userMenu.open;
+  renderSidebar();
+}
+function closeUserMenu() {
+  if (!STATE.userMenu.open) return;
+  STATE.userMenu.open = false;
+  renderSidebar();
+}
+function userMenuAction(action) {
+  closeUserMenu();
+  if (action === 'preferences') {
+    // Functional: clear all dismissed banners so the doc-layer affordances resurface.
+    STATE.dismissedBanners = new Set();
+    sessionStorage.removeItem('dismissedBanners');
+    router();
+    return;
+  }
+  if (action === 'signout') {
+    if (confirm('Sign out of this session?\n\n(This is a prototype — no actual session to end.)')) {
+      alert('Signed out — not implemented in prototype.');
+    }
+    return;
+  }
+  const labels = { profile: 'My profile', switch: 'Switch workspace', keyboard: 'Keyboard shortcuts' };
+  alert(`${labels[action]} — not implemented in prototype.`);
 }
 
 // ============================================================
@@ -5848,8 +5987,16 @@ document.addEventListener('keydown', (ev) => {
   if (ev.key === 'Escape') {
     if (STATE.glossary.open) closeGlossary();
     else if (STATE.activeModal.kind) closeAppModal();
+    else if (STATE.userMenu.open) closeUserMenu();
     else if (STATE.detail.open) closeDetail();
   }
+});
+
+// Click outside the user menu closes it.
+document.addEventListener('click', (ev) => {
+  if (!STATE.userMenu.open) return;
+  const wrap = document.querySelector('.nav-user-wrap');
+  if (wrap && !wrap.contains(ev.target)) closeUserMenu();
 });
 
 // Click outside glossary closes it (but not when clicking the panel itself)
