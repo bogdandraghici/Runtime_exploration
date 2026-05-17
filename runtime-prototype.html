@@ -1748,7 +1748,7 @@ a { color: inherit; }
   </div>
   <div class="app-modal-body" id="appModalBody"></div>
   <div class="app-modal-foot">
-    <a id="appModalRevert" style="color:var(--blue-500);cursor:pointer;font-size:12px;font-weight:600;display:none;" onclick="revertVariableEdit()">Revert to original</a>
+    <button id="appModalRevert" style="background:none;border:0;padding:0;color:var(--blue-500);cursor:pointer;font-size:12px;font-weight:600;display:none;font-family:inherit;" onclick="revertVariableEdit()">Revert to original</button>
     <div style="flex:1"></div>
     <button class="btn ghost" onclick="closeVariableEditModal()">Cancel</button>
     <button class="btn primary" onclick="saveVariableEdit()">Save</button>
@@ -2355,7 +2355,7 @@ const STATE = {
   detail: { open: false, kind: null, id: null, tab: 0 },
   expandedTokens: new Set(),
   variableEdits: {},          // { [instanceId]: { [key]: newValue } }
-  variableEditModal: { open: false, instanceId: null, key: null, originalValue: null },
+  variableEditModal: { open: false, instanceId: null, key: null, originalValue: null, returnFocusTo: null },
   glossary: { open: false, scrollToTerm: null },
   filters: {
     overview: { type: 'all', search: '' },
@@ -4367,7 +4367,7 @@ function renderVariablesTab(it) {
       <td style="padding:6px 0;color:var(--text-muted);width:160px;font-family:'JetBrains Mono',monospace;font-size:11px;vertical-align:top;">${escapeHtml(k)}</td>
       <td style="padding:6px 0;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:11px;vertical-align:top;">
         ${escapeHtml(String(display))}${badge}
-        <button class="var-edit-btn" onclick="openVariableEditModal('${escapeHtml(it.id)}','${escapeHtml(k)}')" title="Edit variable">✎ Edit</button>
+        <button class="var-edit-btn" data-iid="${escapeHtml(it.id)}" data-k="${escapeHtml(k)}" onclick="openVariableEditModal(this.dataset.iid, this.dataset.k)" title="Edit variable">✎ Edit</button>
       </td>
     </tr>`;
   }).join('');
@@ -4585,7 +4585,7 @@ function openVariableEditModal(instanceId, key) {
   const original = it.variables[key];
   const edited = STATE.variableEdits[instanceId]?.[key];
   const current = edited !== undefined ? edited : original;
-  STATE.variableEditModal = { open: true, instanceId, key, originalValue: original };
+  STATE.variableEditModal = { open: true, instanceId, key, originalValue: original, returnFocusTo: document.activeElement };
   document.getElementById('appModalTitle').textContent = `Edit variable · ${key}`;
   document.getElementById('appModalBody').innerHTML = `
     <div class="field-label">Key</div>
@@ -4602,9 +4602,11 @@ function openVariableEditModal(instanceId, key) {
   setTimeout(() => document.getElementById('appModalInput').focus(), 50);
 }
 function closeVariableEditModal() {
-  STATE.variableEditModal = { open: false, instanceId: null, key: null, originalValue: null };
+  const returnFocusTo = STATE.variableEditModal.returnFocusTo;
+  STATE.variableEditModal = { open: false, instanceId: null, key: null, originalValue: null, returnFocusTo: null };
   document.getElementById('appModalScrim').classList.remove('open');
   document.getElementById('appModal').classList.remove('open');
+  setTimeout(() => returnFocusTo?.focus?.(), 0);
 }
 function saveVariableEdit() {
   const { instanceId, key, originalValue } = STATE.variableEditModal;
