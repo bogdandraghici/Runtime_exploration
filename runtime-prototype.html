@@ -4149,16 +4149,18 @@ function renderActivityTree(it) {
     </div>`;
 }
 
-function renderSubprocessTree(subs) {
+function renderSubprocessTree(subs, seen) {
   if (!subs || !subs.length) return '';
-  return subs.map(s => {
+  seen = seen || new Set();
+  return subs.filter(s => !seen.has(s.id)).map(s => {
+    seen.add(s.id);
     const glyphColor = s.type === 'uiflow' ? 'var(--purple-500)' : 'var(--green-500)';
     const glyph = s.type === 'uiflow' ? '◆' : '▸';
     // Look up the full instance to recurse on its own subprocesses (if present)
     const full = MOCK_DATA.instances.find(x => x.id === s.id);
-    const nested = full && full.subprocesses ? renderSubprocessTree(full.subprocesses) : '';
+    const nested = full && full.subprocesses ? renderSubprocessTree(full.subprocesses, seen) : '';
     return `<div class="tree-child">
-      <div class="tree-node ${s.status === 'failed' ? 'bad' : ''}" onclick="openDetail('instance','${s.id}')" style="cursor:pointer;">
+      <div class="tree-node ${s.status === 'failed' ? 'bad' : ''}" onclick="openDetail('instance','${escapeHtml(s.id)}')" style="cursor:pointer;">
         <span style="color:${glyphColor}">${glyph}</span>
         <span class="lbl"><strong>${escapeHtml(s.definitionName)}</strong> · <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-muted);">${escapeHtml(s.id)}</span> · ${escapeHtml(s.atStep)}</span>
         <span class="pos">${escapeHtml(s.status)}</span>
