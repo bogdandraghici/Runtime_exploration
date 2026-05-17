@@ -1898,10 +1898,10 @@ a { color: inherit; }
 const MOCK_DATA = {
   currentUser: {
     userId: 'me',
-    initials: 'AB',
-    fullName: 'Alex Brennan',
+    initials: 'BD',
+    fullName: 'Bogdan D',
     role: 'Runtime engineer',
-    email: 'alex.brennan@flowx.ai',
+    email: 'bogdan.draghici@flowx.ai',
     workspace: 'flowx-prod · eu-west-1',
   },
   builds: [
@@ -2207,13 +2207,13 @@ const MOCK_DATA = {
     { id: 'fire_006', triggerId: 'cron_retention', triggerName: 'Nightly retention sweep', triggerType: 'cron', firedAt: '8h ago', outcome: 'failed', failureReason: 'invalid cron expression' },
   ],
   tasks: [
-    { id: 'task_1', title: 'Approve loan application — $42,000', source: { instanceId: 'inst_55a1c0', definitionName: 'Loan application', atStep: 'waiting at Manager approval' }, assignee: { userId: 'me', displayName: 'AB' }, dueAt: 'in 4h', isOverdue: false, priority: 'high', createdAt: '12m ago' },
+    { id: 'task_1', title: 'Approve loan application — $42,000', source: { instanceId: 'inst_55a1c0', definitionName: 'Loan application', atStep: 'waiting at Manager approval' }, assignee: { userId: 'me', displayName: 'BD' }, dueAt: 'in 4h', isOverdue: false, priority: 'high', createdAt: '12m ago' },
     { id: 'task_2', title: 'Verify identity documents — passport + utility bill', source: { instanceId: 'inst_19f3d4', definitionName: 'KYC review', atStep: 'awaiting agent' }, assignee: null, dueAt: 'overdue 2h', isOverdue: true, priority: 'high', createdAt: '3h ago' },
-    { id: 'task_3', title: 'Confirm escalation — high-value support case', source: { instanceId: 'sess_b34f0e', definitionName: 'Support chat session', atStep: 'awaiting confirmation' }, assignee: { userId: 'me', displayName: 'AB' }, dueAt: 'due tomorrow', isOverdue: false, createdAt: '28m ago' },
+    { id: 'task_3', title: 'Confirm escalation — high-value support case', source: { instanceId: 'sess_b34f0e', definitionName: 'Support chat session', atStep: 'awaiting confirmation' }, assignee: { userId: 'me', displayName: 'BD' }, dueAt: 'due tomorrow', isOverdue: false, createdAt: '28m ago' },
     { id: 'task_4', title: 'Review payment refund — $199.99', source: { instanceId: 'inst_b73e1c', definitionName: 'Payment retry', atStep: 'awaiting review' }, assignee: null, dueAt: 'in 12h', isOverdue: false, createdAt: '2h ago' },
     { id: 'task_5', title: 'Sign agreement', source: { instanceId: 'inst_e1a234', definitionName: 'Document signature', atStep: 'awaiting customer signature' }, assignee: { userId: 'other', displayName: 'CD' }, dueAt: 'in 3 days', isOverdue: false, createdAt: '4h ago' },
-    { id: 'task_6', title: 'Risk decision — case r_3344', source: { instanceId: 'inst_a5b6c7', definitionName: 'Risk assessment', atStep: 'awaiting decision' }, assignee: { userId: 'me', displayName: 'AB' }, dueAt: 'in 22h', isOverdue: false, createdAt: '6h ago' },
-    { id: 'task_7', title: 'Manual override review', source: { instanceId: 'inst_91ab23', definitionName: 'Email verification', atStep: 'completed' }, assignee: { userId: 'me', displayName: 'AB' }, dueAt: 'completed', isOverdue: false, completed: true, createdAt: '1d ago' },
+    { id: 'task_6', title: 'Risk decision — case r_3344', source: { instanceId: 'inst_a5b6c7', definitionName: 'Risk assessment', atStep: 'awaiting decision' }, assignee: { userId: 'me', displayName: 'BD' }, dueAt: 'in 22h', isOverdue: false, createdAt: '6h ago' },
+    { id: 'task_7', title: 'Manual override review', source: { instanceId: 'inst_91ab23', definitionName: 'Email verification', atStep: 'completed' }, assignee: { userId: 'me', displayName: 'BD' }, dueAt: 'completed', isOverdue: false, completed: true, createdAt: '1d ago' },
     { id: 'task_8', title: 'Customer escalation review', source: { instanceId: 'sess_c12d40', definitionName: 'Application form', atStep: 'awaiting review' }, assignee: null, dueAt: 'in 8h', isOverdue: false, createdAt: '8h ago' },
   ],
   workflows: [
@@ -4428,7 +4428,7 @@ function claimTask(id) {
   const t = MOCK_DATA.tasks.find(x => x.id === id);
   if (!t) return;
   if (t.assignee) return;  // refuse to re-claim a task that already has an assignee
-  t.assignee = { userId: 'me', displayName: 'AB' };
+  t.assignee = { userId: 'me', displayName: 'BD' };
   renderTasks(document.getElementById('page'));
   if (STATE.detail.open && STATE.detail.kind === 'task' && STATE.detail.id === id) renderDetail();
 }
@@ -4436,7 +4436,7 @@ function completeTask(id) {
   const t = MOCK_DATA.tasks.find(x => x.id === id);
   if (!t) return;
   t.completed = true;
-  if (!t.assignee) t.assignee = { userId: 'me', displayName: 'AB' };
+  if (!t.assignee) t.assignee = { userId: 'me', displayName: 'BD' };
   renderTasks(document.getElementById('page'));
   if (STATE.detail.open && STATE.detail.kind === 'task' && STATE.detail.id === id) {
     STATE.detail.tab = 2;  // History tab
