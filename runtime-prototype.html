@@ -333,7 +333,7 @@ a { color: inherit; }
 .nav-user-wrap { position: relative; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--flowx-neutrals-100); }
 .nav-user {
   display: flex; align-items: center; gap: 10px;
-  padding: 8px 8px;
+  padding: 8px 8px 4px;
   border-radius: var(--flowx-radius-8);
   background: none; border: none; width: 100%; text-align: left;
   cursor: pointer;
@@ -476,13 +476,16 @@ a { color: inherit; }
   box-shadow: var(--flowx-shadow-xs);
   margin: 16px;
   overflow: hidden;
+  padding: 24px;
 }
+/* Configuration manages its own internal layout via .cfg-shell — opt out of the card's blanket padding */
+.page-section.cfg-shell { padding: 0; }
 .page-section + .page-section { margin-top: 0; }
 /* When a page-head is immediately followed by a page-section, tighten the gap */
 .page-head + .page-section { margin-top: 16px; }
 /* Filter bar that sits at the top of a page-section (or directly under page-head) */
 .filter-bar {
-  padding: 16px 24px;
+  padding: 16px 0;
   background: var(--flowx-surface-primary);
   border-bottom: 1px solid var(--flowx-neutrals-100);
   display: flex;
@@ -490,6 +493,8 @@ a { color: inherit; }
   flex-wrap: wrap;
   align-items: center;
 }
+/* When the filter-bar is the first child of a page-section, the parent's 24px padding already provides top space */
+.page-section > .filter-bar:first-child { padding-top: 0; }
 
 /* ============ COMMON COMPONENTS ============ */
 
@@ -800,6 +805,9 @@ a { color: inherit; }
 .list-table tbody tr:hover { background: var(--bg-alt); }
 .list-table tbody tr.selected { background: var(--blue-50); }
 .list-table tbody tr.anchor { background: var(--yellow-50); }
+/* Edge cells align flush with the page-section's 24px padding */
+.list-table th:first-child, .list-table td:first-child { padding-left: 0; }
+.list-table th:last-child, .list-table td:last-child { padding-right: 0; }
 
 .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 11px; color: var(--text-muted); }
 .pill {
@@ -1390,7 +1398,7 @@ a { color: inherit; }
   display: flex;
   background: var(--flowx-surface-primary);
   border-bottom: 1px solid var(--flowx-neutrals-100);
-  padding: 0 24px;
+  padding: 0;
 }
 .stage-tab {
   padding: 8px 12px;
@@ -1431,7 +1439,7 @@ a { color: inherit; }
   display: grid;
   grid-template-columns: 8px 1fr 120px 150px;
   align-items: center;
-  padding: 12px 16px;
+  padding: 12px 0;
   border-bottom: 1px solid var(--border-soft);
   cursor: pointer;
   gap: 12px;
@@ -1523,7 +1531,7 @@ a { color: inherit; }
 
 /* Builds row anatomy */
 .b-row {
-  padding: 14px 18px;
+  padding: 14px 0;
   border-bottom: 1px solid var(--border-soft);
   cursor: pointer;
 }
@@ -1806,7 +1814,7 @@ a { color: inherit; }
   display: grid;
   grid-template-columns: 32px 1fr auto auto;
   gap: 12px;
-  padding: 12px 16px;
+  padding: 12px 0;
   border-bottom: 1px solid var(--border-soft);
   align-items: center;
   background: var(--bg);
