@@ -1120,6 +1120,64 @@ a { color: inherit; }
   height: 1px;
   background: var(--border-strong);
 }
+/* Token row + expand panel */
+.tree-node.token-row { background: white; }
+.tree-node.token-row:hover { background: var(--bg-alt); }
+.token-expand {
+  margin: -2px 0 10px 0;
+  padding: 10px 12px;
+  background: var(--bg-alt);
+  border: 1px solid var(--border);
+  border-radius: 0 0 6px 6px;
+  font-size: 12px;
+}
+.token-expand .token-meta {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 8px;
+}
+.token-expand .raw-state {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  padding: 2px 8px; border-radius: 9999px;
+  background: var(--green-50); color: var(--green-700);
+  border: 1px solid var(--green-100);
+}
+.token-expand .raw-state.bad { background: var(--red-50); color: var(--red-700); border-color: var(--red-100); }
+.token-expand .raw-state-desc { color: var(--text-muted); font-size: 11px; }
+.token-expand .token-back {
+  display: inline-block;
+  padding: 4px 10px;
+  margin-bottom: 8px;
+  background: var(--yellow-50);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--yellow-700);
+  font-size: 11px;
+}
+.token-expand .token-history {
+  display: flex; flex-direction: column;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: white;
+  overflow: hidden;
+}
+.token-expand .token-history-row {
+  display: grid;
+  grid-template-columns: 80px 130px 80px 1fr;
+  gap: 8px;
+  padding: 6px 10px;
+  font-size: 11px;
+  border-bottom: 1px solid var(--border);
+}
+.token-expand .token-history-row:last-child { border-bottom: none; }
+.token-expand .token-history-row .when { color: var(--text-dim); font-variant-numeric: tabular-nums; }
+.token-expand .token-history-row .node { color: var(--text); font-weight: 600; }
+.token-expand .token-history-row .action { color: var(--purple-700); font-family: 'JetBrains Mono', monospace; }
+.token-expand .token-history-row .status { color: var(--text-muted); }
+.token-expand .token-history-row.head { background: var(--bg-alt); font-size: 10px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-dim); font-weight: 700; }
+.token-expand .token-history-row.head .node,
+.token-expand .token-history-row.head .action,
+.token-expand .token-history-row.head .status,
+.token-expand .token-history-row.head .when { color: var(--text-dim); font-weight: 700; }
 .related-card .ic { border-radius: var(--flowx-radius-6); }
 .feed-row .glyph { border-radius: var(--flowx-radius-6); }
 
@@ -1680,6 +1738,15 @@ const MOCK_DATA = {
       notifications: [
         { at: '4m ago', atSortable: 4, channel: 'email', target: 'compliance@flowx.ai', subject: 'KYC review escalated — Document scan failed', status: 'failed' },
         { at: '8m ago', atSortable: 8, channel: 'in-app', target: 'u_4419', subject: 'Verification in progress', status: 'sent' },
+      ],
+      tokens: [
+        { id: 'tok_p3', name: 'Token tok_p3', state: 'FINISHED_WITH_ERROR', stateDesc: 'raised exception during execution', currentNode: 'Document upload',
+          nodesActionStates: [
+            { at: '3m ago', node: 'Document upload', action: 'execute', status: 'error: NullPointerException at DocumentService.scan()' },
+            { at: '5m ago', node: 'Document upload', action: 'enter', status: 'token arrived' },
+            { at: '6m ago', node: 'Consent gate', action: 'complete', status: 'ok' },
+            { at: '7m ago', node: 'Start', action: 'complete', status: 'ok' },
+          ] },
       ] },
     { id: 'inst_55a1c0', type: 'process', definitionName: 'Loan application', status: 'waiting', rawStatus: 'ON_HOLD', rawDesc: 'paused awaiting input',
       buildTag: 'v1.4.2', atStep: 'Manager approval · awaiting task', startedAt: '12m ago',
@@ -1687,6 +1754,15 @@ const MOCK_DATA = {
       initiator: { kind: 'webhook', triggerId: 'webhook_loans_api', triggerName: 'Loans API webhook', when: '12m ago' },
       notifications: [
         { at: '11m ago', atSortable: 11, channel: 'in-app', target: 'manager:approvals', subject: 'New loan task assigned — $42,000', status: 'sent' },
+      ],
+      tokens: [
+        { id: 'tok_loan_main', name: 'Token tok_loan_main', state: 'ON_HOLD', stateDesc: 'paused awaiting input', currentNode: 'Manager approval',
+          nodesActionStates: [
+            { at: '12m ago', node: 'Manager approval', action: 'enter', status: 'waiting on task task_1' },
+            { at: '13m ago', node: 'Risk score', action: 'complete', status: 'risk=0.42' },
+            { at: '14m ago', node: 'Application intake', action: 'complete', status: 'ok' },
+          ],
+          backSeq: { node: 'Application intake', reason: 'returned for missing field — corrected and resumed' } },
       ] },
     { id: 'sess_b34f0e', type: 'uiflow', definitionName: 'Support chat', status: 'completed', rawStatus: 'completed', rawDesc: 'session ended normally',
       buildTag: 'v1.4.2', atStep: 'Resolved · 12 turns', startedAt: '28m ago',
@@ -1694,7 +1770,20 @@ const MOCK_DATA = {
     { id: 'inst_7c20fa', type: 'process', definitionName: 'Document classifier', status: 'running', rawStatus: 'STARTED', rawDesc: 'executing',
       buildTag: 'v1.4.1', atStep: 'AI scoring · 2 tokens active', startedAt: '31m ago',
       variables: { batch_id: 'b_9921', doc_count: 14 },
-      initiator: { kind: 'webhook', triggerId: 'webhook_stripe', triggerName: 'Stripe webhook', when: '31m ago' } },
+      initiator: { kind: 'webhook', triggerId: 'webhook_stripe', triggerName: 'Stripe webhook', when: '31m ago' },
+      tokens: [
+        { id: 'tok_cls_main', name: 'Token tok_cls_main', state: 'STARTED', stateDesc: 'executing', currentNode: 'AI scoring',
+          nodesActionStates: [
+            { at: '5m ago', node: 'AI scoring', action: 'enter', status: 'running' },
+            { at: '10m ago', node: 'OCR', action: 'complete', status: 'ok · 14 pages' },
+            { at: '31m ago', node: 'Receive batch', action: 'complete', status: 'ok' },
+          ] },
+        { id: 'tok_cls_aux', name: 'Token tok_cls_aux', state: 'STARTED', stateDesc: 'executing', currentNode: 'Verifier',
+          nodesActionStates: [
+            { at: '4m ago', node: 'Verifier', action: 'enter', status: 'running' },
+            { at: '11m ago', node: 'Classifier', action: 'complete', status: 'class=invoice' },
+          ] },
+      ] },
     { id: 'inst_a01b3e', type: 'process', definitionName: 'Nightly retention sweep', status: 'terminated', rawStatus: 'ABORTED', rawDesc: 'manually terminated',
       buildTag: 'v1.4.1', atStep: 'Manually aborted by ops', startedAt: '2h ago',
       variables: { sweep_id: 's_2031', processed: 412 },
@@ -1702,7 +1791,19 @@ const MOCK_DATA = {
         { id: 'inst_sweep_b1', definitionName: 'Retention batch · users', type: 'process', status: 'terminated', atStep: 'aborted at parent' },
         { id: 'inst_sweep_b2', definitionName: 'Retention batch · logs', type: 'process', status: 'terminated', atStep: 'aborted at parent' },
       ],
-      initiator: { kind: 'cron', triggerId: 'cron_retention', triggerName: 'Nightly retention sweep', when: '2h ago' } },
+      initiator: { kind: 'cron', triggerId: 'cron_retention', triggerName: 'Nightly retention sweep', when: '2h ago' },
+      tokens: [
+        { id: 'tok_sweep_a', name: 'Token tok_sweep_a', state: 'ABORTED', stateDesc: 'manually terminated', currentNode: 'Process users',
+          nodesActionStates: [
+            { at: '2h ago', node: 'Process users', action: 'abort', status: 'aborted by ops' },
+            { at: '2h ago', node: 'Process users', action: 'enter', status: 'token arrived' },
+          ] },
+        { id: 'tok_sweep_b', name: 'Token tok_sweep_b', state: 'ABORTED', stateDesc: 'manually terminated', currentNode: 'Process logs',
+          nodesActionStates: [
+            { at: '2h ago', node: 'Process logs', action: 'abort', status: 'aborted by ops' },
+            { at: '2h ago', node: 'Process logs', action: 'enter', status: 'token arrived' },
+          ] },
+      ] },
     { id: 'sess_c12d40', type: 'uiflow', definitionName: 'Application form', status: 'running', rawStatus: 'active', rawDesc: 'session in progress',
       buildTag: 'v1.4.2', atStep: 'Step 5 / 8', startedAt: '45m ago',
       variables: { applicant: 'u_8830', form_id: 'f_loan' } },
@@ -2167,6 +2268,7 @@ const MOCK_DATA = {
 const STATE = {
   currentRoute: null,
   detail: { open: false, kind: null, id: null, tab: 0 },
+  expandedTokens: new Set(),
   glossary: { open: false, scrollToTerm: null },
   filters: {
     overview: { type: 'all', search: '' },
@@ -4003,6 +4105,7 @@ function openDetail(kind, id) {
   document.getElementById('detailOverlay').classList.add('open');
 }
 function closeDetail() {
+  STATE.expandedTokens.clear();
   STATE.detail = { open: false, kind: null, id: null, tab: 0 };
   document.getElementById('detailPanel').classList.remove('open');
   document.getElementById('detailOverlay').classList.remove('open');
@@ -4189,19 +4292,58 @@ function renderActivityTree(it) {
       </div>`;
   }
   // Process: tokens + subprocesses
-  return `${docBanner("What's an Activity tree?", "For processes, this shows active tokens (where execution pointers are right now) and any spawned sub-processes.", 'inst-activity-tree-p')}
-    <div class="panel-block">
-      ${panelHeading('Active tokens', 'Token')}
-      <div class="tree-node ${it.status === 'failed' ? 'bad' : ''}">
+  const tokensHtml = (it.tokens && it.tokens.length)
+    ? it.tokens.map(t => renderTokenRow(t, it)).join('')
+    : `<div class="tree-node ${it.status === 'failed' ? 'bad' : ''}">
         <span style="color:var(--green-500)">▸</span>
         <span class="lbl"><strong>${escapeHtml(it.definitionName)}</strong> · ${escapeHtml(it.atStep)}</span>
         <span class="pos">${it.status}${it.activeIncidentCount ? ` · ${it.activeIncidentCount} incidents` : ''}</span>
-      </div>
+      </div>`;
+  return `${docBanner("What's an Activity tree?", "For processes, this shows active tokens (where execution pointers are right now) and any spawned sub-processes.", 'inst-activity-tree-p')}
+    <div class="panel-block">
+      ${panelHeading('Active tokens', 'Token')}
+      ${tokensHtml}
     </div>
     <div class="panel-block">
       ${panelHeading('Subprocesses', null)}
       ${subprocessesHtml || '<div style="font-size:11px;color:var(--text-dim);padding:8px 10px;">This instance hasn\'t spawned any subprocesses.</div>'}
     </div>`;
+}
+
+function renderTokenRow(t, it) {
+  const expanded = STATE.expandedTokens.has(t.id);
+  const isError = /ERROR|FAILED|ABORTED/i.test(t.state);
+  const chevron = expanded ? '▼' : '▶';
+  const rowClass = isError ? 'tree-node bad token-row' : 'tree-node token-row';
+  const head = `<div class="${rowClass}" onclick="toggleToken('${escapeHtml(t.id)}')" style="cursor:pointer;">
+    <span aria-hidden="true" style="color:var(--text-dim);font-size:10px;width:10px;">${chevron}</span>
+    <span aria-hidden="true" style="color:var(--green-500)">▸</span>
+    <span class="lbl"><strong>${escapeHtml(t.name)}</strong> · ${escapeHtml(t.currentNode)}</span>
+    <span class="pos">${escapeHtml(t.state)}</span>
+  </div>`;
+  if (!expanded) return head;
+  const history = (t.nodesActionStates || []).map(h => `
+    <div class="token-history-row">
+      <span class="when">${escapeHtml(h.at)}</span>
+      <span class="node">${escapeHtml(h.node)}</span>
+      <span class="action">${escapeHtml(h.action)}</span>
+      <span class="status">${escapeHtml(h.status)}</span>
+    </div>`).join('');
+  const back = t.backSeq
+    ? `<div class="token-back">↺ Back to <strong>${escapeHtml(t.backSeq.node)}</strong> — <span style="color:var(--text-muted);">${escapeHtml(t.backSeq.reason)}</span></div>`
+    : '';
+  const body = `<div class="token-expand">
+    <div class="token-meta">
+      <span class="raw-state ${isError ? 'bad' : ''}" data-tip="${escapeHtml(t.stateDesc || '')}">${escapeHtml(t.state)}</span>
+      <span class="raw-state-desc">${escapeHtml(t.stateDesc || '')}</span>
+    </div>
+    ${back}
+    <div class="token-history">
+      <div class="token-history-row head"><span class="when">When</span><span class="node">Node</span><span class="action">Action</span><span class="status">Status</span></div>
+      ${history || '<div style="font-size:11px;color:var(--text-dim);padding:6px;">No node action history recorded.</div>'}
+    </div>
+  </div>`;
+  return head + body;
 }
 
 function renderAuditTimeline(it) {
@@ -4330,6 +4472,11 @@ function docBanner(title, body, id) {
 function dismissBanner(id) {
   STATE.dismissedBanners.add(id);
   sessionStorage.setItem('dismissedBanners', JSON.stringify([...STATE.dismissedBanners]));
+}
+function toggleToken(tokenId) {
+  if (STATE.expandedTokens.has(tokenId)) STATE.expandedTokens.delete(tokenId);
+  else STATE.expandedTokens.add(tokenId);
+  renderDetail();
 }
 function renderIncidentDetail(it, tabIdx) {
   const hasStackTrace = !!it.stackTrace;
