@@ -4180,6 +4180,7 @@ function renderTasks(root) {
 function claimTask(id) {
   const t = MOCK_DATA.tasks.find(x => x.id === id);
   if (!t) return;
+  if (t.assignee) return;  // refuse to re-claim a task that already has an assignee
   t.assignee = { userId: 'me', displayName: 'AB' };
   renderTasks(document.getElementById('page'));
   if (STATE.detail.open && STATE.detail.kind === 'task' && STATE.detail.id === id) renderDetail();
@@ -5241,7 +5242,7 @@ function renderTaskDetail(it, tabIdx) {
     if (!it.dueAt) return '<span style="color:var(--text-muted)">—</span>';
     if (it.completed) return `<span style="color:var(--text-muted)">${escapeHtml(it.dueAt)}</span>`;
     if (it.isOverdue) return `<span style="color:var(--red-700);font-weight:600;">${escapeHtml(it.dueAt)}</span>`;
-    if (it.dueAt.includes('in 4h') || it.dueAt.includes('in 1h') || it.dueAt.includes('in 2h') || it.dueAt.includes('in 3h')) {
+    if (/^in [1-4]h$/.test(it.dueAt)) {
       return `<span style="color:var(--yellow-700);font-weight:600;">${escapeHtml(it.dueAt)}</span>`;
     }
     return escapeHtml(it.dueAt);
