@@ -412,6 +412,15 @@
         </div>
         <div class="delta">Tokens · Subprocesses · Trigger · Notifications dropped as standalone tabs — content folded into Activity tree (subprocess tree + token expand), Overview (initiator KV), and Audit (notification timeline). Variables tab gains an edit affordance + modal scaffold.</div>
       </div>
+      <div class="stat">
+        <div class="k">Detail-panel stubs</div>
+        <div class="row">
+          <span class="before-v">2</span>
+          <span class="arrow">→</span>
+          <span class="after-v">0</span>
+        </div>
+        <div class="delta">Trigger and Task detail panels were literal "coming soon" placeholders. Both now ship as full right-slide panels with tabs — Trigger: Configuration · Recent fires · Failures (conditional); Task: Overview · Form · History with working Claim / Complete flow.</div>
+      </div>
     </div>
   </section>
 
@@ -564,6 +573,21 @@
 
         <tr>
           <td class="before-cell">
+            <div class="name">Trigger detail (none)</div>
+            <div class="desc">Clicking a trigger row in the old Manage Triggers / Scheduled Processes pages either did nothing or revealed thin config-only modals. No fire history alongside config. No path to incidents.</div>
+          </td>
+          <td class="arrow-cell">→</td>
+          <td class="after-cell">
+            <span class="change-pill new">New</span>
+            <div class="name">Trigger detail panel</div>
+            <div class="desc">
+              Right-slide panel with three tabs — <strong>Configuration</strong> (type · schedule · spawns · status · 24h error count · audit fields), <strong>Recent fires</strong> (chronological history per trigger with spawned-instance links), and <strong>Failures</strong> (conditional; only when the trigger has any failed fires; rows deep-link to the corresponding Incident). Reachable from the Triggers list, from Incident detail's source-entity link when <code>sourceEntity.kind === 'trigger'</code>, and from Instance Overview's Trigger initiator row.
+            </div>
+          </td>
+        </tr>
+
+        <tr>
+          <td class="before-cell">
             <div class="name">Builds list</div>
             <div class="desc">Lists builds as artifacts. Has no deployment view — "what is currently serving whom" requires bouncing to Active Policy + test-effective. No workflow-runs-scoped-to-build view.</div>
           </td>
@@ -601,13 +625,17 @@
         <tr>
           <td class="before-cell">
             <div class="name">Task Manager</div>
-            <div class="desc">User-task inbox. Tasks list their originating process implicitly. No reverse linkage.</div>
+            <div class="desc">User-task inbox. Tasks list their originating process implicitly. No reverse linkage. No detail panel — clicking a task did nothing useful.</div>
           </td>
           <td class="arrow-cell">→</td>
           <td class="after-cell">
-            <span class="change-pill keep">Preserved + linked</span>
+            <span class="change-pill enhance">Enhanced</span>
             <div class="name">Tasks</div>
-            <div class="desc">Same list. Each row carries originating Instance ID with click-through; same task surfaces in the Instance's Activity tree tab. Fully cross-linked.</div>
+            <div class="desc">
+              Same list. Each row carries originating Instance ID with click-through; same task surfaces in the Instance's Activity tree tab. Fully cross-linked.
+              <br><br>
+              <strong>Detail panel.</strong> Three tabs — <strong>Overview</strong> (source link + assignee + due + priority + Claim / Open form / Reassign actions), <strong>Form</strong> (synthesized fields per task type — loan tasks get Decision + Amount approved + Notes; KYC tasks get Identity verified + Notes; etc.; disabled when completed or not assigned to you), <strong>History</strong> (created / claimed / completed timeline). Working in-session Complete that moves the row out of Pending into Completed.
+            </div>
           </td>
         </tr>
 

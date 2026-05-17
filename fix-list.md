@@ -49,10 +49,11 @@ The IA restructure (workflow → URL segment) was discovered mid-implementation 
 
 The 6-tab IA survives intact; the new `.app-modal` scaffold is available for any future modal needs.
 
-### 6. Trigger and Task detail panels are stubs
+### 6. Trigger and Task detail panels are stubs  ✅ **DONE**
 **Spec:** §8 — Triggers and Task Manager are first-class surroundings; tasks come from Process Instances reaching human-task nodes.
-**Prototype state:** `renderTriggerDetail` (line 3396) and `renderTaskDetail` (line 3399) return literal "Detail content coming in Task 8" placeholders.
-**What "fixed" means:** flesh out both detail panels — Trigger needs schedule/event config, recent fires, spawned instances; Task needs source instance link, claim/complete actions, variables snapshot.
+**Resolution:** both stubs replaced with full right-slide panels following the same `[head, tabs, body]` triple convention used by `renderInstanceDetail` / `renderIncidentDetail`.
+- **Trigger panel** — three tabs (Configuration · Recent fires · Failures). Failures is conditional (rendered only when the trigger has ≥1 failed fire). Configuration shows schedule (mono when cron), spawned definition, status pill, 24h error count, and audit fields. Recent fires lists chronological fires from `MOCK_DATA.triggerFires` filtered by trigger id with click-through to spawned instances on success. Failures rows deep-link to the corresponding Incident via `sourceEntity.kind === 'trigger'`. Adds the missing `webhook_loans_api` trigger so the Instance Overview's cross-link from Tier 2 #5 resolves cleanly.
+- **Task panel** — three tabs (Overview · Form · History). Overview surfaces source instance link, assignee, due chip, priority pill, and an action row that adapts: Claim (unassigned) / Open form → (assigned to me) / read-only "Assigned to X" (assigned to another) / completed pill. Form synthesizes 2–3 fields tailored to the task title (loan tasks get Decision + Amount approved + Notes; KYC gets Identity verified + Notes; etc.); disabled when completed or not assigned to you; submit calls `completeTask(id)`. History derives created / claimed / completed events from current state. New `completeTask(id)` matches the existing `claimTask(id)` pattern (direct `MOCK_DATA.tasks` mutation), so the Tasks list auto-correctly moves completed tasks out of the Pending filter.
 
 ### 7. Overrides have Edit/Delete buttons but no working flow
 **Spec:** §4 — overrides have full CRUD plus audit metadata (`createdBy`, `createdDate`, `modifiedBy`, `modifiedDate`).
