@@ -703,6 +703,77 @@ a { color: inherit; }
   z-index: 100;
 }
 .detail-overlay.open { opacity: 1; pointer-events: auto; }
+
+/* Generic centered modal scaffold (.app-modal) */
+.app-modal-scrim {
+  position: fixed; inset: 0;
+  background: rgba(20, 30, 50, 0.45);
+  backdrop-filter: blur(2px);
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.15s ease;
+  z-index: 60;
+}
+.app-modal-scrim.open { opacity: 1; pointer-events: auto; }
+.app-modal {
+  position: fixed; top: 50%; left: 50%;
+  transform: translate(-50%, calc(-50% + 8px));
+  width: 460px; max-width: calc(100vw - 32px);
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 24px 56px rgba(20, 30, 50, 0.25);
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  z-index: 61;
+  display: flex; flex-direction: column;
+}
+.app-modal.open {
+  opacity: 1; pointer-events: auto;
+  transform: translate(-50%, -50%);
+}
+.app-modal-head { display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; border-bottom: 1px solid var(--border); }
+.app-modal-head h3 { font-size: 14px; font-weight: 700; margin: 0; }
+.app-modal-head .x { background: none; border: 0; cursor: pointer; font-size: 18px; color: var(--text-dim); padding: 0; line-height: 1; }
+.app-modal-head .x:hover { color: var(--text); }
+.app-modal-body { padding: 16px 18px; font-size: 13px; }
+.app-modal-foot { display: flex; gap: 8px; align-items: center; padding: 12px 18px; border-top: 1px solid var(--border); background: var(--bg-alt); border-radius: 0 0 12px 12px; }
+.app-modal-body .field-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-dim); font-weight: 700; margin-bottom: 4px; }
+.app-modal-body .field-readonly {
+  font-family: 'JetBrains Mono', monospace; font-size: 12px;
+  padding: 6px 10px; background: var(--bg-alt); border: 1px solid var(--border);
+  border-radius: 6px; color: var(--text); margin-bottom: 12px;
+}
+.app-modal-body textarea {
+  width: 100%; min-height: 70px;
+  font-family: 'JetBrains Mono', monospace; font-size: 12px;
+  padding: 8px 10px; border: 1px solid var(--border-strong);
+  border-radius: 6px; resize: vertical; box-sizing: border-box;
+  color: var(--text); background: white;
+}
+.app-modal-body textarea:focus { outline: 2px solid var(--blue-500); outline-offset: -1px; border-color: var(--blue-500); }
+
+/* Variables tab pencil + edited badge */
+.var-row { position: relative; }
+.var-row:hover .var-edit-btn { opacity: 1; }
+.var-edit-btn {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: none; border: 0; cursor: pointer;
+  color: var(--blue-500); font-size: 11px; font-weight: 600;
+  padding: 2px 6px; border-radius: 4px;
+  opacity: 0; transition: opacity 0.1s ease;
+  margin-left: 8px;
+}
+.var-edit-btn:hover { background: var(--blue-50); }
+.var-edited-badge {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 1px 6px;
+  font-size: 9px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.04em;
+  background: var(--yellow-50); color: var(--yellow-700);
+  border: 1px solid var(--border);
+  border-radius: 9999px;
+}
 .detail-panel {
   position: fixed;
   top: 56px; right: 0; bottom: 0;
@@ -1669,6 +1740,20 @@ a { color: inherit; }
 
 <!-- Right-slide detail panel -->
 <div class="detail-overlay" id="detailOverlay"></div>
+<div class="app-modal-scrim" id="appModalScrim" onclick="closeVariableEditModal()"></div>
+<div class="app-modal" id="appModal" role="dialog" aria-modal="true">
+  <div class="app-modal-head">
+    <h3 id="appModalTitle">Edit variable</h3>
+    <button class="x" onclick="closeVariableEditModal()" aria-label="Close">×</button>
+  </div>
+  <div class="app-modal-body" id="appModalBody"></div>
+  <div class="app-modal-foot">
+    <a id="appModalRevert" style="color:var(--blue-500);cursor:pointer;font-size:12px;font-weight:600;display:none;" onclick="revertVariableEdit()">Revert to original</a>
+    <div style="flex:1"></div>
+    <button class="btn ghost" onclick="closeVariableEditModal()">Cancel</button>
+    <button class="btn primary" onclick="saveVariableEdit()">Save</button>
+  </div>
+</div>
 <aside class="detail-panel" id="detailPanel">
   <div class="detail-head" id="detailHead"></div>
   <div class="detail-tabs" id="detailTabs"></div>
@@ -2269,6 +2354,8 @@ const STATE = {
   currentRoute: null,
   detail: { open: false, kind: null, id: null, tab: 0 },
   expandedTokens: new Set(),
+  variableEdits: {},          // { [instanceId]: { [key]: newValue } }
+  variableEditModal: { open: false, instanceId: null, key: null, originalValue: null },
   glossary: { open: false, scrollToTerm: null },
   filters: {
     overview: { type: 'all', search: '' },
@@ -4247,15 +4334,7 @@ function renderInstanceDetail(it, tabIdx) {
       </div>
     `;
   } else if (active === 'Variables') {
-    body = `<div class="panel-block">
-      ${panelHeading('Variables', null)}
-      <table style="width:100%;font-size:12px;">
-        ${Object.entries(it.variables || {}).map(([k, v]) => `<tr>
-          <td style="padding:6px 0;color:var(--text-muted);width:140px;font-family:'JetBrains Mono',monospace;font-size:11px;">${escapeHtml(k)}</td>
-          <td style="padding:6px 0;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:11px;">${escapeHtml(String(v))}</td>
-        </tr>`).join('')}
-      </table>
-    </div>`;
+    body = renderVariablesTab(it);
   } else if (active === 'Activity tree') {
     body = renderActivityTree(it);
   } else if (active === 'AI runs') {
@@ -4275,6 +4354,28 @@ function renderInstanceDetail(it, tabIdx) {
   }
 
   return [head, tabsHtml, body];
+}
+
+function renderVariablesTab(it) {
+  const edits = STATE.variableEdits[it.id] || {};
+  const entries = Object.entries(it.variables || {});
+  const rows = entries.map(([k, v]) => {
+    const edited = edits[k] !== undefined;
+    const display = edited ? edits[k] : v;
+    const badge = edited ? '<span class="var-edited-badge">edited</span>' : '';
+    return `<tr class="var-row">
+      <td style="padding:6px 0;color:var(--text-muted);width:160px;font-family:'JetBrains Mono',monospace;font-size:11px;vertical-align:top;">${escapeHtml(k)}</td>
+      <td style="padding:6px 0;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:11px;vertical-align:top;">
+        ${escapeHtml(String(display))}${badge}
+        <button class="var-edit-btn" onclick="openVariableEditModal('${escapeHtml(it.id)}','${escapeHtml(k)}')" title="Edit variable">✎ Edit</button>
+      </td>
+    </tr>`;
+  }).join('');
+  return `${docBanner('Edit variables.', 'Inline edits go to a live running instance. Requires the wks_process_instance_variables_edit permission (always granted in this prototype).', 'inst-variables-edit')}
+    <div class="panel-block">
+      ${panelHeading('Variables', null)}
+      <table style="width:100%;font-size:12px;">${rows}</table>
+    </div>`;
 }
 
 function renderActivityTree(it) {
@@ -4476,6 +4577,54 @@ function dismissBanner(id) {
 function toggleToken(tokenId) {
   if (STATE.expandedTokens.has(tokenId)) STATE.expandedTokens.delete(tokenId);
   else STATE.expandedTokens.add(tokenId);
+  renderDetail();
+}
+function openVariableEditModal(instanceId, key) {
+  const it = MOCK_DATA.instances.find(x => x.id === instanceId);
+  if (!it) return;
+  const original = it.variables[key];
+  const edited = STATE.variableEdits[instanceId]?.[key];
+  const current = edited !== undefined ? edited : original;
+  STATE.variableEditModal = { open: true, instanceId, key, originalValue: original };
+  document.getElementById('appModalTitle').textContent = `Edit variable · ${key}`;
+  document.getElementById('appModalBody').innerHTML = `
+    <div class="field-label">Key</div>
+    <div class="field-readonly">${escapeHtml(key)}</div>
+    <div class="field-label">Original value</div>
+    <div class="field-readonly">${escapeHtml(String(original))}</div>
+    <div class="field-label">New value</div>
+    <textarea id="appModalInput">${escapeHtml(String(current))}</textarea>
+    <div style="font-size:11px;color:var(--text-dim);margin-top:8px;">In-session change · requires <code style="font-family:'JetBrains Mono',monospace;font-size:10px;">wks_process_instance_variables_edit</code> · not persisted.</div>
+  `;
+  document.getElementById('appModalRevert').style.display = edited !== undefined ? 'inline' : 'none';
+  document.getElementById('appModalScrim').classList.add('open');
+  document.getElementById('appModal').classList.add('open');
+  setTimeout(() => document.getElementById('appModalInput').focus(), 50);
+}
+function closeVariableEditModal() {
+  STATE.variableEditModal = { open: false, instanceId: null, key: null, originalValue: null };
+  document.getElementById('appModalScrim').classList.remove('open');
+  document.getElementById('appModal').classList.remove('open');
+}
+function saveVariableEdit() {
+  const { instanceId, key, originalValue } = STATE.variableEditModal;
+  if (!instanceId) return;
+  const raw = document.getElementById('appModalInput').value;
+  let newValue = raw;
+  if (typeof originalValue === 'number' && raw.trim() !== '' && !isNaN(Number(raw))) {
+    newValue = Number(raw);
+  }
+  if (!STATE.variableEdits[instanceId]) STATE.variableEdits[instanceId] = {};
+  STATE.variableEdits[instanceId][key] = newValue;
+  closeVariableEditModal();
+  renderDetail();
+}
+function revertVariableEdit() {
+  const { instanceId, key } = STATE.variableEditModal;
+  if (!instanceId || !STATE.variableEdits[instanceId]) return closeVariableEditModal();
+  delete STATE.variableEdits[instanceId][key];
+  if (Object.keys(STATE.variableEdits[instanceId]).length === 0) delete STATE.variableEdits[instanceId];
+  closeVariableEditModal();
   renderDetail();
 }
 function renderIncidentDetail(it, tabIdx) {
@@ -5039,6 +5188,7 @@ setInterval(simulateActivity, 7000);
 document.addEventListener('keydown', (ev) => {
   if (ev.key === 'Escape') {
     if (STATE.glossary.open) closeGlossary();
+    else if (STATE.variableEditModal.open) closeVariableEditModal();
     else if (STATE.detail.open) closeDetail();
   }
 });
