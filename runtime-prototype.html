@@ -4038,13 +4038,17 @@ function renderInitiator(init) {
   if (!init) return '<span style="color:var(--text-muted)">—</span>';
   const kindLabels = { manual: 'Manual', cron: 'Cron', webhook: 'Webhook', process: 'Process', uiflow: 'UI Flow' };
   const kindIcons = { manual: '👤', cron: '⏱', webhook: '↘', process: '▸', uiflow: '◆' };
-  const label = kindLabels[init.kind] || init.kind;
+  const label = kindLabels[init.kind] || 'Unknown';
   const icon = kindIcons[init.kind] || '·';
   let body = '';
-  if (init.triggerId && init.triggerName) {
+  if (init.triggerId) {
     body = `<a style="color:var(--blue-500);cursor:pointer;" onclick="openDetail('trigger','${escapeHtml(init.triggerId)}')">${escapeHtml(init.triggerName)}</a>`;
   } else if (init.parentId) {
-    body = `<a style="color:var(--blue-500);cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:11px;" onclick="openDetail('instance','${escapeHtml(init.parentId)}')">${escapeHtml(init.parentId)}</a>`;
+    if (init.triggerName) {
+      body = `<a style="color:var(--blue-500);cursor:pointer;" onclick="openDetail('instance','${escapeHtml(init.parentId)}')">${escapeHtml(init.triggerName)}</a>`;
+    } else {
+      body = `<a style="color:var(--blue-500);cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:11px;" onclick="openDetail('instance','${escapeHtml(init.parentId)}')">${escapeHtml(init.parentId)}</a>`;
+    }
   } else if (init.userId) {
     body = `<code style="font-family:'JetBrains Mono',monospace;font-size:11px;">${escapeHtml(init.userId)}</code>`;
   } else if (init.triggerName) {
