@@ -2586,14 +2586,9 @@ function renderSidebar() {
     }
   });
   // footer
-  const footerHealthy = cnt.openIncidentCount === 0;
   const user = MOCK_DATA.currentUser;
   const menuOpen = STATE.userMenu.open;
   html += `<div class="nav-bottom">
-    <div class="nav-help ${footerHealthy ? '' : 'alert'}">
-      <span class="dot"></span>
-      <span class="text">${footerHealthy ? 'All systems active' : `${cnt.openIncidentCount} incident${cnt.openIncidentCount === 1 ? '' : 's'} open`}</span>
-    </div>
     <button class="nav-help" onclick="openGlossary()">
       <span style="opacity:0.6">?</span>
       <span class="text">Tour &amp; help</span>
