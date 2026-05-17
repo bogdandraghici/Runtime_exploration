@@ -1658,11 +1658,18 @@ const MOCK_DATA = {
   instances: [
     { id: 'sess_a82c91', type: 'uiflow', definitionName: 'Onboarding chat', status: 'running', rawStatus: 'active', rawDesc: 'session in progress',
       buildTag: 'v1.4.2', atStep: 'Step 3 / 7 · Verify email', startedAt: '1m ago', user: 'u_4419', spawnedCount: 1,
-      variables: { user_id: 'u_4419', plan: 'pro', step_count: 7, current_step: 3, locale: 'en-US' } },
+      variables: { user_id: 'u_4419', plan: 'pro', step_count: 7, current_step: 3, locale: 'en-US' },
+      subprocesses: [
+        { id: 'inst_19f3d4', definitionName: 'KYC review', type: 'process', status: 'failed', atStep: 'Document upload · 3 incidents' },
+        { id: 'inst_91ab23', definitionName: 'Email verification', type: 'process', status: 'completed', atStep: 'Done' },
+      ] },
     { id: 'inst_19f3d4', type: 'process', definitionName: 'KYC review', status: 'failed', rawStatus: 'FINISHED_WITH_ERROR', rawDesc: 'raised exception during execution',
       buildTag: 'v1.4.2', atStep: 'Document upload · 3 incidents', startedAt: '3m ago',
       spawnedBy: { type: 'uiflow', id: 'sess_a82c91' }, activeIncidentCount: 3,
-      variables: { applicant: 'u_4419', doc_type: 'passport', risk_score: 0.42 } },
+      variables: { applicant: 'u_4419', doc_type: 'passport', risk_score: 0.42 },
+      subprocesses: [
+        { id: 'inst_doc_scan', definitionName: 'Document scan', type: 'process', status: 'failed', atStep: 'OCR · halted' },
+      ] },
     { id: 'inst_55a1c0', type: 'process', definitionName: 'Loan application', status: 'waiting', rawStatus: 'ON_HOLD', rawDesc: 'paused awaiting input',
       buildTag: 'v1.4.2', atStep: 'Manager approval · awaiting task', startedAt: '12m ago',
       variables: { applicant: 'u_5512', amount: 42000, currency: 'USD' } },
@@ -1674,7 +1681,11 @@ const MOCK_DATA = {
       variables: { batch_id: 'b_9921', doc_count: 14 } },
     { id: 'inst_a01b3e', type: 'process', definitionName: 'Nightly retention sweep', status: 'terminated', rawStatus: 'ABORTED', rawDesc: 'manually terminated',
       buildTag: 'v1.4.1', atStep: 'Manually aborted by ops', startedAt: '2h ago',
-      variables: { sweep_id: 's_2031', processed: 412 } },
+      variables: { sweep_id: 's_2031', processed: 412 },
+      subprocesses: [
+        { id: 'inst_sweep_b1', definitionName: 'Retention batch · users', type: 'process', status: 'terminated', atStep: 'aborted at parent' },
+        { id: 'inst_sweep_b2', definitionName: 'Retention batch · logs', type: 'process', status: 'terminated', atStep: 'aborted at parent' },
+      ] },
     { id: 'sess_c12d40', type: 'uiflow', definitionName: 'Application form', status: 'running', rawStatus: 'active', rawDesc: 'session in progress',
       buildTag: 'v1.4.2', atStep: 'Step 5 / 8', startedAt: '45m ago',
       variables: { applicant: 'u_8830', form_id: 'f_loan' } },
@@ -1702,6 +1713,18 @@ const MOCK_DATA = {
     { id: 'inst_d5e6f7', type: 'process', definitionName: 'Welcome email', status: 'failed', rawStatus: 'FAILED', rawDesc: 'unrecoverable failure',
       buildTag: 'v1.4.2', atStep: 'SMTP timeout', startedAt: '12h ago',
       variables: { user: 'u_9981', template: 'welcome_v3' } },
+    { id: 'inst_doc_scan', type: 'process', definitionName: 'Document scan', status: 'failed', rawStatus: 'FINISHED_WITH_ERROR', rawDesc: 'subprocess halted',
+      buildTag: 'v1.4.2', atStep: 'OCR · halted', startedAt: '3m ago',
+      spawnedBy: { type: 'process', id: 'inst_19f3d4' },
+      variables: { doc_id: 'd_9981', mime: 'application/pdf' } },
+    { id: 'inst_sweep_b1', type: 'process', definitionName: 'Retention batch · users', status: 'terminated', rawStatus: 'ABORTED', rawDesc: 'aborted with parent',
+      buildTag: 'v1.4.1', atStep: 'aborted at parent', startedAt: '2h ago',
+      spawnedBy: { type: 'process', id: 'inst_a01b3e' },
+      variables: { batch_id: 's_2031_users', processed: 218 } },
+    { id: 'inst_sweep_b2', type: 'process', definitionName: 'Retention batch · logs', status: 'terminated', rawStatus: 'ABORTED', rawDesc: 'aborted with parent',
+      buildTag: 'v1.4.1', atStep: 'aborted at parent', startedAt: '2h ago',
+      spawnedBy: { type: 'process', id: 'inst_a01b3e' },
+      variables: { batch_id: 's_2031_logs', processed: 194 } },
   ],
   incidents: [
     { id: 'inc_001', stage: 'mid-execution', severity: 'critical', status: 'open',
@@ -4097,8 +4120,8 @@ function renderInstanceDetail(it, tabIdx) {
 }
 
 function renderActivityTree(it) {
+  const subprocessesHtml = renderSubprocessTree(it.subprocesses);
   if (it.type === 'uiflow') {
-    const spawned = MOCK_DATA.instances.filter(x => x.spawnedBy && x.spawnedBy.id === it.id);
     return `${docBanner("What's an Activity tree?", "For UI Flow sessions, this lists the process instances the session spawned. For processes, it shows active tokens and subprocesses. Same idea, different content.", 'inst-activity-tree')}
       <div class="panel-block">
         ${panelHeading('Activity tree', 'UI Flow Session')}
@@ -4107,31 +4130,42 @@ function renderActivityTree(it) {
           <span class="lbl"><strong>${escapeHtml(it.definitionName)}</strong> · ${escapeHtml(it.atStep)}</span>
           <span class="pos">${it.status}</span>
         </div>
-        ${spawned.map(s => `
-          <div class="tree-child">
-            <div class="tree-node ${s.status === 'failed' ? 'bad' : ''}">
-              <span style="color:var(--green-500)">▸</span>
-              <span class="lbl"><strong>${escapeHtml(s.definitionName)}</strong> · ${escapeHtml(s.id)}</span>
-              <span class="pos">${s.status}${s.activeIncidentCount ? ` · ${s.activeIncidentCount} incidents` : ''}</span>
-            </div>
-          </div>`).join('') || '<div style="font-size:11px;color:var(--text-dim);padding:8px 10px;">No spawned processes yet.</div>'}
-      </div>`;
-  } else {
-    // Process: tokens + subprocesses
-    return `${docBanner("What's an Activity tree?", "For processes, this shows active tokens (where execution pointers are right now) and any spawned sub-processes.", 'inst-activity-tree-p')}
-      <div class="panel-block">
-        ${panelHeading('Active tokens', 'Token')}
-        <div class="tree-node ${it.status === 'failed' ? 'bad' : ''}">
-          <span style="color:var(--green-500)">▸</span>
-          <span class="lbl"><strong>${escapeHtml(it.definitionName)}</strong> · ${escapeHtml(it.atStep)}</span>
-          <span class="pos">${it.status}${it.activeIncidentCount ? ` · ${it.activeIncidentCount} incidents` : ''}</span>
-        </div>
-      </div>
-      <div class="panel-block">
-        ${panelHeading('Subprocesses', null)}
-        <div style="font-size:11px;color:var(--text-dim);padding:8px 10px;">No subprocesses for this instance.</div>
+        ${subprocessesHtml || '<div style="font-size:11px;color:var(--text-dim);padding:8px 10px;">This session hasn\'t spawned any processes yet.</div>'}
       </div>`;
   }
+  // Process: tokens + subprocesses
+  return `${docBanner("What's an Activity tree?", "For processes, this shows active tokens (where execution pointers are right now) and any spawned sub-processes.", 'inst-activity-tree-p')}
+    <div class="panel-block">
+      ${panelHeading('Active tokens', 'Token')}
+      <div class="tree-node ${it.status === 'failed' ? 'bad' : ''}">
+        <span style="color:var(--green-500)">▸</span>
+        <span class="lbl"><strong>${escapeHtml(it.definitionName)}</strong> · ${escapeHtml(it.atStep)}</span>
+        <span class="pos">${it.status}${it.activeIncidentCount ? ` · ${it.activeIncidentCount} incidents` : ''}</span>
+      </div>
+    </div>
+    <div class="panel-block">
+      ${panelHeading('Subprocesses', null)}
+      ${subprocessesHtml || '<div style="font-size:11px;color:var(--text-dim);padding:8px 10px;">This instance hasn\'t spawned any subprocesses.</div>'}
+    </div>`;
+}
+
+function renderSubprocessTree(subs) {
+  if (!subs || !subs.length) return '';
+  return subs.map(s => {
+    const glyphColor = s.type === 'uiflow' ? 'var(--purple-500)' : 'var(--green-500)';
+    const glyph = s.type === 'uiflow' ? '◆' : '▸';
+    // Look up the full instance to recurse on its own subprocesses (if present)
+    const full = MOCK_DATA.instances.find(x => x.id === s.id);
+    const nested = full && full.subprocesses ? renderSubprocessTree(full.subprocesses) : '';
+    return `<div class="tree-child">
+      <div class="tree-node ${s.status === 'failed' ? 'bad' : ''}" onclick="openDetail('instance','${s.id}')" style="cursor:pointer;">
+        <span style="color:${glyphColor}">${glyph}</span>
+        <span class="lbl"><strong>${escapeHtml(s.definitionName)}</strong> · <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-muted);">${escapeHtml(s.id)}</span> · ${escapeHtml(s.atStep)}</span>
+        <span class="pos">${escapeHtml(s.status)}</span>
+      </div>
+      ${nested}
+    </div>`;
+  }).join('');
 }
 
 function renderAiRunsSlice(it) {
