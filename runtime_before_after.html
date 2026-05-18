@@ -211,35 +211,60 @@
     .change-pill.enhance { background: #e6f0fb; color: #004c99; }
     .change-pill.keep    { background: #f0f3f6; color: #5b6a7e; }
 
-    /* Friction table */
-    .fr-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 8px; }
-    .fr-table thead th {
-      background: var(--bg-alt);
-      padding: 10px 14px;
-      text-align: left;
+    /* Friction → resolution list */
+    .fr-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .fr-item {
+      display: grid;
+      grid-template-columns: 24px 1fr;
+      gap: 10px;
+      padding: 10px 14px 12px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      box-shadow: 0 2px 6px #1634620a;
+    }
+    .fr-item-num {
+      font-family: 'JetBrains Mono', ui-monospace, monospace;
       font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-      color: var(--text-dim);
       font-weight: 700;
-      border-bottom: 1px solid var(--border-strong);
+      color: var(--text-dim);
+      letter-spacing: 0.06em;
+      padding-top: 1px;
     }
-    .fr-table tbody td {
-      padding: 12px 14px;
-      border-bottom: 1px solid var(--border);
-      vertical-align: top;
+    .fr-item-body {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
     }
-    .fr-table .num { width: 32px; font-weight: 700; color: var(--text-dim); font-variant-numeric: tabular-nums; }
-    .fr-table .fr-title { font-weight: 700; color: var(--before); margin-bottom: 4px; }
-    .fr-table .fr-desc  { color: var(--text-muted); font-size: 12px; line-height: 18px; }
-    .fr-table .res {
-      background: var(--after-soft);
-      border-left: 3px solid var(--after);
+    .fr-item-friction {
+      font-size: 12px;
+      line-height: 17px;
+      color: var(--before);
+      font-weight: 600;
     }
-    .fr-table .res-title { font-weight: 700; color: var(--after); margin-bottom: 4px; }
-    .fr-table .res-desc  { color: var(--text); font-size: 13px; line-height: 20px; }
-    .fr-table .where { font-size: 11px; color: var(--text-dim); margin-top: 6px; }
-    .fr-table .where code { font-family: 'JetBrains Mono', monospace; background: white; border: 1px solid var(--border); padding: 1px 5px; border-radius: 3px; }
+    .fr-item-resolution {
+      font-size: 12px;
+      line-height: 17px;
+      color: var(--text);
+      padding-left: 18px;
+      position: relative;
+    }
+    .fr-item-resolution::before {
+      content: '↳';
+      position: absolute;
+      left: 0;
+      color: var(--after);
+      font-weight: 700;
+      font-size: 14px;
+      line-height: 1;
+      top: 2px;
+    }
+    .fr-item-resolution strong { color: var(--after); font-weight: 700; }
 
     /* Numbers snapshot */
     .stats {
@@ -269,33 +294,6 @@
     .stat .after-v { color: var(--after); font-size: 24px; font-weight: 700; }
     .stat .delta { font-size: 11px; color: var(--text-muted); margin-top: 6px; }
     .stat .delta strong { color: var(--text); }
-
-    /* Visual hierarchy mini */
-    .vh-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-    @media (max-width: 880px) { .vh-grid { grid-template-columns: 1fr; } }
-    .vh-wire {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 14px;
-      font-size: 11px;
-      line-height: 16px;
-    }
-    .vh-wire .box {
-      background: white;
-      border: 1px solid var(--border-strong);
-      border-radius: 4px;
-      padding: 5px 8px;
-      margin-bottom: 4px;
-      min-height: 24px;
-    }
-    .vh-wire .box.flat { background: var(--bg-alt); }
-    .vh-wire .box.hero { background: var(--blue-50); border-color: #b0d1f3; min-height: 60px; font-weight: 700; color: var(--blue-700); }
-    .vh-wire .box.alert { background: var(--before-bg); border-color: #f7bab0; color: var(--before); font-weight: 700; }
-    .vh-wire .row { display: grid; grid-template-columns: 2fr 1fr; gap: 4px; }
-    .vh-wire .row.equal { grid-template-columns: 1fr 1fr 1fr 1fr; }
-    .vh-wire .row.trends { grid-template-columns: repeat(4, 1fr); gap: 4px; }
-    .vh-wire .label { font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.04em; font-weight: 700; margin-bottom: 4px; }
 
     /* Philosophy section */
     .phil-grid {
@@ -719,19 +717,6 @@
     }
     .canon-source-sub strong { color: var(--text); }
 
-    /* Closing card */
-    .summary-card {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-left: 4px solid var(--blue-500);
-      border-radius: 12px;
-      padding: 18px 22px;
-      box-shadow: var(--shadow-m);
-    }
-    .summary-card h3 { margin: 0 0 8px; font-size: 16px; font-weight: 700; }
-    .summary-card p { margin: 0 0 12px; color: var(--text-muted); font-size: 13px; line-height: 20px; }
-    .summary-card ul { margin: 0; padding-left: 20px; font-size: 13px; line-height: 22px; color: var(--text); }
-
   </style>
 </head>
 <body>
@@ -747,9 +732,89 @@
     </div>
   </header>
 
-  <!-- ============== § 1 — PHILOSOPHY ============== -->
+  <!-- ============== § 1 — FRICTION → RESOLUTION ============== -->
   <section>
-    <h2><span class="num">§ 1</span>Redesign philosophy</h2>
+    <h2><span class="num">§ 1</span>Friction → resolution</h2>
+    <p class="intro">Nine friction points from the starter doc, and the design move that addresses each.</p>
+
+    <div class="fr-list">
+      <div class="fr-item">
+        <div class="fr-item-num">01</div>
+        <div class="fr-item-body">
+          <div class="fr-item-friction">Active Policy + Config Param Overrides duplicate shape</div>
+          <div class="fr-item-resolution"><strong>Configuration</strong> consolidates both axes with a shared resolver.</div>
+        </div>
+      </div>
+
+      <div class="fr-item">
+        <div class="fr-item-num">02</div>
+        <div class="fr-item-body">
+          <div class="fr-item-friction">Process Instances + UI Flow Sessions are near-symmetric</div>
+          <div class="fr-item-resolution"><strong>Instances</strong> merges both — type as a column, shared status pill.</div>
+        </div>
+      </div>
+
+      <div class="fr-item">
+        <div class="fr-item-num">03</div>
+        <div class="fr-item-body">
+          <div class="fr-item-friction">AI workflow runs appear in three places, no cross-navigation</div>
+          <div class="fr-item-resolution"><strong>WorkflowRun</strong> is one canonical panel reachable from four lenses; parent chip jumps back to the spawning entity.</div>
+        </div>
+      </div>
+
+      <div class="fr-item">
+        <div class="fr-item-num">04</div>
+        <div class="fr-item-body">
+          <div class="fr-item-friction">No unified "what's running right now" entry point</div>
+          <div class="fr-item-resolution"><strong>Overview</strong> activity feed + merged Instances list.</div>
+        </div>
+      </div>
+
+      <div class="fr-item">
+        <div class="fr-item-num">05</div>
+        <div class="fr-item-body">
+          <div class="fr-item-friction">Three separate "things went wrong" surfaces</div>
+          <div class="fr-item-resolution"><strong>Incidents</strong> unifies them — four stage tabs, AI scorer breaches included.</div>
+        </div>
+      </div>
+
+      <div class="fr-item">
+        <div class="fr-item-num">06</div>
+        <div class="fr-item-body">
+          <div class="fr-item-friction">Builds has no deployment view — only an artifact list</div>
+          <div class="fr-item-resolution"><strong>Coverage column</strong> on each row + a <strong>Deployment tab</strong> in detail.</div>
+        </div>
+      </div>
+
+      <div class="fr-item">
+        <div class="fr-item-num">07</div>
+        <div class="fr-item-body">
+          <div class="fr-item-friction">Three inconsistent status vocabularies across surfaces</div>
+          <div class="fr-item-resolution">One normalized <strong>five-state pill</strong> — Running / Waiting / Completed / Failed / Terminated.</div>
+        </div>
+      </div>
+
+      <div class="fr-item">
+        <div class="fr-item-num">08</div>
+        <div class="fr-item-body">
+          <div class="fr-item-friction">Detail panel pattern drifted into three implementations</div>
+          <div class="fr-item-resolution">One <strong>shared right-slide panel</strong> across Instance, Incident, Build, Trigger, Task.</div>
+        </div>
+      </div>
+
+      <div class="fr-item">
+        <div class="fr-item-num">09</div>
+        <div class="fr-item-body">
+          <div class="fr-item-friction">Instance Workflows tab is a redundant Live Evals slice</div>
+          <div class="fr-item-resolution">"AI runs" tab embeds the <strong>canonical slice</strong> with deep-links into the WorkflowRun panel.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============== § 2 — PHILOSOPHY ============== -->
+  <section>
+    <h2><span class="num">§ 2</span>Redesign philosophy</h2>
     <p class="intro">Three personas open this tab for three different reasons — <em>what's broken?</em>, <em>how's my workflow behaving?</em>, <em>what did the system do today?</em> The redesign serves all three by reorganising what already exists, not by inventing anything new.</p>
 
     <div class="phil-grid">
@@ -943,9 +1008,9 @@
 
   </section>
 
-  <!-- ============== § 2 — PAGE-BY-PAGE MAPPING ============== -->
+  <!-- ============== § 3 — PAGE-BY-PAGE MAPPING ============== -->
   <section>
-    <h2><span class="num">§ 2</span>Page-by-page mapping</h2>
+    <h2><span class="num">§ 3</span>Page-by-page mapping</h2>
     <p class="intro">How each page or entity in the current Runtime tab moves to the redesign.</p>
 
     <table class="map-table">
@@ -1112,204 +1177,6 @@
 
       </tbody>
     </table>
-  </section>
-
-  <!-- ============== § 3 — FRICTION → RESOLUTION ============== -->
-  <section>
-    <h2><span class="num">§ 3</span>Friction → resolution</h2>
-    <p class="intro">Each friction point from the starter doc and the design choice that addresses it. All nine are resolved.</p>
-
-    <table class="fr-table">
-      <thead>
-        <tr>
-          <th style="width: 32px;">#</th>
-          <th>Friction (current)</th>
-          <th>Resolution (new)</th>
-        </tr>
-      </thead>
-      <tbody>
-
-        <tr>
-          <td class="num">1</td>
-          <td>
-            <div class="fr-title">Active Policy + Config Param Overrides have the same shape</div>
-            <div class="fr-desc">Default + overrides + resolver pattern is duplicated across two pages with different chrome.</div>
-          </td>
-          <td class="res">
-            <div class="res-title">Configuration consolidates both axes</div>
-            <div class="res-desc">One page, shared override grammar, one persistent resolver that shows both outcomes simultaneously.</div>
-            <div class="where">See: <code>§ 8 · Configuration</code></div>
-          </td>
-        </tr>
-
-        <tr>
-          <td class="num">2</td>
-          <td>
-            <div class="fr-title">Process Instances + UI Flow Sessions are near-symmetric</div>
-            <div class="fr-desc">Same list + detail anatomy, separate nav entries, divergent status models. Users must know what kind of thing they're looking for before they can find it.</div>
-          </td>
-          <td class="res">
-            <div class="res-title">Instances merges both</div>
-            <div class="res-desc">One list, type as a column, normalized status pill, shared detail panel with type-adaptive "Activity tree".</div>
-            <div class="where">See: <code>§ 5 · Instances</code></div>
-          </td>
-        </tr>
-
-        <tr>
-          <td class="num">3</td>
-          <td>
-            <div class="fr-title">AI workflow runs appear in three places</div>
-            <div class="fr-desc">Process Instance Workflows tab, UI Flow Session Workflows tab, and Live Evals — three lenses, no cross-navigation. A single run could not be opened, navigated to, or linked back to its parent.</div>
-          </td>
-          <td class="res">
-            <div class="res-title">WorkflowRun becomes a first-class navigable entity</div>
-            <div class="res-desc">Shared detail panel (Trace / Variables / Scores) reachable from 4 lenses: instance "AI runs" tab, Live Evals workflow page (Recent runs), the new cross-workflow <code>#/live-evals/runs</code> route, and Build detail's Workflow runs tab. Parent chip in the panel header jumps back to the spawning Process Instance or UI Flow Session — the cross-lens connector that didn't exist before.</div>
-            <div class="where">See: <code>§ 5, 7, 9</code></div>
-          </td>
-        </tr>
-
-        <tr>
-          <td class="num">4</td>
-          <td>
-            <div class="fr-title">No unified "what's running right now" entry point</div>
-            <div class="fr-desc">Process Instances and UI Flow Sessions are the only sources of live state, but they're separate pages with no cross-cutting view.</div>
-          </td>
-          <td class="res">
-            <div class="res-title">Overview activity feed + merged Instances list</div>
-            <div class="res-desc">Activity-first dashboard surfaces starts/finishes/incidents across all types in one stream. Instances list combines both.</div>
-            <div class="where">See: <code>§ 4 · Overview · § 5 · Instances</code></div>
-          </td>
-        </tr>
-
-        <tr>
-          <td class="num">5</td>
-          <td>
-            <div class="fr-title">Three separate "things went wrong" surfaces</div>
-            <div class="fr-desc">Failed Process Start, Failed Triggers, and Exceptions are sibling pages differing only on lifecycle stage of the failure.</div>
-          </td>
-          <td class="res">
-            <div class="res-title">Incidents unifies them — plus AI breaches</div>
-            <div class="res-desc">One list, four stage tabs. AI scorer breaches join the same surface from the ops perspective.</div>
-            <div class="where">See: <code>§ 6 · Incidents</code></div>
-          </td>
-        </tr>
-
-        <tr>
-          <td class="num">6</td>
-          <td>
-            <div class="fr-title">Builds is the implicit centre, but has no deployment view</div>
-            <div class="fr-desc">Builds list shows artifacts; "what build is currently serving whom" requires opening Active Policy + test-effective.</div>
-          </td>
-          <td class="res">
-            <div class="res-title">Coverage column + Deployment tab</div>
-            <div class="res-desc">Each build row shows % traffic served. Detail panel's Deployment tab breaks down by policy rule and shows fallback routing.</div>
-            <div class="where">See: <code>§ 7 · Builds</code></div>
-          </td>
-        </tr>
-
-        <tr>
-          <td class="num">7</td>
-          <td>
-            <div class="fr-title">Status models are inconsistent</div>
-            <div class="fr-desc">Process Instances have a 10-value ProcessState enum; UI Flow Sessions have a free-form status string; Live Evals has yet another vocabulary.</div>
-          </td>
-          <td class="res">
-            <div class="res-title">Five-state UI normalization</div>
-            <div class="res-desc">Running / Waiting / Completed / Failed / Terminated render consistently. Raw underlying state revealed on hover.</div>
-            <div class="where">See: <code>§ 5 · § 10.2</code></div>
-          </td>
-        </tr>
-
-        <tr>
-          <td class="num">8</td>
-          <td>
-            <div class="fr-title">Detail panel pattern repeated three times, differently</div>
-            <div class="fr-desc">Process Instance, UI Flow Session, and Live Evals modals each use a bottom-panel-with-tabs metaphor but drifted into three different implementations.</div>
-          </td>
-          <td class="res">
-            <div class="res-title">One shared detail-panel component</div>
-            <div class="res-desc">Right-slide panel, consistent chrome, reused across Instance, Incident, Build, Trigger, Task detail views.</div>
-            <div class="where">See: <code>§ 10.1</code></div>
-          </td>
-        </tr>
-
-        <tr>
-          <td class="num">9</td>
-          <td>
-            <div class="fr-title">The Workflows tab on instances is a redundant Live Evals slice</div>
-            <div class="fr-desc">flx-instance-workflows is a thinner, separate implementation of what Live Evals already renders better.</div>
-          </td>
-          <td class="res">
-            <div class="res-title">Tab embeds a real Live Evals slice with deep links into the canonical run panel</div>
-            <div class="res-desc">"AI runs" tab on Instance details filters <code>MOCK_DATA.workflowRuns</code> by parent and shows the real runs (not stub samples). Each row opens the shared WorkflowRun detail panel. "Open in Live Evals →" deep-links to the cross-workflow runs view.</div>
-            <div class="where">See: <code>§ 5 · § 9</code></div>
-          </td>
-        </tr>
-
-      </tbody>
-    </table>
-  </section>
-
-  <!-- ============== § 4 — VISUAL HIERARCHY ============== -->
-  <section>
-    <h2><span class="num">§ 4</span>Visual hierarchy</h2>
-    <p class="intro">The starter has no landing dashboard, so today's "first impression" is just a flat list of builds. The redesign establishes a deliberate visual hierarchy: incident banner → activity feed → KPI cards → trends.</p>
-
-    <div class="vh-grid">
-
-      <div>
-        <div class="label" style="font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.04em; font-weight: 700; margin-bottom: 6px;">Before — flat builds list</div>
-        <div class="vh-wire">
-          <div class="box" style="display:flex;align-items:center;font-size:11px;color:var(--text-dim);">Builds list (default landing — no hierarchy beyond table)</div>
-          <div class="box flat">v1.4.2 · main · 11m ago</div>
-          <div class="box flat">v1.4.1 · main · 2d ago</div>
-          <div class="box flat">v1.4.0-beta · beta · 5d ago</div>
-          <div class="box flat">v1.3.7 · main · 18d ago</div>
-          <div class="box flat">v1.3.6 · main · 21d ago</div>
-        </div>
-      </div>
-
-      <div>
-        <div class="label" style="font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.04em; font-weight: 700; margin-bottom: 6px;">After — activity-first dashboard</div>
-        <div class="vh-wire">
-          <div class="box alert">⚠ 2 scorers breached · 4 incidents · 3 failed starts</div>
-          <div class="row">
-            <div class="box hero" style="display:flex;flex-direction:column;justify-content:center;">
-              <div>Activity feed</div>
-              <div style="font-weight:400;color:var(--blue-700);font-size:9px;margin-top:2px;opacity:0.7;">live · starts · finishes · incidents · deploys · triggers</div>
-            </div>
-            <div>
-              <div class="box" style="min-height: 28px; font-size: 10px;">In flight · 1,284</div>
-              <div class="box" style="min-height: 28px; font-size: 10px;">Deployment · v1.4.2</div>
-              <div class="box" style="min-height: 28px; font-size: 10px;">AI quality · 0.84</div>
-            </div>
-          </div>
-          <div class="row trends">
-            <div class="box flat" style="font-size: 9px; text-align: center; min-height: 22px; padding: 3px;">47/min</div>
-            <div class="box flat" style="font-size: 9px; text-align: center; min-height: 22px; padding: 3px;">2.8s p95</div>
-            <div class="box flat" style="font-size: 9px; text-align: center; min-height: 22px; padding: 3px;">12 err/h</div>
-            <div class="box flat" style="font-size: 9px; text-align: center; min-height: 22px; padding: 3px;">$184/h</div>
-          </div>
-        </div>
-      </div>
-
-    </div>
-  </section>
-
-  <!-- ============== § 5 — SUMMARY ============== -->
-  <section>
-    <h2><span class="num">§ 5</span>Net effect</h2>
-    <div class="summary-card">
-      <h3>What the redesign actually changes</h3>
-      <p>The same content, the same data sources, the same backend services — but reorganised so that every reason someone opens the tab has a deliberate, scannable entry point, and every concept is explainable from inside the product.</p>
-      <ul>
-        <li>One landing that answers "what's happening right now" in five seconds.</li>
-        <li>Three merges that turn parallel concepts into single surfaces with shared chrome.</li>
-        <li>One unified "what's broken" view spanning every failure stage including AI quality.</li>
-        <li>Build becomes a first-class deployment lens, not just an artifact list.</li>
-        <li>Six documentation patterns applied consistently so the tab teaches itself.</li>
-      </ul>
-    </div>
   </section>
 
   <footer style="margin-top: 64px; padding-top: 20px; border-top: 1px solid var(--border); color: var(--text-dim); font-size: 12px;">
